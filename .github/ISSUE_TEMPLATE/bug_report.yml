@@ -1,0 +1,59 @@
+name: Bug report
+description: Report something that is not working as expected.
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for reporting a bug.
+        Please fill out the details below so we can reproduce and fix it quickly.
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A clear and concise description of the bug.
+      placeholder: Describe the current behavior and what you expected instead.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Steps to reproduce
+      description: List exact steps so we can reproduce the issue.
+      placeholder: |
+        1. Start server with plugin version ...
+        2. Place/open doors ...
+        3. Observe ...
+    validations:
+      required: true
+  - type: input
+    id: plugin_version
+    attributes:
+      label: Plugin version
+      placeholder: v1.0.0
+    validations:
+      required: true
+  - type: input
+    id: server_version
+    attributes:
+      label: Server software and version
+      description: Example: Paper 1.21.1 build 125
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant logs/errors
+      description: Paste stack traces or console logs if available.
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and did not find a duplicate.
+          required: true
+        - label: I tested with the latest plugin release.
+          required: false
