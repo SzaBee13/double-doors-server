@@ -3,7 +3,7 @@
 ![GitHub Release](https://img.shields.io/github/v/release/SzaBee13/double-doors-spigot)
 ![GitHub License](https://img.shields.io/github/license/SzaBee13/double-doors-spigot)
 
-A Paper plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
+A Bukkit/Spigot plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
 
 ## Features
 
