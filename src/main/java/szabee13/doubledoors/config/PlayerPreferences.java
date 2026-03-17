@@ -39,6 +39,14 @@ public final class PlayerPreferences {
     data = YamlConfiguration.loadConfiguration(dataFile);
     cache.clear();
     for (String key : data.getKeys(false)) {
+      // Fast path: skip obviously-invalid UUID formats before attempting UUID.fromString.
+      if (key.length() != 36
+          || key.charAt(8) != '-'
+          || key.charAt(13) != '-'
+          || key.charAt(18) != '-'
+          || key.charAt(23) != '-') {
+        continue;
+      }
       try {
         UUID uuid = UUID.fromString(key);
         boolean enabled = data.getBoolean(key + ".enabled", true);

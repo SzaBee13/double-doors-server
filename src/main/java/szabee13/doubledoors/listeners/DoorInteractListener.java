@@ -118,6 +118,10 @@ public final class DoorInteractListener implements Listener {
           return;
         }
 
+        if (linked.isOpen() == openState) {
+          return;
+        }
+
         linked.setOpen(openState);
         partner.setBlockData(linked, false);
 
@@ -134,10 +138,16 @@ public final class DoorInteractListener implements Listener {
       }
 
       Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
+      if (connected.isEmpty()) {
+        return;
+      }
 
       for (Block block : connected) {
         BlockData data = block.getBlockData();
         if (!(data instanceof Openable linked)) {
+          continue;
+        }
+        if (linked.isOpen() == openState) {
           continue;
         }
 

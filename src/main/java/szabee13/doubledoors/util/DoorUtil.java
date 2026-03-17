@@ -4,6 +4,7 @@ import java.util.ArrayDeque;
 import java.util.HashSet;
 import java.util.Set;
 import org.bukkit.World;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -55,12 +56,13 @@ public final class DoorUtil {
       return result;
     }
 
+    Material originType = origin.getType();
     World world = origin.getWorld();
     ArrayDeque<SearchNode> queue = new ArrayDeque<>();
-    Set<String> visited = new HashSet<>();
+    Set<Long> visited = new HashSet<>();
 
     queue.add(new SearchNode(origin, 0));
-    visited.add(key(origin));
+    visited.add(coordHash(origin));
 
     while (!queue.isEmpty()) {
       SearchNode node = queue.poll();
@@ -75,12 +77,12 @@ public final class DoorUtil {
         continue;
       }
 
-      addNeighborIfMatching(origin, world, current.getX() + 1, current.getY(), current.getZ(), depth, visited, queue);
-      addNeighborIfMatching(origin, world, current.getX() - 1, current.getY(), current.getZ(), depth, visited, queue);
-      addNeighborIfMatching(origin, world, current.getX(), current.getY() + 1, current.getZ(), depth, visited, queue);
-      addNeighborIfMatching(origin, world, current.getX(), current.getY() - 1, current.getZ(), depth, visited, queue);
-      addNeighborIfMatching(origin, world, current.getX(), current.getY(), current.getZ() + 1, depth, visited, queue);
-      addNeighborIfMatching(origin, world, current.getX(), current.getY(), current.getZ() - 1, depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX() + 1, current.getY(), current.getZ(), depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX() - 1, current.getY(), current.getZ(), depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX(), current.getY() + 1, current.getZ(), depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX(), current.getY() - 1, current.getZ(), depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX(), current.getY(), current.getZ() + 1, depth, visited, queue);
+      addNeighborIfMatching(originType, world, current.getX(), current.getY(), current.getZ() - 1, depth, visited, queue);
     }
 
     return result;
@@ -146,31 +148,39 @@ public final class DoorUtil {
   }
 
   private static void addNeighborIfMatching(
-      Block origin,
+      Material originType,
       World world,
       int x,
       int y,
       int z,
       int currentDepth,
-      Set<String> visited,
+      Set<Long> visited,
       ArrayDeque<SearchNode> queue
   ) {
+    long neighborKey = coordHash(x, y, z);
+    if (visited.contains(neighborKey)) {
+      return;
+    }
+
     Block neighbor = world.getBlockAt(x, y, z);
-    if (neighbor.getType() != origin.getType()) {
+    if (neighbor.getType() != originType) {
       return;
     }
 
-    String key = key(neighbor);
-    if (visited.contains(key)) {
-      return;
-    }
-
-    visited.add(key);
+    visited.add(neighborKey);
     queue.add(new SearchNode(neighbor, currentDepth + 1));
   }
 
-  private static String key(Block block) {
-    return block.getWorld().getUID() + ":" + block.getX() + ":" + block.getY() + ":" + block.getZ();
+  private static long coordHash(Block block) {
+    return coordHash(block.getX(), block.getY(), block.getZ());
+  }
+
+  private static long coordHash(int x, int y, int z) {
+    // Mirrors Mojang's BlockPos-style bit packing to avoid collisions in normal world ranges.
+    long lx = ((long) x & 0x3FFFFFFL) << 38;
+    long lz = ((long) z & 0x3FFFFFFL) << 12;
+    long ly = (long) y & 0xFFFL;
+    return lx | lz | ly;
   }
 
   private record SearchNode(Block block, int depth) {

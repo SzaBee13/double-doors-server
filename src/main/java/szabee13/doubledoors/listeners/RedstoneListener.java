@@ -10,6 +10,8 @@ import java.util.Map;
 import java.util.Set;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected;
+import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
@@ -116,6 +118,12 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
+    // Skip top-half doors; the bottom-half handler will sync both halves
+    BlockData blockData = block.getBlockData();
+    if (blockData instanceof Bisected bisected && bisected.getHalf() == Half.TOP) {
+      return;
+    }
+
     long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
     if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
       return;
@@ -145,6 +153,12 @@ public final class RedstoneListener implements Listener {
       return;
     }
     if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+      return;
+    }
+
+    // Skip top-half doors; the bottom-half handler will sync both halves
+    BlockData blockData = block.getBlockData();
+    if (blockData instanceof Bisected bisected && bisected.getHalf() == Half.TOP) {
       return;
     }
 
@@ -190,6 +204,10 @@ public final class RedstoneListener implements Listener {
           return;
         }
 
+        if (linked.isOpen() == openState) {
+          return;
+        }
+
         linked.setOpen(openState);
         partner.setBlockData(linked, false);
 
@@ -218,6 +236,9 @@ public final class RedstoneListener implements Listener {
         Block block = entry.getKey();
         BlockData data = entry.getValue();
         if (!(data instanceof Openable linked)) {
+          continue;
+        }
+        if (linked.isOpen() == openState) {
           continue;
         }
 
