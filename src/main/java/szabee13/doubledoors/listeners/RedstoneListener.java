@@ -3,6 +3,7 @@ package szabee13.doubledoors.listeners;
 import szabee13.doubledoors.DoubleDoors;
 import szabee13.doubledoors.config.PluginConfig;
 import szabee13.doubledoors.util.DoorUtil;
+import szabee13.doubledoors.util.ProtectionCompat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -115,6 +116,11 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
+      return;
+    }
+
     applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
   }
 
@@ -139,6 +145,11 @@ public final class RedstoneListener implements Listener {
       return;
     }
     if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+      return;
+    }
+
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
       return;
     }
 

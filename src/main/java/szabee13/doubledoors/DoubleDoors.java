@@ -1,9 +1,11 @@
 package szabee13.doubledoors;
 
+import szabee13.doubledoors.config.ClaimSettings;
 import szabee13.doubledoors.config.PlayerPreferences;
 import szabee13.doubledoors.config.PluginConfig;
 import szabee13.doubledoors.listeners.DoorInteractListener;
 import szabee13.doubledoors.listeners.RedstoneListener;
+import szabee13.doubledoors.util.DoorUtil;
 import szabee13.doubledoors.util.ProtectionCompat;
 import java.util.ArrayList;
 import java.util.List;
@@ -23,6 +25,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
+  private ClaimSettings claimSettings;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -40,6 +43,15 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
    */
   public PlayerPreferences getPlayerPreferences() {
     return playerPreferences;
+  }
+
+  /**
+   * Gets the per-claim settings manager.
+   *
+   * @return the claim settings instance
+   */
+  public ClaimSettings getClaimSettings() {
+    return claimSettings;
   }
 
   /**
@@ -69,6 +81,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
     playerPreferences = new PlayerPreferences(this);
+    claimSettings = new ClaimSettings(this);
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
@@ -107,7 +120,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     if (args.length == 0) {
-      sender.sendMessage("Usage: /doubledoors <reload|toggle|server-toggle>");
+      sender.sendMessage("Usage: /" + label + " <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>");
       return true;
     }
 
@@ -120,6 +133,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       reloadConfig();
       pluginConfig.reload();
       playerPreferences.load();
+      claimSettings.load();
       sender.sendMessage("DoubleDoors config and player preferences reloaded.");
       return true;
     }
@@ -175,7 +189,42 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return true;
     }
 
-    sender.sendMessage("Usage: /doubledoors <reload|toggle [doors|gates|trapdoors]|server-toggle>");
+    if (args[0].equalsIgnoreCase("grief")) {
+      if (!(sender instanceof Player player)) {
+        sender.sendMessage("Only players can use /" + label + " grief.");
+        return true;
+      }
+
+      if (!sender.hasPermission("doubledoors.grief")) {
+        sender.sendMessage("You do not have permission to use this command.");
+        return true;
+      }
+
+      if (args.length < 2 || !args[1].equalsIgnoreCase("villagers")) {
+        sender.sendMessage("Usage: /" + label + " grief villagers");
+        return true;
+      }
+
+      Block standingBlock = player.getLocation().getBlock();
+      long claimId = ProtectionCompat.getClaimIdAt(this, standingBlock);
+      if (claimId < 0) {
+        sender.sendMessage("You are not standing in a GriefPrevention claim, or GriefPrevention is not enabled.");
+        return true;
+      }
+
+      if (!ProtectionCompat.isClaimManagerAt(this, player, standingBlock)) {
+        sender.sendMessage("You do not have permission to manage this claim.");
+        return true;
+      }
+
+      boolean blocked = claimSettings.toggleVillagersBlocked(claimId);
+      sender.sendMessage(blocked
+          ? "Villager linked-door access blocked for this claim."
+          : "Villager linked-door access allowed for this claim.");
+      return true;
+    }
+
+    sender.sendMessage("Usage: /" + label + " <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>");
     return true;
   }
 
@@ -187,7 +236,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     if (args.length == 1) {
-      for (String sub : List.of("reload", "toggle", "server-toggle")) {
+      for (String sub : List.of("reload", "toggle", "server-toggle", "grief")) {
         if (sub.startsWith(args[0].toLowerCase())) {
           completions.add(sub);
         }
@@ -197,6 +246,10 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
         if (sub.startsWith(args[1].toLowerCase())) {
           completions.add(sub);
         }
+      }
+    } else if (args.length == 2 && args[0].equalsIgnoreCase("grief")) {
+      if ("villagers".startsWith(args[1].toLowerCase())) {
+        completions.add("villagers");
       }
     }
     return completions;
