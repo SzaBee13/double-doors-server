@@ -22,6 +22,13 @@
     </repository>
   </repositories>
 
+  <distributionManagement>
+    <repository>
+      <id>github</id>
+      <url>https://maven.pkg.github.com/SzaBee13/double-doors-spigot</url>
+    </repository>
+  </distributionManagement>
+
   <dependencies>
     <dependency>
       <groupId>io.papermc.paper</groupId>

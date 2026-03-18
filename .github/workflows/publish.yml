@@ -1,0 +1,93 @@
+name: Maven Package
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          server-id: github # this auto-generates settings.xml for GitHub Packages auth
+          settings-path: ${{ github.workspace }}
+
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
+
+      - name: Get JAR path
+        id: artifact
+        run: |
+          # Prefer the plugin output jar name, then fall back to the first regular jar.
+          JAR_PATH=$(find target -maxdepth 1 -name "doubledoors-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          if [ -z "$JAR_PATH" ]; then
+            JAR_PATH=$(find target -name "*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          fi
+          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+
+      - name: Attach JAR to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ${{ steps.artifact.outputs.jar_path }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${{ github.ref_name }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Get release notes
+        id: release_notes
+        run: |
+          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
+          if [ -f "$RELEASE_NOTE_FILE" ]; then
+            BODY=$(cat "$RELEASE_NOTE_FILE")
+          else
+            BODY="Release ${{ github.ref_name }}"
+          fi
+          {
+            echo "body<<EOF"
+            echo "$BODY"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to GitHub Packages
+        run: mvn deploy -s ${{ github.workspace }}/settings.xml -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Publish to Modrinth and CurseForge
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Fdj5mcgC
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: 1489404
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: ${{ steps.artifact.outputs.jar_path }}
+          name: 'Double Doors Server ${{ steps.version.outputs.version }}'
+          version: ${{ steps.version.outputs.version }}
+          version-type: release
+          changelog: ${{ steps.release_notes.outputs.body }}
+          loaders: |
+            bukkit
+            paper
+            purpur
+            spigot
+          game-versions: |
+            1.21
+            1.21.1
+          java: |
+            21
