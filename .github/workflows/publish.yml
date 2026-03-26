@@ -54,23 +54,25 @@ jobs:
 
       - name: Get release notes
         id: release_notes
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
         run: |
           RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
+          DELIMITER="RELEASE_NOTES_$(date +%s%N)"
+
           if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then
-            {
-              echo "body<<'EOF'"
-              cat "$RELEASE_NOTE_FILE"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
-          elif [ -n "${{ github.event.release.body }}" ]; then
-            {
-              echo "body<<'EOF'"
-              echo "${{ github.event.release.body }}"
-              echo "EOF"
-            } >> "$GITHUB_OUTPUT"
+            BODY="$(cat "$RELEASE_NOTE_FILE")"
+          elif [ -n "$RELEASE_BODY" ]; then
+            BODY="$RELEASE_BODY"
           else
-            echo "body=Release ${{ github.event.release.tag_name }}" >> "$GITHUB_OUTPUT"
+            BODY="Release ${{ github.event.release.tag_name }}"
           fi
+
+            {
+            echo "body<<$DELIMITER"
+            printf '%s\n' "$BODY"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Publish to GitHub Packages
         run: mvn deploy -s ${{ github.workspace }}/settings.xml -DskipTests
