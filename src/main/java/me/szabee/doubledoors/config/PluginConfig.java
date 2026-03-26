@@ -1,6 +1,6 @@
-package szabee13.doubledoors.config;
+package me.szabee.doubledoors.config;
 
-import szabee13.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.DoubleDoors;
 
 /**
  * Configuration wrapper for DoubleDoors.
@@ -136,3 +136,4 @@ public final class PluginConfig {
     plugin.saveConfig();
   }
 }
+

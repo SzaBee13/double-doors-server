@@ -1,9 +1,9 @@
-package szabee13.doubledoors.listeners;
+package me.szabee.doubledoors.listeners;
 
-import szabee13.doubledoors.DoubleDoors;
-import szabee13.doubledoors.config.PlayerPreferences;
-import szabee13.doubledoors.config.PluginConfig;
-import szabee13.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PlayerPreferences;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.util.DoorUtil;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -220,3 +220,4 @@ public final class DoorInteractListener implements Listener {
     }
   }
 }
+

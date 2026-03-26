@@ -1,6 +1,6 @@
 name: DoubleDoors
 version: 1.2.0
-main: szabee13.doubledoors.DoubleDoors
+main: me.szabee.doubledoors.DoubleDoors
 api-version: '1.21'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
@@ -26,3 +26,4 @@ permissions:
   doubledoors.grief:
     description: Allows toggling per-claim villager linked-door access
     default: true
+

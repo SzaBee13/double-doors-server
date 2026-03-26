@@ -5,7 +5,8 @@ build/
 
 # IDEs
 .idea/
-.vscode/
+.vscode/*
+!.vscode/extensions.json
 
 # OS files
 .DS_Store
@@ -23,4 +24,5 @@ wiki/
 
 # Testing
 tests/
+test/
 coverage/

@@ -1,4 +1,4 @@
-package szabee13.doubledoors.i18n;
+package me.szabee.doubledoors.i18n;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -18,8 +18,8 @@ import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
-import szabee13.doubledoors.DoubleDoors;
-import szabee13.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PluginConfig;
 
 /**
  * Loads and resolves localized message strings for DoubleDoors.
@@ -318,3 +318,4 @@ public final class TranslationManager {
     }
   }
 }
+

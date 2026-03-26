@@ -1,4 +1,4 @@
-package szabee13.doubledoors.config;
+package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import org.bukkit.configuration.file.YamlConfiguration;
-import szabee13.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.DoubleDoors;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
@@ -179,3 +179,4 @@ public final class PlayerPreferences {
       boolean enableTrapdoors
   ) {}
 }
+

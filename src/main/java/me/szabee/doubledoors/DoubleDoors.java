@@ -1,13 +1,13 @@
-package szabee13.doubledoors;
+package me.szabee.doubledoors;
 
-import szabee13.doubledoors.config.ClaimSettings;
-import szabee13.doubledoors.config.PlayerPreferences;
-import szabee13.doubledoors.config.PluginConfig;
-import szabee13.doubledoors.i18n.TranslationManager;
-import szabee13.doubledoors.listeners.DoorInteractListener;
-import szabee13.doubledoors.listeners.RedstoneListener;
-import szabee13.doubledoors.util.DoorUtil;
-import szabee13.doubledoors.util.ProtectionCompat;
+import me.szabee.doubledoors.config.ClaimSettings;
+import me.szabee.doubledoors.config.PlayerPreferences;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.i18n.TranslationManager;
+import me.szabee.doubledoors.listeners.DoorInteractListener;
+import me.szabee.doubledoors.listeners.RedstoneListener;
+import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.ProtectionCompat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
@@ -276,3 +276,4 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     return completions;
   }
 }
+

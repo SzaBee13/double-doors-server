@@ -21,10 +21,10 @@ The shaded JAR is produced at `target/doubledoors-<version>.jar`.
 ### Package layout
 | Package | Responsibility |
 |---|---|
-| `szabee13.doubledoors` | Plugin main class + command/tab handling |
-| `szabee13.doubledoors.config` | `PluginConfig` (server YAML), `PlayerPreferences` (per-player YAML) |
-| `szabee13.doubledoors.listeners` | `DoorInteractListener` (player clicks), `RedstoneListener` (redstone + villager) |
-| `szabee13.doubledoors.util` | `DoorUtil` (block search), `ProtectionCompat` (GriefPrevention reflection) |
+| `me.szabee.doubledoors` | Plugin main class + command/tab handling |
+| `me.szabee.doubledoors.config` | `PluginConfig` (server YAML), `PlayerPreferences` (per-player YAML) |
+| `me.szabee.doubledoors.listeners` | `DoorInteractListener` (player clicks), `RedstoneListener` (redstone + villager) |
+| `me.szabee.doubledoors.util` | `DoorUtil` (block search), `ProtectionCompat` (GriefPrevention reflection) |
 
 ### Configuration files
 | File | Purpose |

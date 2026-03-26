@@ -1,4 +1,4 @@
-package szabee13.doubledoors.config;
+package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.bukkit.configuration.file.YamlConfiguration;
-import szabee13.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.DoubleDoors;
 
 /**
  * Manages per-GriefPrevention-claim settings, persisted to {@code claims.yml}.
@@ -92,3 +92,4 @@ public final class ClaimSettings {
     return true;
   }
 }
+

@@ -1,9 +1,9 @@
-package szabee13.doubledoors.listeners;
+package me.szabee.doubledoors.listeners;
 
-import szabee13.doubledoors.DoubleDoors;
-import szabee13.doubledoors.config.PluginConfig;
-import szabee13.doubledoors.util.DoorUtil;
-import szabee13.doubledoors.util.ProtectionCompat;
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.ProtectionCompat;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;

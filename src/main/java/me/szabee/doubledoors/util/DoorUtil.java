@@ -1,4 +1,4 @@
-package szabee13.doubledoors.util;
+package me.szabee.doubledoors.util;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
@@ -186,3 +186,4 @@ public final class DoorUtil {
   private record SearchNode(Block block, int depth) {
   }
 }
+

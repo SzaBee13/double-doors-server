@@ -1,4 +1,4 @@
-package szabee13.doubledoors.util;
+package me.szabee.doubledoors.util;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -8,7 +8,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-import szabee13.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.DoubleDoors;
 
 /**
  * Optional protection-plugin compatibility hooks.
@@ -296,3 +296,4 @@ public final class ProtectionCompat {
     return -1L;
   }
 }
+
