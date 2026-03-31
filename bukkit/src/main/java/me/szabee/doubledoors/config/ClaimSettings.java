@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 import org.bukkit.configuration.file.YamlConfiguration;
 import me.szabee.doubledoors.DoubleDoors;
 
@@ -17,6 +18,8 @@ public final class ClaimSettings {
 
   private final DoubleDoors plugin;
   private final File dataFile;
+  private final SharedSqlStorage sqlStorage;
+  private final boolean useSql;
   private final Set<Long> villagersBlockedClaims = new HashSet<>();
 
   /**
@@ -27,6 +30,8 @@ public final class ClaimSettings {
   public ClaimSettings(DoubleDoors plugin) {
     this.plugin = plugin;
     this.dataFile = new File(plugin.getDataFolder(), "claims.yml");
+    this.sqlStorage = plugin.getSqlStorage();
+    this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
     load();
   }
 
@@ -34,6 +39,12 @@ public final class ClaimSettings {
    * Reloads all claim settings from disk, clearing in-memory state.
    */
   public void load() {
+    if (useSql) {
+      villagersBlockedClaims.clear();
+      villagersBlockedClaims.addAll(sqlStorage.loadVillagersBlockedClaims());
+      return;
+    }
+
     YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
     villagersBlockedClaims.clear();
     List<?> blocked = data.getList("villagersBlocked");
@@ -50,6 +61,13 @@ public final class ClaimSettings {
    * Saves all claim settings synchronously to {@code claims.yml}.
    */
   public void save() {
+    if (useSql) {
+      for (Long claimId : villagersBlockedClaims) {
+        sqlStorage.setVillagersBlocked(claimId, true);
+      }
+      return;
+    }
+
     YamlConfiguration data = new YamlConfiguration();
     data.set("villagersBlocked", List.copyOf(villagersBlockedClaims));
     try {
@@ -84,10 +102,16 @@ public final class ClaimSettings {
    */
   public boolean toggleVillagersBlocked(long claimId) {
     if (villagersBlockedClaims.remove(claimId)) {
+      if (useSql) {
+        sqlStorage.setVillagersBlocked(claimId, false);
+      }
       saveAsync();
       return false;
     }
     villagersBlockedClaims.add(claimId);
+    if (useSql) {
+      sqlStorage.setVillagersBlocked(claimId, true);
+    }
     saveAsync();
     return true;
   }

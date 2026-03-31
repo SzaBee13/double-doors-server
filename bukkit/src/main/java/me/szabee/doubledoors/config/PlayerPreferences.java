@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 import org.bukkit.configuration.file.YamlConfiguration;
 import me.szabee.doubledoors.DoubleDoors;
 
@@ -18,6 +19,8 @@ public final class PlayerPreferences {
 
   private final DoubleDoors plugin;
   private final File dataFile;
+  private final SharedSqlStorage sqlStorage;
+  private final boolean useSql;
   private YamlConfiguration data;
   private final Map<UUID, PlayerPref> cache = new HashMap<>();
 
@@ -29,6 +32,8 @@ public final class PlayerPreferences {
   public PlayerPreferences(DoubleDoors plugin) {
     this.plugin = plugin;
     this.dataFile = new File(plugin.getDataFolder(), "players.yml");
+    this.sqlStorage = plugin.getSqlStorage();
+    this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
     load();
   }
 
@@ -36,6 +41,19 @@ public final class PlayerPreferences {
    * Reloads all preferences from disk, clearing the in-memory cache.
    */
   public void load() {
+    if (useSql) {
+      cache.clear();
+      for (Map.Entry<UUID, SharedSqlStorage.SqlPlayerPref> entry : sqlStorage.loadAllPlayerPreferences().entrySet()) {
+        SharedSqlStorage.SqlPlayerPref pref = entry.getValue();
+        cache.put(entry.getKey(), new PlayerPref(
+            pref.enabled(),
+            pref.enableDoors(),
+            pref.enableFenceGates(),
+            pref.enableTrapdoors()));
+      }
+      return;
+    }
+
     data = YamlConfiguration.loadConfiguration(dataFile);
     cache.clear();
     for (String key : data.getKeys(false)) {
@@ -64,6 +82,18 @@ public final class PlayerPreferences {
    * Saves all in-memory preferences synchronously to {@code players.yml}.
    */
   public void save() {
+    if (useSql) {
+      for (Map.Entry<UUID, PlayerPref> entry : cache.entrySet()) {
+        PlayerPref pref = entry.getValue();
+        sqlStorage.savePlayerPreference(entry.getKey(), new SharedSqlStorage.SqlPlayerPref(
+            pref.enabled(),
+            pref.enableDoors(),
+            pref.enableFenceGates(),
+            pref.enableTrapdoors()));
+      }
+      return;
+    }
+
     for (Map.Entry<UUID, PlayerPref> entry : cache.entrySet()) {
       String key = entry.getKey().toString();
       PlayerPref pref = entry.getValue();
