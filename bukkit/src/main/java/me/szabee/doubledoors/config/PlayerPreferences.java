@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
-import me.szabee.doubledoors.storage.SharedSqlStorage;
+
 import org.bukkit.configuration.file.YamlConfiguration;
+
 import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
@@ -83,14 +85,6 @@ public final class PlayerPreferences {
    */
   public void save() {
     if (useSql) {
-      for (Map.Entry<UUID, PlayerPref> entry : cache.entrySet()) {
-        PlayerPref pref = entry.getValue();
-        sqlStorage.savePlayerPreference(entry.getKey(), new SharedSqlStorage.SqlPlayerPref(
-            pref.enabled(),
-            pref.enableDoors(),
-            pref.enableFenceGates(),
-            pref.enableTrapdoors()));
-      }
       return;
     }
 
@@ -105,13 +99,27 @@ public final class PlayerPreferences {
     try {
       data.save(dataFile);
     } catch (IOException e) {
-      plugin.getLogger().warning("Could not save players.yml: " + e.getMessage());
+      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
     }
   }
 
   /** Saves asynchronously; safe to call from the main thread after every mutation. */
-  private void saveAsync() {
-    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::save);
+  private void saveAsync(UUID changedUuid) {
+    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+      if (useSql) {
+        PlayerPref pref = cache.get(changedUuid);
+        if (pref == null) {
+          return;
+        }
+        sqlStorage.savePlayerPreference(changedUuid, new SharedSqlStorage.SqlPlayerPref(
+            pref.enabled(),
+            pref.enableDoors(),
+            pref.enableFenceGates(),
+            pref.enableTrapdoors()));
+        return;
+      }
+      save();
+    });
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
@@ -148,7 +156,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enabled();
     cache.put(uuid, new PlayerPref(next, current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -162,7 +170,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableDoors();
     cache.put(uuid, new PlayerPref(current.enabled(), next, current.enableFenceGates(), current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -176,7 +184,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableFenceGates();
     cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), next, current.enableTrapdoors()));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 
@@ -190,7 +198,7 @@ public final class PlayerPreferences {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableTrapdoors();
     cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), next));
-    saveAsync();
+    saveAsync(uuid);
     return next;
   }
 

@@ -1,12 +1,5 @@
 package me.szabee.doubledoors.proxy;
 
-import com.google.inject.Inject;
-import com.velocitypowered.api.event.Subscribe;
-import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
-import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
-import com.velocitypowered.api.plugin.Plugin;
-import com.velocitypowered.api.plugin.annotation.DataDirectory;
-import com.velocitypowered.api.proxy.ProxyServer;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -16,7 +9,16 @@ import java.sql.SQLException;
 import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
+
 import org.slf4j.Logger;
+
+import com.google.inject.Inject;
+import com.velocitypowered.api.event.Subscribe;
+import com.velocitypowered.api.event.proxy.ProxyInitializeEvent;
+import com.velocitypowered.api.event.proxy.ProxyShutdownEvent;
+import com.velocitypowered.api.plugin.Plugin;
+import com.velocitypowered.api.plugin.annotation.DataDirectory;
+import com.velocitypowered.api.proxy.ProxyServer;
 
 /**
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
@@ -92,18 +94,21 @@ public final class DoubleDoorsProxy {
     }
 
     sqlClient = new ProxySqlClient(jdbcUrl, username, password);
-    try {
-      sqlClient.initializeSchema();
-      writeHeartbeat();
-      heartbeatEnabled = true;
-      proxyServer.getScheduler()
-          .buildTask(this, this::writeHeartbeat)
-          .repeat(heartbeatSeconds, TimeUnit.SECONDS)
-          .schedule();
-      logger.info("DoubleDoorsProxy heartbeat enabled for proxyId='{}' every {}s.", proxyId, heartbeatSeconds);
-    } catch (SQLException e) {
-      logger.warn("DoubleDoorsProxy could not initialize SQL heartbeat: {}", e.getMessage());
-    }
+    long repeatSeconds = heartbeatSeconds;
+    proxyServer.getScheduler().buildTask(this, () -> {
+      try {
+        sqlClient.initializeSchema();
+        writeHeartbeat();
+        heartbeatEnabled = true;
+        proxyServer.getScheduler()
+            .buildTask(this, this::writeHeartbeat)
+            .repeat(repeatSeconds, TimeUnit.SECONDS)
+            .schedule();
+        logger.info("DoubleDoorsProxy heartbeat enabled for proxyId='{}' every {}s.", proxyId, repeatSeconds);
+      } catch (SQLException e) {
+        logger.warn("DoubleDoorsProxy could not initialize SQL heartbeat: {}", e.getMessage());
+      }
+    }).schedule();
   }
 
   /**

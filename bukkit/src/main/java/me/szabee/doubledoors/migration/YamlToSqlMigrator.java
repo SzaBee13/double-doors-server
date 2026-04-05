@@ -1,11 +1,13 @@
 package me.szabee.doubledoors.migration;
 
-import me.szabee.doubledoors.DoubleDoors;
-import me.szabee.doubledoors.storage.SharedSqlStorage;
 import java.io.File;
 import java.util.List;
 import java.util.UUID;
+
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 
 /**
  * Migrates legacy YAML persistence files into SQL tables.
@@ -29,23 +31,31 @@ public final class YamlToSqlMigrator {
       return;
     }
 
+    boolean migrationSucceeded = true;
+
     File playersFile = new File(plugin.getDataFolder(), "players.yml");
     if (playersFile.exists()) {
-      migratePlayers(plugin, sqlStorage, playersFile);
+      migrationSucceeded = migratePlayers(plugin, sqlStorage, playersFile) && migrationSucceeded;
     }
 
     File claimsFile = new File(plugin.getDataFolder(), "claims.yml");
     if (claimsFile.exists()) {
-      migrateClaims(plugin, sqlStorage, claimsFile);
+      migrationSucceeded = migrateClaims(plugin, sqlStorage, claimsFile) && migrationSucceeded;
+    }
+
+    if (!migrationSucceeded) {
+      plugin.getLogger().warning("DoubleDoors YAML to SQL migration had failures; migration marker was not written.");
+      return;
     }
 
     sqlStorage.markMigrationDone(MIGRATION_KEY);
     plugin.getLogger().info("DoubleDoors migrated YAML storage into SQL (" + MIGRATION_KEY + ").");
   }
 
-  private static void migratePlayers(DoubleDoors plugin, SharedSqlStorage sqlStorage, File playersFile) {
+  private static boolean migratePlayers(DoubleDoors plugin, SharedSqlStorage sqlStorage, File playersFile) {
     YamlConfiguration data = YamlConfiguration.loadConfiguration(playersFile);
     int migrated = 0;
+    boolean success = true;
     for (String key : data.getKeys(false)) {
       try {
         UUID uuid = UUID.fromString(key);
@@ -53,27 +63,38 @@ public final class YamlToSqlMigrator {
         boolean doors = data.getBoolean(key + ".enableDoors", true);
         boolean gates = data.getBoolean(key + ".enableFenceGates", true);
         boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
-        sqlStorage.savePlayerPreference(uuid, new SharedSqlStorage.SqlPlayerPref(enabled, doors, gates, trapdoors));
-        migrated++;
+        boolean wrote = sqlStorage.savePlayerPreference(uuid,
+            new SharedSqlStorage.SqlPlayerPref(enabled, doors, gates, trapdoors));
+        if (wrote) {
+          migrated++;
+        } else {
+          success = false;
+        }
       } catch (IllegalArgumentException ignored) {
         // Ignore unexpected top-level keys.
       }
     }
-    plugin.getLogger().info("DoubleDoors migrated " + migrated + " player preference rows from players.yml.");
+    plugin.getLogger().info(String.format("DoubleDoors migrated %d player preference rows from players.yml.", migrated));
+    return success;
   }
 
-  private static void migrateClaims(DoubleDoors plugin, SharedSqlStorage sqlStorage, File claimsFile) {
+  private static boolean migrateClaims(DoubleDoors plugin, SharedSqlStorage sqlStorage, File claimsFile) {
     YamlConfiguration data = YamlConfiguration.loadConfiguration(claimsFile);
     List<?> blocked = data.getList("villagersBlocked");
     int migrated = 0;
+    boolean success = true;
     if (blocked != null) {
       for (Object entry : blocked) {
         if (entry instanceof Number number) {
-          sqlStorage.setVillagersBlocked(number.longValue(), true);
-          migrated++;
+          if (sqlStorage.setVillagersBlocked(number.longValue(), true)) {
+            migrated++;
+          } else {
+            success = false;
+          }
         }
       }
     }
-    plugin.getLogger().info("DoubleDoors migrated " + migrated + " claim rows from claims.yml.");
+    plugin.getLogger().info(String.format("DoubleDoors migrated %d claim rows from claims.yml.", migrated));
+    return success;
   }
 }

@@ -1,7 +1,5 @@
 package me.szabee.doubledoors.storage;
 
-import me.szabee.doubledoors.DoubleDoors;
-import me.szabee.doubledoors.config.PluginConfig;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -11,9 +9,11 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
+
+import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.config.PluginConfig;
 
 /**
  * Shared SQL storage used by Bukkit and proxy components.
@@ -92,7 +92,7 @@ public final class SharedSqlStorage {
         }
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not load player preferences from SQL: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
     }
     return result;
   }
@@ -103,7 +103,7 @@ public final class SharedSqlStorage {
    * @param uuid the player UUID
    * @param pref the preference values
    */
-  public void savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
+  public boolean savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
     String updateSql = "UPDATE dd_player_preferences SET enabled=?, enable_doors=?, enable_fence_gates=?, "
         + "enable_trapdoors=? WHERE player_uuid=?";
     try (Connection connection = openConnection();
@@ -127,8 +127,10 @@ public final class SharedSqlStorage {
         }
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not save player preference to SQL: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
+      return false;
     }
+    return true;
   }
 
   /**
@@ -138,15 +140,17 @@ public final class SharedSqlStorage {
    */
   public Set<Long> loadVillagersBlockedClaims() {
     Set<Long> blocked = new HashSet<>();
-    String sql = "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=TRUE";
+    String sql = "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=?";
     try (Connection connection = openConnection();
-         Statement statement = connection.createStatement();
-         ResultSet rs = statement.executeQuery(sql)) {
-      while (rs.next()) {
-        blocked.add(rs.getLong("claim_id"));
+         PreparedStatement statement = connection.prepareStatement(sql)) {
+      statement.setBoolean(1, true);
+      try (ResultSet rs = statement.executeQuery()) {
+        while (rs.next()) {
+          blocked.add(rs.getLong("claim_id"));
+        }
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not load claim settings from SQL: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
     }
     return blocked;
   }
@@ -157,7 +161,7 @@ public final class SharedSqlStorage {
    * @param claimId claim ID
    * @param blocked true to block villagers in this claim
    */
-  public void setVillagersBlocked(long claimId, boolean blocked) {
+  public boolean setVillagersBlocked(long claimId, boolean blocked) {
     String updateSql = "UPDATE dd_claim_settings SET villagers_blocked=? WHERE claim_id=?";
     try (Connection connection = openConnection();
          PreparedStatement update = connection.prepareStatement(updateSql)) {
@@ -173,8 +177,10 @@ public final class SharedSqlStorage {
         }
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not save claim setting to SQL: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
+      return false;
     }
+    return true;
   }
 
   /**
@@ -195,7 +201,7 @@ public final class SharedSqlStorage {
         return "done".equalsIgnoreCase(rs.getString("meta_value"));
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not read SQL migration metadata: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
       return false;
     }
   }
@@ -219,7 +225,7 @@ public final class SharedSqlStorage {
         }
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not write SQL migration metadata: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
     }
   }
 
@@ -230,19 +236,16 @@ public final class SharedSqlStorage {
    * @return true when a recent proxy heartbeat exists
    */
   public boolean hasRecentProxyHeartbeat(long maxAgeMillis) {
-    String sql = "SELECT last_seen_epoch_ms FROM dd_proxy_presence";
     long threshold = System.currentTimeMillis() - maxAgeMillis;
+    String sql = "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? LIMIT 1";
     try (Connection connection = openConnection();
-         Statement statement = connection.createStatement();
-         ResultSet rs = statement.executeQuery(sql)) {
-      while (rs.next()) {
-        long seenAt = rs.getLong("last_seen_epoch_ms");
-        if (seenAt >= threshold) {
-          return true;
-        }
+         PreparedStatement statement = connection.prepareStatement(sql)) {
+      statement.setLong(1, threshold);
+      try (ResultSet rs = statement.executeQuery()) {
+        return rs.next();
       }
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not read proxy heartbeat from SQL: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
     }
     return false;
   }
@@ -259,7 +262,7 @@ public final class SharedSqlStorage {
          Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
     } catch (SQLException e) {
-      plugin.getLogger().warning("Could not initialize SQL schema: " + e.getMessage());
+      plugin.getLogger().warning(String.format("Could not initialize SQL schema: %s", e.getMessage()));
     }
   }
 

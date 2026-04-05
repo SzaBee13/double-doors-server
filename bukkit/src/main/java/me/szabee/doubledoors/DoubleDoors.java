@@ -1,18 +1,9 @@
 package me.szabee.doubledoors;
 
-import me.szabee.doubledoors.config.ClaimSettings;
-import me.szabee.doubledoors.config.PlayerPreferences;
-import me.szabee.doubledoors.config.PluginConfig;
-import me.szabee.doubledoors.i18n.TranslationManager;
-import me.szabee.doubledoors.listeners.DoorInteractListener;
-import me.szabee.doubledoors.listeners.RedstoneListener;
-import me.szabee.doubledoors.migration.YamlToSqlMigrator;
-import me.szabee.doubledoors.storage.SharedSqlStorage;
-import me.szabee.doubledoors.util.DoorUtil;
-import me.szabee.doubledoors.util.ProtectionCompat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -22,6 +13,16 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+
+import me.szabee.doubledoors.config.ClaimSettings;
+import me.szabee.doubledoors.config.PlayerPreferences;
+import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.i18n.TranslationManager;
+import me.szabee.doubledoors.listeners.DoorInteractListener;
+import me.szabee.doubledoors.listeners.RedstoneListener;
+import me.szabee.doubledoors.migration.YamlToSqlMigrator;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
+import me.szabee.doubledoors.util.ProtectionCompat;
 
 /**
  * Main plugin class for DoubleDoors.
@@ -127,13 +128,9 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
     boolean hasLocalGeyserBridge = hasAnyPluginEnabled(pluginManager,
         "Geyser-Spigot",
-        "Geyser-Velocity",
-        "Geyser-BungeeCord",
         "Geyser",
         "floodgate",
-        "floodgate-bukkit",
-        "floodgate-velocity",
-      "floodgate-bungee");
+        "floodgate-bukkit");
     boolean hasProxyHeartbeat = sqlStorage != null
       && sqlStorage.hasRecentProxyHeartbeat(pluginConfig.getProxyHeartbeatMaxAgeMillis());
     if (hasLocalGeyserBridge || hasProxyHeartbeat) {
@@ -205,8 +202,8 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       pluginConfig.reload();
       initializeSqlIfEnabled();
       translationManager.reload();
-      playerPreferences.load();
-      claimSettings.load();
+      playerPreferences = new PlayerPreferences(this);
+      claimSettings = new ClaimSettings(this);
       sender.sendMessage(t("cmd.reload.success", translationManager.getActiveLanguage()));
       return true;
     }

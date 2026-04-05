@@ -5,9 +5,11 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import me.szabee.doubledoors.storage.SharedSqlStorage;
+
 import org.bukkit.configuration.file.YamlConfiguration;
+
 import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
 
 /**
  * Manages per-GriefPrevention-claim settings, persisted to {@code claims.yml}.
@@ -62,9 +64,6 @@ public final class ClaimSettings {
    */
   public void save() {
     if (useSql) {
-      for (Long claimId : villagersBlockedClaims) {
-        sqlStorage.setVillagersBlocked(claimId, true);
-      }
       return;
     }
 
@@ -73,7 +72,7 @@ public final class ClaimSettings {
     try {
       data.save(dataFile);
     } catch (IOException e) {
-      plugin.getLogger().warning("Could not save claims.yml: " + e.getMessage());
+      plugin.getLogger().warning("Could not save claims.yml: %s".formatted(e.getMessage()));
     }
   }
 
@@ -82,6 +81,16 @@ public final class ClaimSettings {
    */
   public void saveAsync() {
     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, this::save);
+  }
+
+  private void saveAsync(long claimId, boolean blocked) {
+    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
+      if (useSql) {
+        sqlStorage.setVillagersBlocked(claimId, blocked);
+        return;
+      }
+      save();
+    });
   }
 
   /**
@@ -102,17 +111,11 @@ public final class ClaimSettings {
    */
   public boolean toggleVillagersBlocked(long claimId) {
     if (villagersBlockedClaims.remove(claimId)) {
-      if (useSql) {
-        sqlStorage.setVillagersBlocked(claimId, false);
-      }
-      saveAsync();
+      saveAsync(claimId, false);
       return false;
     }
     villagersBlockedClaims.add(claimId);
-    if (useSql) {
-      sqlStorage.setVillagersBlocked(claimId, true);
-    }
-    saveAsync();
+    saveAsync(claimId, true);
     return true;
   }
 }
