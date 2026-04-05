@@ -3,6 +3,12 @@ name: Publish Release
 on:
   release:
     types: [created]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to publish (for example: v3.0.0)'
+        required: true
+        type: string
 
 jobs:
   build:
@@ -14,7 +20,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          ref: ${{ github.event.release.tag_name }}
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
           fetch-depth: 0
 
       - name: Set up JDK 25
@@ -41,6 +47,7 @@ jobs:
       - name: Attach JAR to release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
           files: ${{ steps.artifact.outputs.jar_path }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
@@ -48,15 +55,15 @@ jobs:
       - name: Extract version
         id: version
         run: |
-          VERSION="${{ github.event.release.tag_name }}"
+          VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
           echo "version=$VERSION" >> $GITHUB_OUTPUT
 
       - name: Detect release channel
         id: release_channel
         env:
-          TAG_NAME: ${{ github.event.release.tag_name }}
-          IS_PRERELEASE: ${{ github.event.release.prerelease }}
+          TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+          IS_PRERELEASE: ${{ github.event_name == 'release' && github.event.release.prerelease || 'false' }}
         run: |
           TAG_LOWER="$(printf '%s' "$TAG_NAME" | tr '[:upper:]' '[:lower:]')"
           VERSION_TYPE="release"
@@ -75,6 +82,7 @@ jobs:
         id: release_notes
         env:
           RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
         run: |
           RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
@@ -84,7 +92,7 @@ jobs:
           elif [ -n "$RELEASE_BODY" ]; then
             BODY="$RELEASE_BODY"
           else
-            BODY="Release ${{ github.event.release.tag_name }}"
+            BODY="Release ${RELEASE_TAG}"
           fi
 
             {
