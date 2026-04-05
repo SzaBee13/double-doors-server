@@ -3,6 +3,7 @@ package me.szabee.doubledoors;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
+import java.util.logging.Level;
 
 import org.bukkit.block.Block;
 import org.bukkit.command.Command;
@@ -105,11 +106,12 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
-    initializeSqlIfEnabled();
+    sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
     translationManager.reload();
     playerPreferences = new PlayerPreferences(this);
     claimSettings = new ClaimSettings(this);
+    initializeSqlIfEnabledAsync();
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
@@ -167,18 +169,33 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     return false;
   }
 
-  private void initializeSqlIfEnabled() {
+  private void initializeSqlIfEnabledAsync() {
     sqlStorage = null;
     if (!pluginConfig.isSqlEnabled()) {
       return;
     }
 
     SharedSqlStorage storage = new SharedSqlStorage(this, pluginConfig);
-    storage.initializeSchema();
-    if (pluginConfig.isMigrateYamlToSql()) {
-      YamlToSqlMigrator.migrateIfNeeded(this, storage);
-    }
-    sqlStorage = storage;
+    getServer().getScheduler().runTaskAsynchronously(this, () -> {
+      try {
+        storage.initializeSchema();
+        if (pluginConfig.isMigrateYamlToSql()) {
+          YamlToSqlMigrator.migrateIfNeeded(this, storage);
+        }
+        getServer().getScheduler().runTask(this, () -> {
+          sqlStorage = storage;
+          playerPreferences = new PlayerPreferences(this);
+          claimSettings = new ClaimSettings(this);
+        });
+      } catch (RuntimeException e) {
+        getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
+        getServer().getScheduler().runTask(this, () -> {
+          sqlStorage = null;
+          playerPreferences = new PlayerPreferences(this);
+          claimSettings = new ClaimSettings(this);
+        });
+      }
+    });
   }
 
   @Override
@@ -200,10 +217,11 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
       reloadConfig();
       pluginConfig.reload();
-      initializeSqlIfEnabled();
-      translationManager.reload();
+      sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);
+      initializeSqlIfEnabledAsync();
+      translationManager.reload();
       sender.sendMessage(t("cmd.reload.success", translationManager.getActiveLanguage()));
       return true;
     }

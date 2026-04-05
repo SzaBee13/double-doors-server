@@ -42,7 +42,8 @@ public final class SharedSqlStorage {
    * Creates required tables if they do not already exist.
    */
   public void initializeSchema() {
-    executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
+    try {
+      executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
         + "player_uuid VARCHAR(36) PRIMARY KEY,"
         + "enabled BOOLEAN NOT NULL,"
         + "enable_doors BOOLEAN NOT NULL,"
@@ -50,21 +51,24 @@ public final class SharedSqlStorage {
         + "enable_trapdoors BOOLEAN NOT NULL"
         + ")");
 
-    executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
+      executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
         + "claim_id BIGINT PRIMARY KEY,"
         + "villagers_blocked BOOLEAN NOT NULL"
         + ")");
 
-    executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
+      executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
         + "proxy_id VARCHAR(128) PRIMARY KEY,"
         + "platform VARCHAR(32) NOT NULL,"
         + "last_seen_epoch_ms BIGINT NOT NULL"
         + ")");
 
-    executeStatement("CREATE TABLE IF NOT EXISTS dd_meta ("
+      executeStatement("CREATE TABLE IF NOT EXISTS dd_meta ("
         + "meta_key VARCHAR(128) PRIMARY KEY,"
         + "meta_value VARCHAR(255) NOT NULL"
         + ")");
+    } catch (SQLException e) {
+      throw new IllegalStateException("Could not initialize SQL schema", e);
+    }
   }
 
   /**
@@ -257,12 +261,10 @@ public final class SharedSqlStorage {
     return DriverManager.getConnection(jdbcUrl, username, password);
   }
 
-  private void executeStatement(String sql) {
+  private void executeStatement(String sql) throws SQLException {
     try (Connection connection = openConnection();
          Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not initialize SQL schema: %s", e.getMessage()));
     }
   }
 

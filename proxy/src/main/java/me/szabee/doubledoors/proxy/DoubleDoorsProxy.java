@@ -26,7 +26,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 @Plugin(
     id = "doubledoors-proxy",
     name = "DoubleDoorsProxy",
-    version = "1.2.2",
+    version = "1.3.0",
     description = "Proxy companion plugin for DoubleDoors shared SQL detection",
     authors = {"SzaBee13"}
 )

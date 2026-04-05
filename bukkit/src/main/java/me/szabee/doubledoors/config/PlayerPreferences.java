@@ -105,21 +105,22 @@ public final class PlayerPreferences {
 
   /** Saves asynchronously; safe to call from the main thread after every mutation. */
   private void saveAsync(UUID changedUuid) {
-    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, () -> {
-      if (useSql) {
-        PlayerPref pref = cache.get(changedUuid);
-        if (pref == null) {
-          return;
-        }
-        sqlStorage.savePlayerPreference(changedUuid, new SharedSqlStorage.SqlPlayerPref(
-            pref.enabled(),
-            pref.enableDoors(),
-            pref.enableFenceGates(),
-            pref.enableTrapdoors()));
+    if (useSql) {
+      PlayerPref pref = cache.get(changedUuid);
+      if (pref == null) {
         return;
       }
-      save();
-    });
+      SharedSqlStorage.SqlPlayerPref snapshot = new SharedSqlStorage.SqlPlayerPref(
+          pref.enabled(),
+          pref.enableDoors(),
+          pref.enableFenceGates(),
+          pref.enableTrapdoors());
+      plugin.getServer().getScheduler().runTaskAsynchronously(plugin,
+          () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
+      return;
+    }
+
+    plugin.getServer().getScheduler().runTask(plugin, this::save);
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
