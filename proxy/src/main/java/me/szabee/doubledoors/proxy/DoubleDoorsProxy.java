@@ -112,7 +112,7 @@ public final class DoubleDoorsProxy {
   }
 
   /**
-   * Writes a final heartbeat when the proxy shuts down.
+   * Writes a final heartbeat when the proxy shuts down and closes the connection pool.
    *
    * @param event shutdown event
    */
@@ -121,7 +121,11 @@ public final class DoubleDoorsProxy {
     if (!heartbeatEnabled || sqlClient == null) {
       return;
     }
-    writeHeartbeat();
+    try {
+      writeHeartbeat();
+    } finally {
+      sqlClient.close();
+    }
   }
 
   private boolean isPluginPresent(String... ids) {

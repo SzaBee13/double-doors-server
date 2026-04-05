@@ -1,31 +1,40 @@
 package me.szabee.doubledoors.proxy;
 
+import com.zaxxer.hikari.HikariConfig;
+import com.zaxxer.hikari.HikariDataSource;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
  * SQL client used by the proxy module for heartbeat writes.
+ * Uses HikariCP for efficient connection pooling.
  */
 public final class ProxySqlClient {
 
-  private final String jdbcUrl;
-  private final String username;
-  private final String password;
+  private final HikariDataSource dataSource;
 
   /**
-   * Creates a SQL client.
+   * Creates a SQL client with HikariCP connection pooling.
    *
    * @param jdbcUrl JDBC URL
    * @param username SQL username
    * @param password SQL password
    */
   public ProxySqlClient(String jdbcUrl, String username, String password) {
-    this.jdbcUrl = jdbcUrl;
-    this.username = username;
-    this.password = password;
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl(jdbcUrl);
+    if (username != null && !username.isBlank()) {
+      config.setUsername(username);
+      config.setPassword(password == null ? "" : password);
+    }
+    config.setMaximumPoolSize(5);
+    config.setMinimumIdle(1);
+    config.setConnectionTimeout(10_000);
+    config.setIdleTimeout(600_000);
+    config.setMaxLifetime(1_800_000);
+    this.dataSource = new HikariDataSource(config);
   }
 
   /**
@@ -37,7 +46,7 @@ public final class ProxySqlClient {
         + "platform VARCHAR(32) NOT NULL,"
         + "last_seen_epoch_ms BIGINT NOT NULL"
         + ")";
-    try (Connection connection = openConnection();
+    try (Connection connection = dataSource.getConnection();
          Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
     }
@@ -52,7 +61,7 @@ public final class ProxySqlClient {
    */
   public void upsertHeartbeat(String proxyId, String platform, long epochMillis) throws SQLException {
     String updateSql = "UPDATE dd_proxy_presence SET platform=?, last_seen_epoch_ms=? WHERE proxy_id=?";
-    try (Connection connection = openConnection();
+    try (Connection connection = dataSource.getConnection();
          PreparedStatement update = connection.prepareStatement(updateSql)) {
       update.setString(1, platform);
       update.setLong(2, epochMillis);
@@ -70,10 +79,12 @@ public final class ProxySqlClient {
     }
   }
 
-  private Connection openConnection() throws SQLException {
-    if (username == null || username.isBlank()) {
-      return DriverManager.getConnection(jdbcUrl);
+  /**
+   * Closes the connection pool. Call this on proxy shutdown.
+   */
+  public void close() {
+    if (dataSource != null && !dataSource.isClosed()) {
+      dataSource.close();
     }
-    return DriverManager.getConnection(jdbcUrl, username, password == null ? "" : password);
   }
 }
