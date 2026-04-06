@@ -20,25 +20,31 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
+import dev.faststats.core.Metrics;
+import dev.faststats.velocity.VelocityMetrics;
+
 /**
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
  */
 @Plugin(
     id = "doubledoors-proxy",
     name = "DoubleDoorsProxy",
-    version = "1.3.0",
+  version = "1.3.2",
     description = "Proxy companion plugin for DoubleDoors shared SQL detection",
     authors = {"SzaBee13"}
 )
 public final class DoubleDoorsProxy {
+  private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de-5e43-4289-8df6-16e9671697c9";
 
   private final ProxyServer proxyServer;
   private final Logger logger;
   private final Path dataDirectory;
+  private final VelocityMetrics.Factory metricsFactory;
 
   private ProxySqlClient sqlClient;
   private String proxyId;
   private boolean heartbeatEnabled;
+  private Metrics metrics;
 
   /**
    * Creates the Velocity plugin instance.
@@ -46,12 +52,15 @@ public final class DoubleDoorsProxy {
    * @param proxyServer Velocity proxy server
    * @param logger plugin logger
    * @param dataDirectory plugin data directory
+   * @param metricsFactory FastStats metrics factory
    */
   @Inject
-  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
+  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory,
+      VelocityMetrics.Factory metricsFactory) {
     this.proxyServer = proxyServer;
     this.logger = logger;
     this.dataDirectory = dataDirectory;
+    this.metricsFactory = metricsFactory;
   }
 
   /**
@@ -61,6 +70,15 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
+    try {
+      metrics = metricsFactory
+          .token(FASTSTATS_PROJECT_TOKEN)
+          .create(this);
+    } catch (RuntimeException e) {
+      metrics = null;
+      logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+    }
+
     Properties config = loadConfig();
     boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
     if (!sqlEnabled) {
@@ -118,13 +136,17 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyShutdown(ProxyShutdownEvent event) {
-    if (!heartbeatEnabled || sqlClient == null) {
-      return;
+    if (heartbeatEnabled && sqlClient != null) {
+      try {
+        writeHeartbeat();
+      } finally {
+        sqlClient.close();
+      }
     }
-    try {
-      writeHeartbeat();
-    } finally {
-      sqlClient.close();
+
+    if (metrics != null) {
+      metrics.shutdown();
+      metrics = null;
     }
   }
 

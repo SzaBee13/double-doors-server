@@ -15,6 +15,7 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import dev.faststats.bukkit.BukkitMetrics;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
@@ -29,11 +30,14 @@ import me.szabee.doubledoors.util.ProtectionCompat;
  * Main plugin class for DoubleDoors.
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
+  private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de-5e43-4289-8df6-16e9671697c9";
+
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
   private ClaimSettings claimSettings;
   private TranslationManager translationManager;
   private SharedSqlStorage sqlStorage;
+  private BukkitMetrics metrics;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -104,6 +108,16 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onEnable() {
+    try {
+      metrics = BukkitMetrics.factory()
+          .token(FASTSTATS_PROJECT_TOKEN)
+          .create(this);
+      metrics.ready();
+    } catch (RuntimeException e) {
+      metrics = null;
+      getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
     sqlStorage = null;
@@ -144,6 +158,11 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onDisable() {
+    if (metrics != null) {
+      metrics.shutdown();
+      metrics = null;
+    }
+
     if (playerPreferences != null) {
       playerPreferences.save();
     }

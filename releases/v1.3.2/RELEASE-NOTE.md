@@ -1,0 +1,46 @@
+# DoubleDoors v1.3.2 Release Notes
+
+Release date: 2026-04-06
+
+## Highlights
+
+- Added FastStats metrics integration on both Bukkit and Velocity components.
+- Introduced telemetry lifecycle handling with graceful fail-open behavior.
+
+## Added
+
+- Added FastStats SDK dependency for Bukkit (`dev.faststats.metrics:bukkit:0.21.0`).
+- Added FastStats SDK dependency for Velocity (`dev.faststats.metrics:velocity:0.21.0`).
+- Added FastStats repository (`https://repo.faststats.dev/releases`) to both module builds.
+
+## Changed
+
+- Updated Maven parent and module versions to `1.3.2`.
+- Updated Bukkit plugin descriptor version to `1.3.2`.
+- Updated proxy plugin descriptor version to `1.3.2`.
+- Updated Velocity `@Plugin` annotation version to `1.3.2`.
+
+## Fixed
+
+- Corrected internal proxy plugin annotation metadata that previously reported an outdated version.
+
+## Breaking Changes
+
+- None.
+
+## Upgrade Guide
+
+1. Back up your server and proxy plugin directories.
+2. Replace existing DoubleDoors jars with the `1.3.2` artifacts.
+3. Start server/proxy once and confirm plugins load successfully.
+4. Verify metrics events appear in your FastStats project dashboard.
+
+## Artifacts
+
+- Bukkit/Spigot/Paper/Purpur: `doubledoors-bukkit-1.3.2.jar`
+- Velocity proxy companion: `doubledoors-proxy-1.3.2.jar`
+
+## Notes
+
+- FastStats is initialized at startup and shut down on plugin disable/shutdown.
+- If FastStats cannot initialize, DoubleDoors continues operating without telemetry.
