@@ -1,5 +1,9 @@
 package me.szabee.doubledoors.config;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import me.szabee.doubledoors.DoubleDoors;
 
 /**
@@ -16,6 +20,9 @@ public final class PluginConfig {
   private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
   private boolean enableAnonymousTracking;
+  private boolean enableExtendedAnonymousTracking;
+  private List<String> trackingCountries;
+  private String trackingServerLocation;
   private String language;
   private boolean sqlEnabled;
   private String sqlJdbcUrl;
@@ -53,6 +60,21 @@ public final class PluginConfig {
     enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
     enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
+    enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
+
+    List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
+    trackingCountries = new ArrayList<>();
+    for (String country : configuredCountries) {
+      if (country != null && !country.isBlank()) {
+        trackingCountries.add(country.trim());
+      }
+    }
+
+    trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
+    if (trackingServerLocation == null) {
+      trackingServerLocation = "";
+    }
+    trackingServerLocation = trackingServerLocation.trim();
 
     sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
     sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
@@ -151,6 +173,33 @@ public final class PluginConfig {
    */
   public boolean isEnableAnonymousTracking() {
     return enableAnonymousTracking;
+  }
+
+  /**
+   * Gets whether extended anonymous tracking is enabled.
+   *
+   * @return true when extra telemetry should be sent
+   */
+  public boolean isEnableExtendedAnonymousTracking() {
+    return enableExtendedAnonymousTracking;
+  }
+
+  /**
+   * Gets the configured countries associated with this server.
+   *
+   * @return immutable list of configured country codes
+   */
+  public List<String> getTrackingCountries() {
+    return Collections.unmodifiableList(trackingCountries);
+  }
+
+  /**
+   * Gets the configured server location label.
+   *
+   * @return trimmed location label, or empty string
+   */
+  public String getTrackingServerLocation() {
+    return trackingServerLocation;
   }
 
   /**

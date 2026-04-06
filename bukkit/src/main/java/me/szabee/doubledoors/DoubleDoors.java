@@ -16,6 +16,7 @@ import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.faststats.bukkit.BukkitMetrics;
+import dev.faststats.core.data.Metric;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
@@ -111,20 +112,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
 
-    if (pluginConfig.isEnableAnonymousTracking()) {
-      try {
-        metrics = BukkitMetrics.factory()
-            .token(FASTSTATS_PROJECT_TOKEN)
-            .create(this);
-        metrics.ready();
-      } catch (RuntimeException e) {
-        metrics = null;
-        getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
-      }
-    } else {
-      metrics = null;
-      getLogger().info("Anonymous tracking is disabled by config.");
-    }
+    initializeFastStats();
 
     sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
@@ -221,6 +209,43 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
         });
       }
     });
+  }
+
+  private void initializeFastStats() {
+    if (!pluginConfig.isEnableAnonymousTracking()) {
+      metrics = null;
+      getLogger().info("Anonymous tracking is disabled by config.");
+      return;
+    }
+
+    BukkitMetrics.Factory factory = BukkitMetrics.factory();
+    if (pluginConfig.isEnableExtendedAnonymousTracking()) {
+      factory = factory
+          .addMetric(Metric.string("server_location", pluginConfig::getTrackingServerLocation))
+          .addMetric(Metric.stringArray("countries", () -> pluginConfig.getTrackingCountries().toArray(String[]::new)))
+          .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+          .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+    }
+
+    try {
+      metrics = factory.token(FASTSTATS_PROJECT_TOKEN).create(this);
+      metrics.ready();
+    } catch (RuntimeException e) {
+      metrics = null;
+      getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+  }
+
+  private String[] getSystemStatistics() {
+    Runtime runtime = Runtime.getRuntime();
+    return new String[] {
+        "os=" + System.getProperty("os.name", "unknown"),
+        "os_version=" + System.getProperty("os.version", "unknown"),
+        "arch=" + System.getProperty("os.arch", "unknown"),
+        "java_version=" + System.getProperty("java.version", "unknown"),
+        "cores=" + runtime.availableProcessors(),
+        "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
+    };
   }
 
   @Override

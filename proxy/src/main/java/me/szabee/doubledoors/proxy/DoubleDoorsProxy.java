@@ -20,6 +20,7 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
+import dev.faststats.core.data.Metric;
 import dev.faststats.core.Metrics;
 import dev.faststats.velocity.VelocityMetrics;
 
@@ -73,10 +74,17 @@ public final class DoubleDoorsProxy {
     Properties config = loadConfig();
     boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
     if (anonymousTrackingEnabled) {
+      VelocityMetrics.Factory factory = metricsFactory;
+      if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
+        factory = factory
+            .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
+            .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
+            .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+            .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+      }
+
       try {
-        metrics = metricsFactory
-            .token(FASTSTATS_PROJECT_TOKEN)
-            .create(this);
+        metrics = factory.token(FASTSTATS_PROJECT_TOKEN).create(this);
       } catch (RuntimeException e) {
         metrics = null;
         logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
@@ -175,6 +183,35 @@ public final class DoubleDoorsProxy {
     } catch (SQLException e) {
       logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
     }
+  }
+
+  private String[] getCountries(Properties config) {
+    String rawCountries = config.getProperty("trackingCountries", "").trim();
+    if (rawCountries.isEmpty()) {
+      return new String[0];
+    }
+
+    return java.util.Arrays.stream(rawCountries.split(","))
+        .map(String::trim)
+        .filter(country -> !country.isEmpty())
+        .toArray(String[]::new);
+  }
+
+  private String getConfigValue(Properties config, String key) {
+    String value = config.getProperty(key, "");
+    return value == null ? "" : value.trim();
+  }
+
+  private String[] getSystemStatistics() {
+    Runtime runtime = Runtime.getRuntime();
+    return new String[] {
+        "os=" + System.getProperty("os.name", "unknown"),
+        "os_version=" + System.getProperty("os.version", "unknown"),
+        "arch=" + System.getProperty("os.arch", "unknown"),
+        "java_version=" + System.getProperty("java.version", "unknown"),
+        "cores=" + runtime.availableProcessors(),
+        "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
+    };
   }
 
   private Properties loadConfig() {

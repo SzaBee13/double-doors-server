@@ -6,6 +6,7 @@ Release date: 2026-04-06
 
 - Added FastStats metrics integration on both Bukkit and Velocity components.
 - Added configurable anonymous tracking switches on both Bukkit and Velocity.
+- Added extended anonymous tracking for server location, countries, Java version, and system statistics.
 - Introduced telemetry lifecycle handling with graceful fail-open behavior.
 
 ## Added
@@ -14,6 +15,7 @@ Release date: 2026-04-06
 - Added FastStats SDK dependency for Velocity (`dev.faststats.metrics:velocity:0.21.0`).
 - Added FastStats repository (`https://repo.faststats.dev/releases`) to both module builds.
 - Added `enableAnonymousTracking` to Bukkit `config.yml` and proxy `proxy-config.properties`.
+- Added `enableExtendedAnonymousTracking`, `trackingCountries`, and `trackingServerLocation` config keys.
 
 ## Changed
 
@@ -46,4 +48,5 @@ Release date: 2026-04-06
 
 - FastStats is initialized at startup and shut down on plugin disable/shutdown.
 - Set `enableAnonymousTracking: false` (Bukkit) and `enableAnonymousTracking=false` (Velocity) to disable telemetry.
+- Set `enableExtendedAnonymousTracking: true` to send the additional location and system metrics.
 - If FastStats cannot initialize, DoubleDoors continues operating without telemetry.
