@@ -19,6 +19,10 @@ enableVillagerLinkedDoors: true
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true
 
+# Enable anonymous FastStats tracking
+# Info we track is public usage data and can be viewed at: https://faststats.dev/double-doors-server
+enableAnonymousTracking: true
+
 # Active plugin language code.
 # You can use full codes (e.g. en_US, de_DE) or aliases (e.g. en -> en_US).
 # Built-in language files are loaded from subfolders under: lang/

@@ -15,6 +15,7 @@ public final class PluginConfig {
   private boolean enableTrapdoors;
   private boolean enableVillagerLinkedDoors;
   private boolean serverWideEnabled;
+  private boolean enableAnonymousTracking;
   private String language;
   private boolean sqlEnabled;
   private String sqlJdbcUrl;
@@ -51,6 +52,7 @@ public final class PluginConfig {
     enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+    enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
 
     sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
     sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
@@ -140,6 +142,15 @@ public final class PluginConfig {
    */
   public boolean isServerWideEnabled() {
     return serverWideEnabled;
+  }
+
+  /**
+   * Gets whether anonymous tracking is enabled.
+   *
+   * @return true when FastStats tracking is enabled
+   */
+  public boolean isEnableAnonymousTracking() {
+    return enableAnonymousTracking;
   }
 
   /**

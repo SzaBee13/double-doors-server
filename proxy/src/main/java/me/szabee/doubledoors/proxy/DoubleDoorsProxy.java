@@ -29,7 +29,7 @@ import dev.faststats.velocity.VelocityMetrics;
 @Plugin(
     id = "doubledoors-proxy",
     name = "DoubleDoorsProxy",
-  version = "1.3.2",
+    version = "1.3.2",
     description = "Proxy companion plugin for DoubleDoors shared SQL detection",
     authors = {"SzaBee13"}
 )
@@ -70,16 +70,22 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
-    try {
-      metrics = metricsFactory
-          .token(FASTSTATS_PROJECT_TOKEN)
-          .create(this);
-    } catch (RuntimeException e) {
+    Properties config = loadConfig();
+    boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
+    if (anonymousTrackingEnabled) {
+      try {
+        metrics = metricsFactory
+            .token(FASTSTATS_PROJECT_TOKEN)
+            .create(this);
+      } catch (RuntimeException e) {
+        metrics = null;
+        logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+      }
+    } else {
       metrics = null;
-      logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+      logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
     }
 
-    Properties config = loadConfig();
     boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
     if (!sqlEnabled) {
       logger.info("DoubleDoorsProxy SQL heartbeat is disabled by config.");

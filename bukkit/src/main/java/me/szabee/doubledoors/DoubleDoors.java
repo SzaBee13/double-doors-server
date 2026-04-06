@@ -108,18 +108,24 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onEnable() {
-    try {
-      metrics = BukkitMetrics.factory()
-          .token(FASTSTATS_PROJECT_TOKEN)
-          .create(this);
-      metrics.ready();
-    } catch (RuntimeException e) {
-      metrics = null;
-      getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
-    }
-
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+
+    if (pluginConfig.isEnableAnonymousTracking()) {
+      try {
+        metrics = BukkitMetrics.factory()
+            .token(FASTSTATS_PROJECT_TOKEN)
+            .create(this);
+        metrics.ready();
+      } catch (RuntimeException e) {
+        metrics = null;
+        getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+      }
+    } else {
+      metrics = null;
+      getLogger().info("Anonymous tracking is disabled by config.");
+    }
+
     sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
     translationManager.reload();
