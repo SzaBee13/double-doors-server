@@ -113,7 +113,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
 
-    initializeFastStats();
+    restartFastStats();
 
     sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
@@ -153,15 +153,22 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onDisable() {
-    if (metrics != null) {
-      metrics.shutdown();
-      metrics = null;
+    try {
+      if (metrics != null) {
+        try {
+          metrics.shutdown();
+        } catch (RuntimeException e) {
+          getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly.", e);
+        } finally {
+          metrics = null;
+        }
+      }
+    } finally {
+      if (playerPreferences != null) {
+        playerPreferences.save();
+      }
+      getLogger().info(t("log.disabled"));
     }
-
-    if (playerPreferences != null) {
-      playerPreferences.save();
-    }
-    getLogger().info(t("log.disabled"));
   }
 
   private String t(String key, Object... args) {
@@ -236,12 +243,26 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     }
 
     try {
-      metrics = factory.token(token).create(this);
-      metrics.ready();
+      BukkitMetrics localMetrics = factory.token(token).create(this);
+      localMetrics.ready();
+      metrics = localMetrics;
     } catch (RuntimeException e) {
       metrics = null;
       getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
     }
+  }
+
+  private void restartFastStats() {
+    if (metrics != null) {
+      try {
+        metrics.shutdown();
+      } catch (RuntimeException e) {
+        getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly during restart.", e);
+      } finally {
+        metrics = null;
+      }
+    }
+    initializeFastStats();
   }
 
   private String normalizeFastStatsToken(String rawToken) {
@@ -287,6 +308,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
       reloadConfig();
       pluginConfig.reload();
+      restartFastStats();
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);
