@@ -291,9 +291,10 @@ public final class DoubleDoors extends JavaPlugin {
 
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-    if (sender == null || command == null || label == null || args == null) {
-      return false;
-    }
+    java.util.Objects.requireNonNull(sender, "sender");
+    java.util.Objects.requireNonNull(command, "command");
+    java.util.Objects.requireNonNull(label, "label");
+    java.util.Objects.requireNonNull(args, "args");
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
       return false;
     }
@@ -388,11 +389,7 @@ public final class DoubleDoors extends JavaPlugin {
         return true;
       }
 
-      var playerLocation = player.getLocation();
-      if (playerLocation == null) {
-        sender.sendMessage(t("cmd.grief.no_claim"));
-        return true;
-      }
+      var playerLocation = java.util.Objects.requireNonNull(player.getLocation(), "player location");
       Block standingBlock = playerLocation.getBlock();
       long claimId = ProtectionCompat.getClaimIdAt(this, standingBlock);
       if (claimId < 0) {
@@ -418,9 +415,10 @@ public final class DoubleDoors extends JavaPlugin {
 
   @Override
   public List<String> onTabComplete(CommandSender sender, Command command, String alias, String[] args) {
-    if (sender == null || command == null || alias == null || args == null) {
-      return List.of();
-    }
+    java.util.Objects.requireNonNull(sender, "sender");
+    java.util.Objects.requireNonNull(command, "command");
+    java.util.Objects.requireNonNull(alias, "alias");
+    java.util.Objects.requireNonNull(args, "args");
     List<String> completions = new ArrayList<>();
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
       return completions;
