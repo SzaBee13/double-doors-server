@@ -32,7 +32,7 @@ import me.szabee.doubledoors.util.ProtectionCompat;
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
-  private static final String FASTSTATS_PROJECT_TOKEN = "0123456789abcdef0123456789abcdef";
+  private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de5e4342898df616e9671697c9"; // Technically project id (in uuid4 format without dashes), but treated as token by FastStats
 
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
