@@ -32,7 +32,7 @@ import me.szabee.doubledoors.util.ProtectionCompat;
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
-  private static final String FASTSTATS_PROJECT_TOKEN = "2dc619de-5e43-4289-8df6-16e9671697c9";
+  private static final String FASTSTATS_PROJECT_TOKEN = "0123456789abcdef0123456789abcdef";
 
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
@@ -219,14 +219,10 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
       return;
     }
 
-    String tokenSource = pluginConfig.getFastStatsToken().isBlank()
-        ? FASTSTATS_PROJECT_TOKEN
-        : pluginConfig.getFastStatsToken();
-    String token = normalizeFastStatsToken(tokenSource);
+    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
     if (token == null) {
       metrics = null;
-      getLogger().warning("Anonymous tracking is enabled, but FastStats token is invalid; metrics are disabled."
-          + " Please set fastStatsToken in config.yml.");
+      getLogger().warning("Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled.");
       return;
     }
 
