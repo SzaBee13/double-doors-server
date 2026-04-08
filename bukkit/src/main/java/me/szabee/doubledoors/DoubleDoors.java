@@ -15,6 +15,8 @@ import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import dev.faststats.bukkit.BukkitMetrics;
+import dev.faststats.core.data.Metric;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
@@ -29,11 +31,15 @@ import me.szabee.doubledoors.util.ProtectionCompat;
  * Main plugin class for DoubleDoors.
  */
 public final class DoubleDoors extends JavaPlugin implements CommandExecutor, TabCompleter {
+  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
+  private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
+
   private PluginConfig pluginConfig;
   private PlayerPreferences playerPreferences;
   private ClaimSettings claimSettings;
   private TranslationManager translationManager;
   private SharedSqlStorage sqlStorage;
+  private BukkitMetrics metrics;
 
   /**
    * Gets the plugin configuration wrapper.
@@ -106,6 +112,9 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+
+    restartFastStats();
+
     sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
     translationManager.reload();
@@ -144,10 +153,22 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
   @Override
   public void onDisable() {
-    if (playerPreferences != null) {
-      playerPreferences.save();
+    try {
+      if (metrics != null) {
+        try {
+          metrics.shutdown();
+        } catch (RuntimeException e) {
+          getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly.", e);
+        } finally {
+          metrics = null;
+        }
+      }
+    } finally {
+      if (playerPreferences != null) {
+        playerPreferences.save();
+      }
+      getLogger().info(t("log.disabled"));
     }
-    getLogger().info(t("log.disabled"));
   }
 
   private String t(String key, Object... args) {
@@ -198,6 +219,76 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
     });
   }
 
+  private void initializeFastStats() {
+    if (!pluginConfig.isEnableAnonymousTracking()) {
+      metrics = null;
+      getLogger().info("Anonymous tracking is disabled by config.");
+      return;
+    }
+
+    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+    if (token == null) {
+      metrics = null;
+      getLogger().warning("Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled.");
+      return;
+    }
+
+    BukkitMetrics.Factory factory = BukkitMetrics.factory();
+    if (pluginConfig.isEnableExtendedAnonymousTracking()) {
+      factory = factory
+          .addMetric(Metric.string("server_location", pluginConfig::getTrackingServerLocation))
+          .addMetric(Metric.stringArray("countries", () -> pluginConfig.getTrackingCountries().toArray(String[]::new)))
+          .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+          .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+    }
+
+    try {
+      BukkitMetrics localMetrics = factory.token(token).create(this);
+      localMetrics.ready();
+      metrics = localMetrics;
+    } catch (RuntimeException e) {
+      metrics = null;
+      getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+  }
+
+  private void restartFastStats() {
+    if (metrics != null) {
+      try {
+        metrics.shutdown();
+      } catch (RuntimeException e) {
+        getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly during restart.", e);
+      } finally {
+        metrics = null;
+      }
+    }
+    initializeFastStats();
+  }
+
+  private String normalizeFastStatsToken(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      return null;
+    }
+
+    String normalized = rawToken.trim().toLowerCase().replace("-", "");
+    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
+      return null;
+    }
+    return normalized;
+  }
+
+  private String[] getSystemStatistics() {
+    Runtime runtime = Runtime.getRuntime();
+    return new String[] {
+        "os=" + System.getProperty("os.name", "unknown"),
+        "os_version=" + System.getProperty("os.version", "unknown"),
+        "arch=" + System.getProperty("os.arch", "unknown"),
+        "java_version=" + System.getProperty("java.version", "unknown"),
+        "cores=" + runtime.availableProcessors(),
+        "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
+    };
+  }
+
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
     if (!command.getName().equalsIgnoreCase("doubledoors")) {
@@ -217,6 +308,7 @@ public final class DoubleDoors extends JavaPlugin implements CommandExecutor, Ta
 
       reloadConfig();
       pluginConfig.reload();
+      restartFastStats();
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);

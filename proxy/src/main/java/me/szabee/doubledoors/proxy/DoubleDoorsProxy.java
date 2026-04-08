@@ -20,25 +20,33 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
+import dev.faststats.core.Metrics;
+import dev.faststats.core.data.Metric;
+import dev.faststats.velocity.VelocityMetrics;
+
 /**
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
  */
 @Plugin(
     id = "doubledoors-proxy",
     name = "DoubleDoorsProxy",
-    version = "1.3.0",
+    version = "1.3.2",
     description = "Proxy companion plugin for DoubleDoors shared SQL detection",
     authors = {"SzaBee13"}
 )
 public final class DoubleDoorsProxy {
+  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
+  private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
 
   private final ProxyServer proxyServer;
   private final Logger logger;
   private final Path dataDirectory;
+  private final VelocityMetrics.Factory metricsFactory;
 
   private ProxySqlClient sqlClient;
   private String proxyId;
   private boolean heartbeatEnabled;
+  private Metrics metrics;
 
   /**
    * Creates the Velocity plugin instance.
@@ -46,12 +54,15 @@ public final class DoubleDoorsProxy {
    * @param proxyServer Velocity proxy server
    * @param logger plugin logger
    * @param dataDirectory plugin data directory
+   * @param metricsFactory FastStats metrics factory
    */
   @Inject
-  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
+  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory,
+      VelocityMetrics.Factory metricsFactory) {
     this.proxyServer = proxyServer;
     this.logger = logger;
     this.dataDirectory = dataDirectory;
+    this.metricsFactory = metricsFactory;
   }
 
   /**
@@ -62,6 +73,37 @@ public final class DoubleDoorsProxy {
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
     Properties config = loadConfig();
+    boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
+    if (anonymousTrackingEnabled) {
+      String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+      if (token == null) {
+        metrics = null;
+        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
+            + " metrics are disabled.");
+      }
+
+      VelocityMetrics.Factory factory = metricsFactory;
+      if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
+        factory = factory
+            .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
+            .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
+            .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+            .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+      }
+
+      if (token != null) {
+        try {
+          metrics = factory.token(token).create(this);
+        } catch (RuntimeException e) {
+          metrics = null;
+          logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+        }
+      }
+    } else {
+      metrics = null;
+      logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
+    }
+
     boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
     if (!sqlEnabled) {
       logger.info("DoubleDoorsProxy SQL heartbeat is disabled by config.");
@@ -118,13 +160,17 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyShutdown(ProxyShutdownEvent event) {
-    if (!heartbeatEnabled || sqlClient == null) {
-      return;
+    if (heartbeatEnabled && sqlClient != null) {
+      try {
+        writeHeartbeat();
+      } finally {
+        sqlClient.close();
+      }
     }
-    try {
-      writeHeartbeat();
-    } finally {
-      sqlClient.close();
+
+    if (metrics != null) {
+      metrics.shutdown();
+      metrics = null;
     }
   }
 
@@ -147,6 +193,47 @@ public final class DoubleDoorsProxy {
     } catch (SQLException e) {
       logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
     }
+  }
+
+  private String[] getCountries(Properties config) {
+    String rawCountries = config.getProperty("trackingCountries", "").trim();
+    if (rawCountries.isEmpty()) {
+      return new String[0];
+    }
+
+    return java.util.Arrays.stream(rawCountries.split(","))
+        .map(String::trim)
+        .filter(country -> !country.isEmpty())
+        .toArray(String[]::new);
+  }
+
+  private String getConfigValue(Properties config, String key) {
+    String value = config.getProperty(key, "");
+    return value == null ? "" : value.trim();
+  }
+
+  private String[] getSystemStatistics() {
+    Runtime runtime = Runtime.getRuntime();
+    return new String[] {
+        "os=" + System.getProperty("os.name", "unknown"),
+        "os_version=" + System.getProperty("os.version", "unknown"),
+        "arch=" + System.getProperty("os.arch", "unknown"),
+        "java_version=" + System.getProperty("java.version", "unknown"),
+        "cores=" + runtime.availableProcessors(),
+        "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
+    };
+  }
+
+  private String normalizeFastStatsToken(String rawToken) {
+    if (rawToken == null || rawToken.isBlank()) {
+      return null;
+    }
+
+    String normalized = rawToken.trim().toLowerCase().replace("-", "");
+    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
+      return null;
+    }
+    return normalized;
   }
 
   private Properties loadConfig() {

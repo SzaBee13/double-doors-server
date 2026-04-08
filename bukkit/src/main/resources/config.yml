@@ -19,6 +19,23 @@ enableVillagerLinkedDoors: true
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true
 
+# Enable anonymous FastStats tracking
+# ALSO CHANGE IN plugins/faststats/config.properties
+# Info we track is public usage data and can be viewed at: https://faststats.dev/project/double-doors-server/minecraft-plugin
+enableAnonymousTracking: true
+
+# Enable additional anonymous telemetry like server location, countries, Java version, and system statistics.
+enableExtendedAnonymousTracking: false
+
+# Optional list of countries you want associated with this server, for example:
+# trackingCountries:
+#   - US
+#   - DE
+trackingCountries: []
+
+# Optional human-readable server location label, such as EU, US-East, or Frankfurt.
+trackingServerLocation: ""
+
 # Active plugin language code.
 # You can use full codes (e.g. en_US, de_DE) or aliases (e.g. en -> en_US).
 # Built-in language files are loaded from subfolders under: lang/
