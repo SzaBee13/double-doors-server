@@ -12,24 +12,24 @@ import me.szabee.doubledoors.DoubleDoors;
 public final class PluginConfig {
   private final DoubleDoors plugin;
 
-  private boolean enableRecursiveOpening;
-  private int recursiveOpeningMaxBlocksDistance;
-  private boolean enableDoors;
-  private boolean enableFenceGates;
-  private boolean enableTrapdoors;
-  private boolean enableVillagerLinkedDoors;
-  private boolean serverWideEnabled;
-  private boolean enableAnonymousTracking;
-  private boolean enableExtendedAnonymousTracking;
-  private List<String> trackingCountries;
-  private String trackingServerLocation;
-  private String language;
-  private boolean sqlEnabled;
-  private String sqlJdbcUrl;
-  private String sqlUsername;
-  private String sqlPassword;
-  private boolean migrateYamlToSql;
-  private long proxyHeartbeatMaxAgeMillis;
+  private volatile boolean enableRecursiveOpening;
+  private volatile int recursiveOpeningMaxBlocksDistance;
+  private volatile boolean enableDoors;
+  private volatile boolean enableFenceGates;
+  private volatile boolean enableTrapdoors;
+  private volatile boolean enableVillagerLinkedDoors;
+  private volatile boolean serverWideEnabled;
+  private volatile boolean enableAnonymousTracking;
+  private volatile boolean enableExtendedAnonymousTracking;
+  private volatile List<String> trackingCountries;
+  private volatile String trackingServerLocation;
+  private volatile String language;
+  private volatile boolean sqlEnabled;
+  private volatile String sqlJdbcUrl;
+  private volatile String sqlUsername;
+  private volatile String sqlPassword;
+  private volatile boolean migrateYamlToSql;
+  private volatile long proxyHeartbeatMaxAgeMillis;
 
   /**
    * Creates and loads a plugin config wrapper.
