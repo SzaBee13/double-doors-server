@@ -75,7 +75,9 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
-          files: ${{ steps.artifact.outputs.jar_path }}
+          files: |
+            ${{ steps.artifact.outputs.jar_path }}
+            ${{ steps.proxy_artifact.outputs.jar_path }}
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
@@ -138,8 +140,8 @@ jobs:
         with:
           modrinth-id: Fdj5mcgC
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          # curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
-          # curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ steps.artifact.outputs.jar_path }}
           name: 'Double Doors Server ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
@@ -154,6 +156,7 @@ jobs:
           game-versions: |
             26.1
             26.1.1
+            26.1.2
           java: |
             25
           game-version-filter: none
@@ -172,6 +175,7 @@ jobs:
           game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
             26.1
             26.1.1
+            26.1.2
           java: |
             25
           game-version-filter: none
