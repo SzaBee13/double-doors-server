@@ -34,7 +34,7 @@
     <dependency>
       <groupId>dev.faststats.metrics</groupId>
       <artifactId>velocity</artifactId>
-      <version>0.21.0</version>
+      <version>0.22.0</version>
     </dependency>
     <dependency>
       <groupId>org.xerial</groupId>
