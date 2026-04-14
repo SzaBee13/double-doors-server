@@ -26,6 +26,7 @@ import org.bukkit.event.world.GenericGameEvent;
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
 
@@ -75,6 +76,9 @@ public final class RedstoneListener implements Listener {
     }
 
     Block source = event.getBlock();
+    if (!plugin.isLocationAllowed(source)) {
+      return;
+    }
 
     Set<Block> candidates = new HashSet<>();
     if (DoorInteractListener.isEnabledType(source.getType(), config)) {
@@ -211,7 +215,8 @@ public final class RedstoneListener implements Listener {
     boolean beforeState = beforeOpenable.isOpen();
 
     // Read and mirror state after the configured delay so we sync to vanilla's final result.
-    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), delayTicks, () -> {
+    long effectiveDelay = delayTicks + config.getAnimationSyncExtraDelayTicks();
+    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), effectiveDelay, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;
@@ -223,8 +228,12 @@ public final class RedstoneListener implements Listener {
       }
 
       if (originData instanceof Door) {
-        Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
-        if (partner == null) {
+        DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+        if (!search.found()) {
+          return;
+        }
+        Block partner = search.partner();
+        if (!plugin.isLocationAllowed(partner)) {
           return;
         }
 
@@ -239,6 +248,7 @@ public final class RedstoneListener implements Listener {
 
         linked.setOpen(openState);
         partner.setBlockData(linked, false);
+        plugin.playLinkedFeedback(partner, OpenableType.DOOR);
 
         // Keep the upper half of the partner door in sync too.
         Block partnerTop = partner.getRelative(BlockFace.UP);
@@ -271,8 +281,14 @@ public final class RedstoneListener implements Listener {
           continue;
         }
 
+        if (!plugin.isLocationAllowed(block)) {
+          continue;
+        }
+
         linked.setOpen(openState);
         block.setBlockData(linked, false);
+        OpenableType type = OpenableType.fromMaterial(block.getType());
+        plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
       }
     });
   }

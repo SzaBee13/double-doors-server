@@ -1,9 +1,16 @@
 package me.szabee.doubledoors.config;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
+import java.util.Set;
+
+import org.bukkit.Particle;
+import org.bukkit.Sound;
 
 import me.szabee.doubledoors.DoubleDoors;
+import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
@@ -41,6 +48,66 @@ public final class PluginConfig {
     boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
     boolean serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+    boolean playPartnerSound = plugin.getConfig().getBoolean("playPartnerSound", true);
+    boolean enablePartnerParticles = plugin.getConfig().getBoolean("enablePartnerParticles", false);
+
+    String genericSoundRaw = plugin.getConfig().getString("partnerSound", "");
+    Sound genericPartnerSound = parseSound(genericSoundRaw);
+    Sound doorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.doors", ""));
+    Sound gatePartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.fenceGates", ""));
+    Sound trapdoorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.trapdoors", ""));
+
+    String particleName = plugin.getConfig().getString("partnerParticle", "END_ROD");
+    Particle partnerParticle = parseParticle(particleName, Particle.END_ROD);
+    int partnerParticleCount = plugin.getConfig().getInt("partnerParticleCount", 6);
+    if (partnerParticleCount < 1) {
+      partnerParticleCount = 1;
+    }
+    if (partnerParticleCount > 64) {
+      partnerParticleCount = 64;
+    }
+
+    String previewParticleName = plugin.getConfig().getString("previewParticle", "WAX_OFF");
+    Particle previewParticle = parseParticle(previewParticleName, Particle.WAX_OFF);
+    int previewParticleCount = plugin.getConfig().getInt("previewParticleCount", 18);
+    if (previewParticleCount < 1) {
+      previewParticleCount = 1;
+    }
+    if (previewParticleCount > 128) {
+      previewParticleCount = 128;
+    }
+    int previewDurationTicks = plugin.getConfig().getInt("previewDurationTicks", 60);
+    if (previewDurationTicks < 20) {
+      previewDurationTicks = 20;
+    }
+    if (previewDurationTicks > 200) {
+      previewDurationTicks = 200;
+    }
+
+    int extraAnimationDelayTicks = plugin.getConfig().getInt("animationSyncExtraDelayTicks", 0);
+    if (extraAnimationDelayTicks < 0) {
+      extraAnimationDelayTicks = 0;
+    }
+    if (extraAnimationDelayTicks > 4) {
+      extraAnimationDelayTicks = 4;
+    }
+
+    int lookupCacheTtlMillis = plugin.getConfig().getInt("lookupCacheTtlMillis", 1200);
+    if (lookupCacheTtlMillis < 200) {
+      lookupCacheTtlMillis = 200;
+    }
+    if (lookupCacheTtlMillis > 10_000) {
+      lookupCacheTtlMillis = 10_000;
+    }
+
+    LocationMode locationMode = parseLocationMode(plugin.getConfig().getString("locationFilter.mode", "DISABLED"));
+    Set<String> configuredLocations = normalizeLocationEntries(plugin.getConfig().getStringList("locationFilter.locations"));
+
+    RegionMode regionMode = parseRegionMode(plugin.getConfig().getString("worldGuardRegionFilter.mode", "DISABLED"));
+    Set<String> configuredRegions = normalizeRegionEntries(plugin.getConfig().getStringList("worldGuardRegionFilter.regions"));
+    String worldGuardCustomFlag = normalizeLower(plugin.getConfig().getString("worldGuardCustomFlag", "double-doors-allow"));
+    boolean worldGuardRespectBuildPermission = plugin.getConfig().getBoolean("worldGuardRespectBuildPermission", true);
+
     boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
     boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
 
@@ -92,6 +159,25 @@ public final class PluginConfig {
         enableTrapdoors,
         enableVillagerLinkedDoors,
         serverWideEnabled,
+        playPartnerSound,
+        genericPartnerSound,
+        doorPartnerSound,
+        gatePartnerSound,
+        trapdoorPartnerSound,
+        enablePartnerParticles,
+        partnerParticle,
+        partnerParticleCount,
+        previewParticle,
+        previewParticleCount,
+        previewDurationTicks,
+        extraAnimationDelayTicks,
+        lookupCacheTtlMillis,
+        locationMode,
+        Set.copyOf(configuredLocations),
+        regionMode,
+        Set.copyOf(configuredRegions),
+        worldGuardCustomFlag,
+        worldGuardRespectBuildPermission,
         enableAnonymousTracking,
         enableExtendedAnonymousTracking,
         List.copyOf(trackingCountries),
@@ -166,6 +252,156 @@ public final class PluginConfig {
    */
   public boolean isServerWideEnabled() {
     return snapshot.serverWideEnabled();
+  }
+
+  /**
+   * Gets whether partner-door sounds should be played for mirrored updates.
+   *
+   * @return true when partner sounds are enabled
+   */
+  public boolean isPlayPartnerSound() {
+    return snapshot.playPartnerSound();
+  }
+
+  /**
+   * Resolves the configured partner sound for a type.
+   *
+   * @param type the block type category
+   * @return configured sound or null to use vanilla/no explicit sound
+   */
+  public Sound getPartnerSound(OpenableType type) {
+    return switch (type) {
+      case DOOR -> snapshot.doorPartnerSound() != null ? snapshot.doorPartnerSound() : snapshot.genericPartnerSound();
+      case FENCE_GATE -> snapshot.gatePartnerSound() != null ? snapshot.gatePartnerSound() : snapshot.genericPartnerSound();
+      case TRAPDOOR -> snapshot.trapdoorPartnerSound() != null ? snapshot.trapdoorPartnerSound() : snapshot.genericPartnerSound();
+      case CUSTOM -> snapshot.genericPartnerSound();
+    };
+  }
+
+  /**
+   * Gets whether partner particles are enabled.
+   *
+   * @return true when partner particles should be emitted
+   */
+  public boolean isEnablePartnerParticles() {
+    return snapshot.enablePartnerParticles();
+  }
+
+  /**
+   * Gets the particle type used for linked partner effects.
+   *
+   * @return partner effect particle type
+   */
+  public Particle getPartnerParticle() {
+    return snapshot.partnerParticle();
+  }
+
+  /**
+   * Gets the particle count used for linked partner effects.
+   *
+   * @return partner particle count
+   */
+  public int getPartnerParticleCount() {
+    return snapshot.partnerParticleCount();
+  }
+
+  /**
+   * Gets the particle type used by the preview command.
+   *
+   * @return preview particle type
+   */
+  public Particle getPreviewParticle() {
+    return snapshot.previewParticle();
+  }
+
+  /**
+   * Gets the preview particle count.
+   *
+   * @return preview particle count
+   */
+  public int getPreviewParticleCount() {
+    return snapshot.previewParticleCount();
+  }
+
+  /**
+   * Gets how long preview particles should run.
+   *
+   * @return preview duration in ticks
+   */
+  public int getPreviewDurationTicks() {
+    return snapshot.previewDurationTicks();
+  }
+
+  /**
+   * Gets extra delay ticks used for animation sync compensation.
+   *
+   * @return extra ticks between 0 and 4
+   */
+  public int getAnimationSyncExtraDelayTicks() {
+    return snapshot.extraAnimationDelayTicks();
+  }
+
+  /**
+   * Gets the lookup cache TTL in milliseconds.
+   *
+   * @return lookup cache TTL in milliseconds
+   */
+  public int getLookupCacheTtlMillis() {
+    return snapshot.lookupCacheTtlMillis();
+  }
+
+  /**
+   * Gets the location filter mode.
+   *
+   * @return location mode
+   */
+  public LocationMode getLocationMode() {
+    return snapshot.locationMode();
+  }
+
+  /**
+   * Gets normalized world:x:y:z location filter entries.
+   *
+   * @return immutable set of normalized entries
+   */
+  public Set<String> getLocationEntries() {
+    return snapshot.locationEntries();
+  }
+
+  /**
+   * Gets the WorldGuard region filter mode.
+   *
+   * @return WorldGuard region mode
+   */
+  public RegionMode getWorldGuardRegionMode() {
+    return snapshot.regionMode();
+  }
+
+  /**
+   * Gets normalized WorldGuard region IDs used by region filters.
+   *
+   * @return immutable set of region IDs
+   */
+  public Set<String> getWorldGuardRegionIds() {
+    return snapshot.regionIds();
+  }
+
+  /**
+   * Gets the optional WorldGuard custom state-flag name.
+   *
+   * @return normalized custom flag name, or empty string
+   */
+  public String getWorldGuardCustomFlag() {
+    return snapshot.worldGuardCustomFlag();
+  }
+
+  /**
+   * Gets whether WorldGuard build checks should be enforced.
+   *
+   * @return true when build checks should run
+   */
+  public boolean isWorldGuardRespectBuildPermission() {
+    return snapshot.worldGuardRespectBuildPermission();
   }
 
   /**
@@ -286,6 +522,25 @@ public final class PluginConfig {
       boolean enableTrapdoors,
       boolean enableVillagerLinkedDoors,
       boolean serverWideEnabled,
+      boolean playPartnerSound,
+      Sound genericPartnerSound,
+      Sound doorPartnerSound,
+      Sound gatePartnerSound,
+      Sound trapdoorPartnerSound,
+      boolean enablePartnerParticles,
+      Particle partnerParticle,
+      int partnerParticleCount,
+      Particle previewParticle,
+      int previewParticleCount,
+      int previewDurationTicks,
+      int extraAnimationDelayTicks,
+      int lookupCacheTtlMillis,
+      LocationMode locationMode,
+      Set<String> locationEntries,
+      RegionMode regionMode,
+      Set<String> regionIds,
+      String worldGuardCustomFlag,
+      boolean worldGuardRespectBuildPermission,
       boolean enableAnonymousTracking,
       boolean enableExtendedAnonymousTracking,
       List<String> trackingCountries,
@@ -306,6 +561,25 @@ public final class PluginConfig {
           true,
           true,
           true,
+          true,
+          true,
+          null,
+          null,
+          null,
+          null,
+          false,
+          Particle.END_ROD,
+          6,
+          Particle.WAX_OFF,
+          18,
+          60,
+          0,
+          1200,
+          LocationMode.DISABLED,
+          Set.of(),
+          RegionMode.DISABLED,
+          Set.of(),
+          "double-doors-allow",
           true,
           true,
           false,
@@ -329,6 +603,25 @@ public final class PluginConfig {
           enableTrapdoors,
           enableVillagerLinkedDoors,
           enabled,
+          playPartnerSound,
+          genericPartnerSound,
+          doorPartnerSound,
+          gatePartnerSound,
+          trapdoorPartnerSound,
+          enablePartnerParticles,
+          partnerParticle,
+          partnerParticleCount,
+          previewParticle,
+          previewParticleCount,
+          previewDurationTicks,
+          extraAnimationDelayTicks,
+          lookupCacheTtlMillis,
+          locationMode,
+          locationEntries,
+          regionMode,
+          regionIds,
+          worldGuardCustomFlag,
+          worldGuardRespectBuildPermission,
           enableAnonymousTracking,
           enableExtendedAnonymousTracking,
           trackingCountries,
@@ -341,6 +634,109 @@ public final class PluginConfig {
           migrateYamlToSql,
           proxyHeartbeatMaxAgeMillis);
     }
+  }
+
+  /**
+   * Location filter mode for exact world coordinates.
+   */
+  public enum LocationMode {
+    DISABLED,
+    BLACKLIST,
+    WHITELIST
+  }
+
+  /**
+   * WorldGuard region filter mode.
+   */
+  public enum RegionMode {
+    DISABLED,
+    BLACKLIST,
+    WHITELIST
+  }
+
+  private static Sound parseSound(String raw) {
+    if (raw == null || raw.isBlank()) {
+      return null;
+    }
+    try {
+      return Sound.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException ex) {
+      return null;
+    }
+  }
+
+  private static Particle parseParticle(String raw, Particle fallback) {
+    if (raw == null || raw.isBlank()) {
+      return fallback;
+    }
+    try {
+      return Particle.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException ex) {
+      return fallback;
+    }
+  }
+
+  private static LocationMode parseLocationMode(String raw) {
+    if (raw == null) {
+      return LocationMode.DISABLED;
+    }
+    try {
+      return LocationMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException ex) {
+      return LocationMode.DISABLED;
+    }
+  }
+
+  private static RegionMode parseRegionMode(String raw) {
+    if (raw == null) {
+      return RegionMode.DISABLED;
+    }
+    try {
+      return RegionMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+    } catch (IllegalArgumentException ex) {
+      return RegionMode.DISABLED;
+    }
+  }
+
+  private static Set<String> normalizeLocationEntries(List<String> rawEntries) {
+    Set<String> normalized = new HashSet<>();
+    for (String raw : rawEntries) {
+      if (raw == null || raw.isBlank()) {
+        continue;
+      }
+      String cleaned = raw.trim().toLowerCase(Locale.ROOT);
+      String[] parts = cleaned.split(":");
+      if (parts.length != 4) {
+        continue;
+      }
+      try {
+        int x = Integer.parseInt(parts[1]);
+        int y = Integer.parseInt(parts[2]);
+        int z = Integer.parseInt(parts[3]);
+        normalized.add(parts[0] + ":" + x + ":" + y + ":" + z);
+      } catch (NumberFormatException ignored) {
+        // Keep filtering robust for malformed entries.
+      }
+    }
+    return normalized;
+  }
+
+  private static Set<String> normalizeRegionEntries(List<String> rawEntries) {
+    Set<String> normalized = new HashSet<>();
+    for (String raw : rawEntries) {
+      if (raw == null || raw.isBlank()) {
+        continue;
+      }
+      normalized.add(raw.trim().toLowerCase(Locale.ROOT));
+    }
+    return normalized;
+  }
+
+  private static String normalizeLower(String raw) {
+    if (raw == null || raw.isBlank()) {
+      return "";
+    }
+    return raw.trim().toLowerCase(Locale.ROOT);
   }
 }
 

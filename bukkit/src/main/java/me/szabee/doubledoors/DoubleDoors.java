@@ -2,10 +2,19 @@ package me.szabee.doubledoors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Openable;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -15,6 +24,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.core.data.Metric;
+import me.szabee.doubledoors.api.DoubleDoorsAPI;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
@@ -23,6 +33,8 @@ import me.szabee.doubledoors.listeners.DoorInteractListener;
 import me.szabee.doubledoors.listeners.RedstoneListener;
 import me.szabee.doubledoors.migration.YamlToSqlMigrator;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
+import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
 
@@ -39,6 +51,99 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile TranslationManager translationManager;
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
+  private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
+  private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
+  private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
+    @Override
+    public boolean isDoubleBehaviorEnabled(Player player) {
+      return player != null && isEnabledForPlayer(player);
+    }
+
+    @Override
+    public boolean triggerLinkedOpen(Block origin, Player actor) {
+      if (origin == null) {
+        return false;
+      }
+
+      BlockData data = origin.getBlockData();
+      if (!(data instanceof Openable openable)) {
+        return false;
+      }
+
+      boolean targetState = !openable.isOpen();
+      if (data instanceof Door) {
+        DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+        if (!search.found()) {
+          return false;
+        }
+        Block partner = search.partner();
+        if (actor != null) {
+          String denyReason = ProtectionCompat.explainLinkedDoorDeniedReason(DoubleDoors.this, actor, partner);
+          if (!denyReason.isEmpty()) {
+            return false;
+          }
+        }
+
+        BlockData partnerData = partner.getBlockData();
+        if (!(partnerData instanceof Openable linked)) {
+          return false;
+        }
+        linked.setOpen(targetState);
+        partner.setBlockData(linked, false);
+
+        Block partnerTop = partner.getRelative(BlockFace.UP);
+        BlockData topData = partnerTop.getBlockData();
+        if (topData instanceof Openable topOpenable) {
+          topOpenable.setOpen(targetState);
+          partnerTop.setBlockData(topData, false);
+        }
+        playLinkedFeedback(partner, OpenableType.DOOR);
+        return true;
+      }
+
+      var connected = DoorUtil.findConnectedDoors(origin, pluginConfig.getRecursiveOpeningMaxBlocksDistance());
+      if (connected.isEmpty()) {
+        return false;
+      }
+
+      boolean changedAny = false;
+      for (Block block : connected) {
+        if (actor != null) {
+          String denyReason = ProtectionCompat.explainLinkedDoorDeniedReason(DoubleDoors.this, actor, block);
+          if (!denyReason.isEmpty()) {
+            continue;
+          }
+        }
+        BlockData linkedData = block.getBlockData();
+        if (!(linkedData instanceof Openable linked)) {
+          continue;
+        }
+        if (linked.isOpen() == targetState) {
+          continue;
+        }
+        linked.setOpen(targetState);
+        block.setBlockData(linked, false);
+        OpenableType type = OpenableType.fromMaterial(block.getType());
+        playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
+        changedAny = true;
+      }
+      return changedAny;
+    }
+
+    @Override
+    public void registerCustomOpenableBlock(Material material) {
+      if (material != null) {
+        customOpenables.add(material);
+      }
+    }
+
+    @Override
+    public void unregisterCustomOpenableBlock(Material material) {
+      if (material != null) {
+        customOpenables.remove(material);
+      }
+    }
+  };
 
   /**
    * Gets the plugin configuration wrapper.
@@ -86,6 +191,15 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   /**
+   * Gets the public DoubleDoors API for other plugins.
+   *
+   * @return the API surface
+   */
+  public DoubleDoorsAPI getApi() {
+    return api;
+  }
+
+  /**
    * Checks whether the player can interact with a linked door block according to
    * active protection plugins.
    *
@@ -98,6 +212,27 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   /**
+   * Returns whether a location is allowed by global location filters.
+   *
+   * @param block the block location to evaluate
+   * @return true when allowed by configured filters
+   */
+  public boolean isLocationAllowed(Block block) {
+    return ProtectionCompat.isLocationAllowed(this, block);
+  }
+
+  /**
+   * Explains why a linked door access attempt is denied.
+   *
+   * @param player the acting player
+   * @param linkedBlock the linked block being toggled
+   * @return empty string when allowed, otherwise deny reason key
+   */
+  public String explainLinkedDoorDeniedReason(Player player, Block linkedBlock) {
+    return ProtectionCompat.explainLinkedDoorDeniedReason(this, player, linkedBlock);
+  }
+
+  /**
    * Checks whether double-door logic is globally enabled for a given player.
    *
    * @param player the player to check
@@ -107,10 +242,74 @@ public final class DoubleDoors extends JavaPlugin {
     return playerPreferences.isEnabled(player.getUniqueId());
   }
 
+  /**
+   * Returns whether debug mode is enabled for the player.
+   *
+   * @param player the player to check
+   * @return true when debug mode is enabled
+   */
+  public boolean isDebugEnabled(Player player) {
+    return debugPlayers.contains(player.getUniqueId());
+  }
+
+  /**
+   * Toggles debug mode for a player.
+   *
+   * @param player the player to toggle
+   * @return true when debug is now enabled
+   */
+  public boolean toggleDebug(Player player) {
+    UUID uuid = player.getUniqueId();
+    if (debugPlayers.contains(uuid)) {
+      debugPlayers.remove(uuid);
+      return false;
+    }
+    debugPlayers.add(uuid);
+    return true;
+  }
+
+  /**
+   * Checks whether a material is registered as a custom openable.
+   *
+   * @param material the material to evaluate
+   * @return true when custom-openable behavior is enabled for this material
+   */
+  public boolean isCustomOpenable(Material material) {
+    return customOpenables.contains(material);
+  }
+
+  /**
+   * Plays configured sound and particle feedback for linked blocks.
+   *
+   * @param linkedBlock the linked block
+   * @param type the openable block type category
+   */
+  public void playLinkedFeedback(Block linkedBlock, OpenableType type) {
+    if (pluginConfig.isPlayPartnerSound()) {
+      Sound sound = pluginConfig.getPartnerSound(type);
+      if (sound != null) {
+        Location soundLoc = linkedBlock.getLocation().add(0.5, 0.5, 0.5);
+        linkedBlock.getWorld().playSound(soundLoc, sound, 0.8f, 1.0f);
+      }
+    }
+    if (pluginConfig.isEnablePartnerParticles()) {
+      Location loc = linkedBlock.getLocation().add(0.5, 0.55, 0.5);
+      linkedBlock.getWorld().spawnParticle(
+          pluginConfig.getPartnerParticle(),
+          loc,
+          pluginConfig.getPartnerParticleCount(),
+          0.18,
+          0.20,
+          0.18,
+          0.01);
+    }
+  }
+
   @Override
   public void onEnable() {
     saveDefaultConfig();
     pluginConfig = new PluginConfig(this);
+    DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
 
     restartFastStats();
 
@@ -136,6 +335,9 @@ public final class DoubleDoors extends JavaPlugin {
     }
     if (pluginManager.isPluginEnabled("GriefPrevention")) {
       getLogger().info(t("log.griefprevention_detected"));
+    }
+    if (pluginManager.isPluginEnabled("WorldGuard")) {
+      getLogger().info(t("log.worldguard_detected"));
     }
     boolean hasLocalGeyserBridge = hasAnyPluginEnabled(pluginManager,
         "Geyser-Spigot",
@@ -312,6 +514,7 @@ public final class DoubleDoors extends JavaPlugin {
 
       reloadConfig();
       pluginConfig.reload();
+      DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
       restartFastStats();
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
@@ -373,6 +576,35 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
+    if (args[0].equalsIgnoreCase("debug")) {
+      if (!(sender instanceof Player player)) {
+        sender.sendMessage(t("cmd.only_players.debug", label));
+        return true;
+      }
+      if (!sender.hasPermission("doubledoors.debug")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
+
+      boolean enabled = toggleDebug(player);
+      sender.sendMessage(enabled ? t("cmd.debug.enabled") : t("cmd.debug.disabled"));
+      return true;
+    }
+
+    if (args[0].equalsIgnoreCase("preview")) {
+      if (!(sender instanceof Player player)) {
+        sender.sendMessage(t("cmd.only_players.preview", label));
+        return true;
+      }
+      if (!sender.hasPermission("doubledoors.preview")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
+
+      showPreview(player);
+      return true;
+    }
+
     if (args[0].equalsIgnoreCase("grief")) {
       if (!(sender instanceof Player player)) {
         sender.sendMessage(t("cmd.only_players.grief", label));
@@ -425,7 +657,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 1) {
-      for (String sub : List.of("reload", "toggle", "server-toggle", "grief")) {
+      for (String sub : List.of("reload", "toggle", "server-toggle", "grief", "debug", "preview")) {
         if (sub.startsWith(args[0].toLowerCase())) {
           completions.add(sub);
         }
@@ -442,6 +674,60 @@ public final class DoubleDoors extends JavaPlugin {
       }
     }
     return completions;
+  }
+
+  private void showPreview(Player player) {
+    Block origin = player.getTargetBlockExact(8);
+    if (origin == null) {
+      player.sendMessage(t("cmd.preview.no_target"));
+      return;
+    }
+    if (!DoorInteractListener.isEnabledTypeForDebug(origin.getType(), pluginConfig, this)) {
+      player.sendMessage(t("cmd.preview.unsupported", origin.getType().name()));
+      return;
+    }
+
+    Block partner;
+    String facing;
+    if (origin.getBlockData() instanceof Door) {
+      DoorUtil.MirrorSearchResult result = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+      if (!result.found()) {
+        player.sendMessage(t("cmd.preview.not_found", result.reason()));
+        return;
+      }
+      partner = result.partner();
+      facing = ((Door) partner.getBlockData()).getFacing().name();
+    } else {
+      var connected = DoorUtil.findConnectedDoors(origin, pluginConfig.getRecursiveOpeningMaxBlocksDistance());
+      if (connected.isEmpty()) {
+        player.sendMessage(t("cmd.preview.not_found", "no_connected_block"));
+        return;
+      }
+      partner = connected.iterator().next();
+      facing = "N/A";
+    }
+
+    Location center = partner.getLocation().add(0.5, 0.5, 0.5);
+    player.sendMessage(t(
+        "cmd.preview.found",
+        partner.getWorld().getName(),
+        partner.getX(),
+        partner.getY(),
+        partner.getZ(),
+        facing));
+
+    int bursts = Math.max(1, pluginConfig.getPreviewDurationTicks() / 10);
+    for (int i = 0; i < bursts; i++) {
+      int tickDelay = i * 10;
+      SchedulerBridge.runLaterAtLocation(this, center, tickDelay, () -> partner.getWorld().spawnParticle(
+          pluginConfig.getPreviewParticle(),
+          center,
+          pluginConfig.getPreviewParticleCount(),
+          0.22,
+          0.30,
+          0.22,
+          0.01));
+    }
   }
 }
 

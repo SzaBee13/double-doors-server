@@ -24,6 +24,7 @@ import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
@@ -82,6 +83,12 @@ public final class DoorInteractListener implements Listener {
     if (!isEnabledTypeForPlayer(clicked.getType(), config, plugin.getPlayerPreferences(), player.getUniqueId())) {
       return;
     }
+    if (!plugin.isLocationAllowed(clicked)) {
+      if (plugin.isDebugEnabled(player)) {
+        player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.skip", "location_filter"));
+      }
+      return;
+    }
     if (isDuplicateInteraction(player, clicked)) {
       return;
     }
@@ -110,7 +117,8 @@ public final class DoorInteractListener implements Listener {
     // Schedule for the next tick so we read the state AFTER vanilla has processed the
     // click. Reading it here (at MONITOR) would give the pre-click state on Paper 1.21,
     // causing the partner/connected blocks to be set to the wrong state.
-    SchedulerBridge.runNextTick(plugin, () -> {
+    long delay = 1L + config.getAnimationSyncExtraDelayTicks();
+    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), delay, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;
@@ -119,16 +127,33 @@ public final class DoorInteractListener implements Listener {
       boolean openState = openable.isOpen();
 
       if (originData instanceof Door) {
-        Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
-        if (partner == null) {
+        DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+        if (!search.found()) {
+          if (plugin.isDebugEnabled(player)) {
+            player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.partner_missing", search.reason()));
+          }
+          return;
+        }
+        Block partner = search.partner();
+        if (!plugin.isLocationAllowed(partner)) {
+          if (plugin.isDebugEnabled(player)) {
+            player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.partner_blocked", "location_filter"));
+          }
           return;
         }
 
         BlockData partnerData = partner.getBlockData();
         if (!(partnerData instanceof Openable linked)) {
+          if (plugin.isDebugEnabled(player)) {
+            player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.partner_blocked", "not_openable"));
+          }
           return;
         }
-        if (!plugin.canOpenLinkedDoor(player, partner)) {
+        String denyReason = plugin.explainLinkedDoorDeniedReason(player, partner);
+        if (!denyReason.isEmpty()) {
+          if (plugin.isDebugEnabled(player)) {
+            player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.partner_blocked", denyReason));
+          }
           return;
         }
 
@@ -138,6 +163,7 @@ public final class DoorInteractListener implements Listener {
 
         linked.setOpen(openState);
         partner.setBlockData(linked, false);
+        plugin.playLinkedFeedback(partner, OpenableType.DOOR);
 
         // Doors are two blocks tall — update the upper half explicitly so both
         // halves stay in sync (setBlockData with applyPhysics=false does not
@@ -165,39 +191,57 @@ public final class DoorInteractListener implements Listener {
           continue;
         }
 
+        if (!plugin.isLocationAllowed(block)) {
+          continue;
+        }
+
         linked.setOpen(openState);
         block.setBlockData(linked, false);
+        OpenableType type = OpenableType.fromMaterial(block.getType());
+        plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
       }
     });
   }
 
   private boolean isEnabledTypeForPlayer(Material material, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
-    String name = material.name();
-    if (name.endsWith("_DOOR")) {
+    OpenableType type = OpenableType.fromMaterial(material);
+    if (type == OpenableType.DOOR) {
       return config.isEnableDoors() && prefs.isDoorsEnabled(playerId);
     }
-    if (name.endsWith("_FENCE_GATE")) {
+    if (type == OpenableType.FENCE_GATE) {
       return config.isEnableFenceGates() && prefs.isFenceGatesEnabled(playerId);
     }
-    if (name.endsWith("_TRAPDOOR")) {
+    if (type == OpenableType.TRAPDOOR) {
       return config.isEnableTrapdoors() && prefs.isTrapdoorsEnabled(playerId);
     }
-    return false;
+    return plugin.isCustomOpenable(material) && prefs.isEnabled(playerId);
   }  
 
   // Kept for code paths that do not involve a specific player (e.g. redstone / villager)
   static boolean isEnabledType(Material material, PluginConfig config) {
-    String name = material.name();
-    if (name.endsWith("_DOOR")) {
+    OpenableType type = OpenableType.fromMaterial(material);
+    if (type == OpenableType.DOOR) {
       return config.isEnableDoors();
     }
-    if (name.endsWith("_FENCE_GATE")) {
+    if (type == OpenableType.FENCE_GATE) {
       return config.isEnableFenceGates();
     }
-    if (name.endsWith("_TRAPDOOR")) {
+    if (type == OpenableType.TRAPDOOR) {
       return config.isEnableTrapdoors();
     }
     return false;
+  }
+
+  /**
+   * Helper used by commands for type-checking against both built-ins and custom materials.
+   *
+   * @param material the material to evaluate
+   * @param config active plugin config
+   * @param plugin plugin instance
+   * @return true when this material can be processed by linked behavior
+   */
+  public static boolean isEnabledTypeForDebug(Material material, PluginConfig config, DoubleDoors plugin) {
+    return isEnabledType(material, config) || plugin.isCustomOpenable(material);
   }
 
   private boolean isDuplicateInteraction(Player player, Block clicked) {
