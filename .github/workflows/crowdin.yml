@@ -141,7 +141,7 @@ jobs:
             echo "Mapped ${file} -> ${target}"
           done
 
-          find .crowdin -type f -exec chmod u+w {} + && rm -rf .crowdin
+          find .crowdin -type f -exec rm -rf .crowdin
 
       - name: Create pull request for translation updates
         uses: peter-evans/create-pull-request@v8
