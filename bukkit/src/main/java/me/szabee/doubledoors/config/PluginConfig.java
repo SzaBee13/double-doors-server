@@ -47,6 +47,14 @@ public final class PluginConfig {
     boolean enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
     boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
+    boolean enableKnockFeature = plugin.getConfig().getBoolean("enableKnockFeature", true);
+    int knockDistanceBlocks = plugin.getConfig().getInt("knockDistanceBlocks", 12);
+    if (knockDistanceBlocks < 1) {
+      knockDistanceBlocks = 1;
+    }
+    if (knockDistanceBlocks > 64) {
+      knockDistanceBlocks = 64;
+    }
     boolean serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
     boolean playPartnerSound = plugin.getConfig().getBoolean("playPartnerSound", true);
     boolean enablePartnerParticles = plugin.getConfig().getBoolean("enablePartnerParticles", false);
@@ -168,6 +176,8 @@ public final class PluginConfig {
         enableFenceGates,
         enableTrapdoors,
         enableVillagerLinkedDoors,
+        enableKnockFeature,
+        knockDistanceBlocks,
         serverWideEnabled,
         playPartnerSound,
         genericPartnerSound,
@@ -256,6 +266,24 @@ public final class PluginConfig {
    */
   public boolean isEnableVillagerLinkedDoors() {
     return snapshot.enableVillagerLinkedDoors();
+  }
+
+  /**
+   * Gets whether left-click knock sounds are enabled.
+   *
+   * @return true when knock behavior is enabled
+   */
+  public boolean isEnableKnockFeature() {
+    return snapshot.enableKnockFeature();
+  }
+
+  /**
+   * Gets how far knock sounds can be heard in blocks.
+   *
+   * @return knock hearing distance in blocks
+   */
+  public int getKnockDistanceBlocks() {
+    return snapshot.knockDistanceBlocks();
   }
 
   /**
@@ -561,6 +589,8 @@ public final class PluginConfig {
       boolean enableFenceGates,
       boolean enableTrapdoors,
       boolean enableVillagerLinkedDoors,
+      boolean enableKnockFeature,
+      int knockDistanceBlocks,
       boolean serverWideEnabled,
       boolean playPartnerSound,
       Sound genericPartnerSound,
@@ -602,6 +632,8 @@ public final class PluginConfig {
           10,
           true,
           true,
+          true,
+          12,
           true,
           true,
           true,
@@ -648,6 +680,8 @@ public final class PluginConfig {
           enableFenceGates,
           enableTrapdoors,
           enableVillagerLinkedDoors,
+          enableKnockFeature,
+          knockDistanceBlocks,
           enabled,
           playPartnerSound,
           genericPartnerSound,

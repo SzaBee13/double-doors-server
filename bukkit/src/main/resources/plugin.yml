@@ -15,6 +15,9 @@ permissions:
   doubledoors.use:
     description: Allows using DoubleDoors linked opening behavior
     default: true
+  doubledoors.knock:
+    description: Allows playing knock sounds by left-clicking doors
+    default: true
   doubledoors.reload:
     description: Allows reloading the config
     default: op

@@ -6,6 +6,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import org.bukkit.Material;
+import org.bukkit.Sound;
+import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.BlockData;
@@ -52,9 +54,6 @@ public final class DoorInteractListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onPlayerInteract(PlayerInteractEvent event) {
-    if (event.getAction() != Action.RIGHT_CLICK_BLOCK) {
-      return;
-    }
     if (event.getHand() != EquipmentSlot.HAND) {
       return;
     }
@@ -66,6 +65,15 @@ public final class DoorInteractListener implements Listener {
 
     Player player = event.getPlayer();
     PluginConfig config = plugin.getPluginConfig();
+    Action action = event.getAction();
+
+    if (action == Action.LEFT_CLICK_BLOCK) {
+      playDoorKnock(player, clicked, config);
+      return;
+    }
+    if (action != Action.RIGHT_CLICK_BLOCK) {
+      return;
+    }
 
     if (!config.isServerWideEnabled()) {
       return;
@@ -94,6 +102,39 @@ public final class DoorInteractListener implements Listener {
     }
 
     applyConnectedState(player, clicked, config);
+  }
+
+  private void playDoorKnock(Player player, Block clicked, PluginConfig config) {
+    if (!config.isEnableKnockFeature()) {
+      return;
+    }
+    if (!player.hasPermission("doubledoors.knock")) {
+      return;
+    }
+    if (!config.isEnableDoors()) {
+      return;
+    }
+    if (!plugin.getPlayerPreferences().isDoorsEnabled(player.getUniqueId())) {
+      return;
+    }
+    if (OpenableType.fromMaterial(clicked.getType()) != OpenableType.DOOR) {
+      return;
+    }
+
+    Sound hitSound = clicked.getBlockData().getSoundGroup().getHitSound();
+    if (hitSound == null) {
+      return;
+    }
+
+    double maxDistance = config.getKnockDistanceBlocks();
+    double maxDistanceSquared = maxDistance * maxDistance;
+    var soundLocation = clicked.getLocation().add(0.5, 0.5, 0.5);
+    for (Player nearby : clicked.getWorld().getPlayers()) {
+      if (nearby.getLocation().distanceSquared(soundLocation) > maxDistanceSquared) {
+        continue;
+      }
+      nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, 1.0f, 1.0f);
+    }
   }
 
   /**
@@ -278,4 +319,3 @@ public final class DoorInteractListener implements Listener {
     }
   }
 }
-

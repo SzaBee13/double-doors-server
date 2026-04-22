@@ -16,6 +16,12 @@ enableTrapdoors: true
 # Whether villagers trigger linked-door behavior (open/close partner doors when pathfinding)
 enableVillagerLinkedDoors: true
 
+# Whether players can left-click doors to play a local knock sound.
+enableKnockFeature: true
+
+# Maximum distance in blocks where players can hear the knock sound.
+knockDistanceBlocks: 12
+
 # Play a sound at linked partner blocks when DoubleDoors updates them.
 playPartnerSound: true
 
