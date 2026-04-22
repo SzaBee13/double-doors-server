@@ -104,6 +104,7 @@ public final class DoorInteractListener implements Listener {
 
     scheduleManualIronDoorToggleIfPermitted(player, clicked);
     applyConnectedState(player, clicked, config);
+    scheduleAutoCloseAfterOpen(clicked, config);
   }
 
   private void playDoorKnock(Player player, Block clicked, PluginConfig config) {
@@ -270,6 +271,79 @@ public final class DoorInteractListener implements Listener {
         top.setBlockData(topOpenable, false);
       }
     });
+  }
+
+  private void scheduleAutoCloseAfterOpen(Block origin, PluginConfig config) {
+    if (!config.isEnableAutoClose()) {
+      return;
+    }
+
+    long stateReadDelay = 1L + config.getAnimationSyncExtraDelayTicks();
+    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), stateReadDelay, () -> {
+      BlockData data = origin.getBlockData();
+      if (!(data instanceof Openable openable) || !openable.isOpen()) {
+        return;
+      }
+
+      long closeDelayTicks = config.getAutoCloseDelaySeconds() * 20L;
+      SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), closeDelayTicks, () -> closeLinked(origin));
+    });
+  }
+
+  private void closeLinked(Block origin) {
+    BlockData originData = origin.getBlockData();
+    if (!(originData instanceof Openable openable) || !openable.isOpen()) {
+      return;
+    }
+    if (origin.isBlockPowered() || origin.isBlockIndirectlyPowered()) {
+      return;
+    }
+
+    if (originData instanceof Door) {
+      closeDoor(origin);
+      DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+      if (search.found()) {
+        closeDoor(search.partner());
+      }
+      return;
+    }
+
+    openable.setOpen(false);
+    origin.setBlockData(openable, false);
+
+    Set<Block> connected = DoorUtil.findConnectedDoors(origin, plugin.getPluginConfig().getRecursiveOpeningMaxBlocksDistance());
+    for (Block block : connected) {
+      BlockData data = block.getBlockData();
+      if (!(data instanceof Openable linked) || !linked.isOpen()) {
+        continue;
+      }
+      if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
+        continue;
+      }
+      linked.setOpen(false);
+      block.setBlockData(linked, false);
+    }
+  }
+
+  private void closeDoor(Block doorBlock) {
+    Block baseDoor = toDoorBottomHalf(doorBlock);
+    BlockData baseData = baseDoor.getBlockData();
+    if (!(baseData instanceof Openable openable) || !openable.isOpen()) {
+      return;
+    }
+    if (baseDoor.isBlockPowered() || baseDoor.isBlockIndirectlyPowered()) {
+      return;
+    }
+
+    openable.setOpen(false);
+    baseDoor.setBlockData(openable, false);
+
+    Block top = baseDoor.getRelative(BlockFace.UP);
+    BlockData topData = top.getBlockData();
+    if (topData instanceof Openable topOpenable) {
+      topOpenable.setOpen(false);
+      top.setBlockData(topOpenable, false);
+    }
   }
 
   private boolean isEnabledTypeForPlayer(Material material, PluginConfig config, PlayerPreferences prefs, UUID playerId) {

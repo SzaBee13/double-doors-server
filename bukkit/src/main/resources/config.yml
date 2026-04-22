@@ -16,6 +16,12 @@ enableTrapdoors: true
 # Whether villagers trigger linked-door behavior (open/close partner doors when pathfinding)
 enableVillagerLinkedDoors: true
 
+# Whether player-triggered opens should auto-close after a delay.
+enableAutoClose: false
+
+# Delay in seconds before auto-closing an opened block.
+autoCloseDelaySeconds: 5
+
 # Whether players can left-click doors to play a local knock sound.
 enableKnockFeature: true
 

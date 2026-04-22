@@ -47,6 +47,14 @@ public final class PluginConfig {
     boolean enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
     boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
     boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
+    boolean enableAutoClose = plugin.getConfig().getBoolean("enableAutoClose", false);
+    int autoCloseDelaySeconds = plugin.getConfig().getInt("autoCloseDelaySeconds", 5);
+    if (autoCloseDelaySeconds < 1) {
+      autoCloseDelaySeconds = 1;
+    }
+    if (autoCloseDelaySeconds > 300) {
+      autoCloseDelaySeconds = 300;
+    }
     boolean enableKnockFeature = plugin.getConfig().getBoolean("enableKnockFeature", true);
     int knockDistanceBlocks = plugin.getConfig().getInt("knockDistanceBlocks", 12);
     if (knockDistanceBlocks < 1) {
@@ -176,6 +184,8 @@ public final class PluginConfig {
         enableFenceGates,
         enableTrapdoors,
         enableVillagerLinkedDoors,
+        enableAutoClose,
+        autoCloseDelaySeconds,
         enableKnockFeature,
         knockDistanceBlocks,
         serverWideEnabled,
@@ -266,6 +276,24 @@ public final class PluginConfig {
    */
   public boolean isEnableVillagerLinkedDoors() {
     return snapshot.enableVillagerLinkedDoors();
+  }
+
+  /**
+   * Gets whether automatic closing is enabled for player-triggered opens.
+   *
+   * @return true when auto-close is enabled
+   */
+  public boolean isEnableAutoClose() {
+    return snapshot.enableAutoClose();
+  }
+
+  /**
+   * Gets the auto-close delay in seconds.
+   *
+   * @return auto-close delay in seconds
+   */
+  public int getAutoCloseDelaySeconds() {
+    return snapshot.autoCloseDelaySeconds();
   }
 
   /**
@@ -589,6 +617,8 @@ public final class PluginConfig {
       boolean enableFenceGates,
       boolean enableTrapdoors,
       boolean enableVillagerLinkedDoors,
+      boolean enableAutoClose,
+      int autoCloseDelaySeconds,
       boolean enableKnockFeature,
       int knockDistanceBlocks,
       boolean serverWideEnabled,
@@ -632,6 +662,8 @@ public final class PluginConfig {
           10,
           true,
           true,
+          false,
+          5,
           true,
           12,
           true,
@@ -680,6 +712,8 @@ public final class PluginConfig {
           enableFenceGates,
           enableTrapdoors,
           enableVillagerLinkedDoors,
+          enableAutoClose,
+          autoCloseDelaySeconds,
           enableKnockFeature,
           knockDistanceBlocks,
           enabled,
