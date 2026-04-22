@@ -1,6 +1,6 @@
-# DoubleDoors v1.3.3 Release Notes
+# DoubleDoors v1.3.3 Pre Release Notes
 
-Release date: 2026-04-14
+Release date: None
 
 ## Highlights
 
@@ -32,6 +32,7 @@ Release date: 2026-04-14
 
 - Improved linked-door diagnostics so operators can see why a partner block was skipped.
 - Tightened reflective protection checks to remain fail-open when optional plugins are unavailable.
+- Fixed the proxy's handling of database connection failures to prevent server instability.
 
 ## Breaking Changes
 
