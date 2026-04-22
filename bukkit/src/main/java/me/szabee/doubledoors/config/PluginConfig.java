@@ -115,6 +115,13 @@ public final class PluginConfig {
     if (lookupCacheTtlMillis > 10_000) {
       lookupCacheTtlMillis = 10_000;
     }
+    int interactionCooldownMillis = plugin.getConfig().getInt("interactionCooldownMillis", 250);
+    if (interactionCooldownMillis < 0) {
+      interactionCooldownMillis = 0;
+    }
+    if (interactionCooldownMillis > 5000) {
+      interactionCooldownMillis = 5000;
+    }
 
     LocationMode locationMode = parseLocationMode(plugin.getConfig().getString("locationFilter.mode", "DISABLED"));
     Set<String> configuredLocations = normalizeLocationEntries(plugin.getConfig().getStringList("locationFilter.locations"));
@@ -202,6 +209,7 @@ public final class PluginConfig {
         previewDurationTicks,
         extraAnimationDelayTicks,
         lookupCacheTtlMillis,
+        interactionCooldownMillis,
         locationMode,
         Set.copyOf(configuredLocations),
         regionMode,
@@ -420,6 +428,15 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets the interaction cooldown in milliseconds for repeated same-door toggles.
+   *
+   * @return interaction cooldown in milliseconds (0 disables)
+   */
+  public int getInteractionCooldownMillis() {
+    return snapshot.interactionCooldownMillis();
+  }
+
+  /**
    * Gets the location filter mode.
    *
    * @return location mode
@@ -635,6 +652,7 @@ public final class PluginConfig {
       int previewDurationTicks,
       int extraAnimationDelayTicks,
       int lookupCacheTtlMillis,
+      int interactionCooldownMillis,
       LocationMode locationMode,
       Set<String> locationEntries,
       RegionMode regionMode,
@@ -682,6 +700,7 @@ public final class PluginConfig {
           60,
           0,
           1200,
+          250,
           LocationMode.DISABLED,
           Set.of(),
           RegionMode.DISABLED,
@@ -730,6 +749,7 @@ public final class PluginConfig {
           previewDurationTicks,
           extraAnimationDelayTicks,
           lookupCacheTtlMillis,
+          interactionCooldownMillis,
           locationMode,
           locationEntries,
           regionMode,

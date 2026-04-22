@@ -57,6 +57,10 @@ previewDurationTicks: 60
 # Cache TTL for mirrored door lookups in milliseconds.
 lookupCacheTtlMillis: 1200
 
+# Cooldown in milliseconds before the same player can toggle the same block again.
+# Set to 0 to disable cooldown logic (duplicate-fire debounce still remains).
+interactionCooldownMillis: 250
+
 # Exact location filter for linked behavior, format world:x:y:z.
 locationFilter:
   mode: DISABLED

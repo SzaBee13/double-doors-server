@@ -99,7 +99,7 @@ public final class DoorInteractListener implements Listener {
       }
       return;
     }
-    if (isDuplicateInteraction(player, clicked)) {
+    if (isInteractionRateLimited(player, clicked, config)) {
       return;
     }
 
@@ -392,7 +392,7 @@ public final class DoorInteractListener implements Listener {
     return isEnabledType(material, config) || plugin.isCustomOpenable(material);
   }
 
-  private boolean isDuplicateInteraction(Player player, Block clicked) {
+  private boolean isInteractionRateLimited(Player player, Block clicked, PluginConfig config) {
     long now = System.nanoTime();
     UUID playerId = player.getUniqueId();
     InteractionStamp previous = lastInteractionByPlayer.get(playerId);
@@ -414,7 +414,16 @@ public final class DoorInteractListener implements Listener {
       return false;
     }
 
-    return (now - previous.timestampNanos()) <= DUPLICATE_INTERACTION_WINDOW_NANOS;
+    long elapsedNanos = now - previous.timestampNanos();
+    if (elapsedNanos <= DUPLICATE_INTERACTION_WINDOW_NANOS) {
+      return true;
+    }
+
+    long cooldownMillis = config.getInteractionCooldownMillis();
+    if (cooldownMillis <= 0L) {
+      return false;
+    }
+    return elapsedNanos <= (cooldownMillis * 1_000_000L);
   }
 
   private Block toDoorBottomHalf(Block block) {
