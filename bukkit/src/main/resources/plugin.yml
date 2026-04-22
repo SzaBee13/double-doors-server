@@ -18,6 +18,9 @@ permissions:
   doubledoors.knock:
     description: Allows playing knock sounds by left-clicking doors
     default: true
+  doubledoors.iron.manual:
+    description: Allows manually toggling iron doors by right-click
+    default: op
   doubledoors.reload:
     description: Allows reloading the config
     default: op

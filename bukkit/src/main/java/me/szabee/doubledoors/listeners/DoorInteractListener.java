@@ -10,6 +10,7 @@ import org.bukkit.Sound;
 import org.bukkit.SoundCategory;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
@@ -101,6 +102,7 @@ public final class DoorInteractListener implements Listener {
       return;
     }
 
+    scheduleManualIronDoorToggleIfPermitted(player, clicked);
     applyConnectedState(player, clicked, config);
   }
 
@@ -244,6 +246,32 @@ public final class DoorInteractListener implements Listener {
     });
   }
 
+  private void scheduleManualIronDoorToggleIfPermitted(Player player, Block clicked) {
+    if (!player.hasPermission("doubledoors.iron.manual")) {
+      return;
+    }
+    if (clicked.getType() != Material.IRON_DOOR) {
+      return;
+    }
+
+    Block baseDoor = toDoorBottomHalf(clicked);
+    SchedulerBridge.runLaterAtLocation(plugin, baseDoor.getLocation(), 1L, () -> {
+      BlockData data = baseDoor.getBlockData();
+      if (!(data instanceof Openable openable)) {
+        return;
+      }
+      openable.setOpen(!openable.isOpen());
+      baseDoor.setBlockData(openable, false);
+
+      Block top = baseDoor.getRelative(BlockFace.UP);
+      BlockData topData = top.getBlockData();
+      if (topData instanceof Openable topOpenable) {
+        topOpenable.setOpen(openable.isOpen());
+        top.setBlockData(topOpenable, false);
+      }
+    });
+  }
+
   private boolean isEnabledTypeForPlayer(Material material, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
     OpenableType type = OpenableType.fromMaterial(material);
     if (type == OpenableType.DOOR) {
@@ -308,6 +336,16 @@ public final class DoorInteractListener implements Listener {
     }
 
     return (now - previous.timestampNanos()) <= DUPLICATE_INTERACTION_WINDOW_NANOS;
+  }
+
+  private Block toDoorBottomHalf(Block block) {
+    if (!(block.getBlockData() instanceof Door doorData)) {
+      return block;
+    }
+    if (!(doorData instanceof Bisected bisected) || bisected.getHalf() == Bisected.Half.BOTTOM) {
+      return block;
+    }
+    return block.getRelative(BlockFace.DOWN);
   }
 
   private record InteractionStamp(UUID worldId, int x, int y, int z, long timestampNanos) {
