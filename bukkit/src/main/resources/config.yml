@@ -106,3 +106,14 @@ sql:
 
   # Bukkit considers proxy heartbeats newer than this as "proxy online".
   proxyHeartbeatMaxAgeSeconds: 180
+
+# Built-in updater configuration (PluginUpdater shadeable API).
+updateChecker:
+  # Enable automatic checks for new releases.
+  enabled: true
+
+  # How often to check for updates, in seconds (300-86400).
+  checkScheduleSeconds: 3600
+
+  # Notify online players with permission when an update is available.
+  notify: true

@@ -37,6 +37,7 @@ import me.szabee.doubledoors.util.DoorUtil;
 import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
+import org.lushplugins.pluginupdater.api.updater.Updater;
 
 /**
  * Main plugin class for DoubleDoors.
@@ -44,6 +45,8 @@ import me.szabee.doubledoors.util.SchedulerBridge;
 public final class DoubleDoors extends JavaPlugin {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
   private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
+  private static final String MODRINTH_PROJECT_ID = "Fdj5mcgC";
+  private static final String UPDATE_NOTIFY_PERMISSION = "doubledoors.update.notify";
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -51,6 +54,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile TranslationManager translationManager;
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
+  private volatile Updater updater;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
@@ -312,6 +316,7 @@ public final class DoubleDoors extends JavaPlugin {
     DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
 
     restartFastStats();
+    initializeUpdater();
 
     sqlStorage = null;
     translationManager = new TranslationManager(this, pluginConfig);
@@ -465,6 +470,24 @@ public final class DoubleDoors extends JavaPlugin {
       }
     }
     initializeFastStats();
+  }
+
+  private void initializeUpdater() {
+    updater = null;
+    if (!pluginConfig.isUpdateCheckerEnabled()) {
+      return;
+    }
+
+    try {
+      updater = Updater.builder(this)
+          .modrinth(MODRINTH_PROJECT_ID)
+          .checkSchedule(pluginConfig.getUpdateCheckerScheduleSeconds())
+          .notify(pluginConfig.isUpdateCheckerNotify())
+          .notificationPermission(UPDATE_NOTIFY_PERMISSION)
+          .build();
+    } catch (RuntimeException | LinkageError e) {
+      getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
+    }
   }
 
   private String normalizeFastStatsToken(String rawToken) {
@@ -730,4 +753,3 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 }
-

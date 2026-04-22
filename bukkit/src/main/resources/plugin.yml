@@ -33,5 +33,8 @@ permissions:
   doubledoors.preview:
     description: Allows showing partner-door preview particles
     default: true
+  doubledoors.update.notify:
+    description: Receives update notifications from the built-in updater
+    default: op
 modrinth-project-id: "Fdj5mcgC"
 github-repo: "SzaBee13/double-doors-server"

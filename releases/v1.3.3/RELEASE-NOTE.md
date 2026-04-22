@@ -17,6 +17,7 @@ Release date: None
 - Added optional subtle particles on linked partner blocks.
 - Added `/doubledoors debug` for partner lookup diagnostics.
 - Added `/doubledoors preview` for showing linked-door location and facing.
+- Added built-in PluginUpdater API support for automatic Modrinth update checks.
 - Added a public `DoubleDoorsAPI` for other plugins.
 - Added custom openable registration support for external plugins.
 

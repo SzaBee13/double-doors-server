@@ -145,6 +145,16 @@ public final class PluginConfig {
     }
     long proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
 
+    boolean updateCheckerEnabled = plugin.getConfig().getBoolean("updateChecker.enabled", true);
+    int updateCheckerScheduleSeconds = plugin.getConfig().getInt("updateChecker.checkScheduleSeconds", 3600);
+    if (updateCheckerScheduleSeconds < 300) {
+      updateCheckerScheduleSeconds = 300;
+    }
+    if (updateCheckerScheduleSeconds > 86_400) {
+      updateCheckerScheduleSeconds = 86_400;
+    }
+    boolean updateCheckerNotify = plugin.getConfig().getBoolean("updateChecker.notify", true);
+
     String configuredLanguage = plugin.getConfig().getString("language", "en_US");
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
@@ -188,7 +198,10 @@ public final class PluginConfig {
         sqlUsername,
         sqlPassword,
         migrateYamlToSql,
-        proxyHeartbeatMaxAgeMillis);
+        proxyHeartbeatMaxAgeMillis,
+        updateCheckerEnabled,
+        updateCheckerScheduleSeconds,
+        updateCheckerNotify);
   }
 
   /**
@@ -504,6 +517,33 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets whether startup update checks are enabled.
+   *
+   * @return true when the built-in updater is enabled
+   */
+  public boolean isUpdateCheckerEnabled() {
+    return snapshot.updateCheckerEnabled();
+  }
+
+  /**
+   * Gets the number of seconds between updater checks.
+   *
+   * @return check schedule in seconds
+   */
+  public int getUpdateCheckerScheduleSeconds() {
+    return snapshot.updateCheckerScheduleSeconds();
+  }
+
+  /**
+   * Gets whether update notifications should be sent.
+   *
+   * @return true when player notifications are enabled
+   */
+  public boolean isUpdateCheckerNotify() {
+    return snapshot.updateCheckerNotify();
+  }
+
+  /**
    * Sets and persists whether linked opening is enabled globally for the server.
    *
    * @param enabled true to enable globally, false to disable globally
@@ -551,7 +591,10 @@ public final class PluginConfig {
       String sqlUsername,
       String sqlPassword,
       boolean migrateYamlToSql,
-      long proxyHeartbeatMaxAgeMillis
+      long proxyHeartbeatMaxAgeMillis,
+      boolean updateCheckerEnabled,
+      int updateCheckerScheduleSeconds,
+      boolean updateCheckerNotify
   ) {
     private static ConfigSnapshot defaults() {
       return new ConfigSnapshot(
@@ -591,7 +634,10 @@ public final class PluginConfig {
           "",
           "",
           true,
-          180_000L);
+          180_000L,
+          true,
+          3600,
+          true);
     }
 
     private ConfigSnapshot withServerWideEnabled(boolean enabled) {
@@ -632,7 +678,10 @@ public final class PluginConfig {
           sqlUsername,
           sqlPassword,
           migrateYamlToSql,
-          proxyHeartbeatMaxAgeMillis);
+          proxyHeartbeatMaxAgeMillis,
+          updateCheckerEnabled,
+          updateCheckerScheduleSeconds,
+          updateCheckerNotify);
     }
   }
 
@@ -739,4 +788,3 @@ public final class PluginConfig {
     return raw.trim().toLowerCase(Locale.ROOT);
   }
 }
-
