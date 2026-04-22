@@ -13,6 +13,7 @@ import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.Gate;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -223,6 +224,7 @@ public final class RedstoneListener implements Listener {
       }
 
       boolean openState = openable.isOpen();
+      BlockFace targetGateFacing = originData instanceof Gate gate ? gate.getFacing() : null;
       if (requireOriginStateChange && beforeState == openState) {
         return;
       }
@@ -285,6 +287,9 @@ public final class RedstoneListener implements Listener {
           continue;
         }
 
+        if (openState && targetGateFacing != null && linked instanceof Gate gate) {
+          gate.setFacing(targetGateFacing);
+        }
         linked.setOpen(openState);
         block.setBlockData(linked, false);
         OpenableType type = OpenableType.fromMaterial(block.getType());

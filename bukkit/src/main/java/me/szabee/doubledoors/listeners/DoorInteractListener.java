@@ -14,6 +14,7 @@ import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.Gate;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -169,6 +170,7 @@ public final class DoorInteractListener implements Listener {
       }
 
       boolean openState = openable.isOpen();
+      BlockFace targetGateFacing = resolveTargetGateFacing(originData, player);
 
       if (originData instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
@@ -239,6 +241,9 @@ public final class DoorInteractListener implements Listener {
           continue;
         }
 
+        if (openState && targetGateFacing != null && linked instanceof Gate gate) {
+          gate.setFacing(targetGateFacing);
+        }
         linked.setOpen(openState);
         block.setBlockData(linked, false);
         OpenableType type = OpenableType.fromMaterial(block.getType());
@@ -420,6 +425,17 @@ public final class DoorInteractListener implements Listener {
       return block;
     }
     return block.getRelative(BlockFace.DOWN);
+  }
+
+  private BlockFace resolveTargetGateFacing(BlockData originData, Player player) {
+    if (!(originData instanceof Gate gate)) {
+      return null;
+    }
+    BlockFace playerFacing = player.getFacing();
+    return switch (playerFacing) {
+      case NORTH, SOUTH, EAST, WEST -> playerFacing;
+      default -> gate.getFacing();
+    };
   }
 
   private record InteractionStamp(UUID worldId, int x, int y, int z, long timestampNanos) {
