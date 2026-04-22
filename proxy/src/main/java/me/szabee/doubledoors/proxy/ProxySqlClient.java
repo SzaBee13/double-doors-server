@@ -13,6 +13,9 @@ import java.sql.Statement;
  */
 public final class ProxySqlClient {
 
+  private static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
+  private static final String SQLITE_DRIVER = "org.sqlite.JDBC";
+
   private final HikariDataSource dataSource;
 
   /**
@@ -25,6 +28,11 @@ public final class ProxySqlClient {
   public ProxySqlClient(String jdbcUrl, String username, String password) {
     HikariConfig config = new HikariConfig();
     config.setJdbcUrl(jdbcUrl);
+    String driverClassName = detectDriverClassName(jdbcUrl);
+    if (driverClassName != null) {
+      ensureDriverLoaded(driverClassName);
+      config.setDriverClassName(driverClassName);
+    }
     if (username != null && !username.isBlank()) {
       config.setUsername(username);
       config.setPassword(password == null ? "" : password);
@@ -35,6 +43,27 @@ public final class ProxySqlClient {
     config.setIdleTimeout(600_000);
     config.setMaxLifetime(1_800_000);
     this.dataSource = new HikariDataSource(config);
+  }
+
+  private static String detectDriverClassName(String jdbcUrl) {
+    if (jdbcUrl == null) {
+      return null;
+    }
+    if (jdbcUrl.startsWith("jdbc:mysql:")) {
+      return MYSQL_DRIVER;
+    }
+    if (jdbcUrl.startsWith("jdbc:sqlite:")) {
+      return SQLITE_DRIVER;
+    }
+    return null;
+  }
+
+  private static void ensureDriverLoaded(String driverClassName) {
+    try {
+      Class.forName(driverClassName);
+    } catch (ClassNotFoundException exception) {
+      throw new IllegalStateException("JDBC driver class not found: " + driverClassName, exception);
+    }
   }
 
   /**
