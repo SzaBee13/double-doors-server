@@ -90,7 +90,7 @@ public final class DoorInteractListener implements Listener {
     if (player.isSneaking()) {
       return;
     }
-    if (!isEnabledTypeForPlayer(clicked.getType(), config, plugin.getPlayerPreferences(), player.getUniqueId())) {
+    if (!isEnabledTypeForPlayer(clicked, config, plugin.getPlayerPreferences(), player.getUniqueId())) {
       return;
     }
     if (!plugin.isLocationAllowed(clicked)) {
@@ -121,7 +121,7 @@ public final class DoorInteractListener implements Listener {
     if (!plugin.getPlayerPreferences().isDoorsEnabled(player.getUniqueId())) {
       return;
     }
-    if (OpenableType.fromMaterial(clicked.getType()) != OpenableType.DOOR) {
+    if (OpenableType.fromBlockData(clicked.getBlockData(), clicked.getType()) != OpenableType.DOOR) {
       return;
     }
 
@@ -246,7 +246,7 @@ public final class DoorInteractListener implements Listener {
         }
         linked.setOpen(openState);
         block.setBlockData(linked, false);
-        OpenableType type = OpenableType.fromMaterial(block.getType());
+        OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
         plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
       }
     });
@@ -351,8 +351,9 @@ public final class DoorInteractListener implements Listener {
     }
   }
 
-  private boolean isEnabledTypeForPlayer(Material material, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
-    OpenableType type = OpenableType.fromMaterial(material);
+  private boolean isEnabledTypeForPlayer(Block block, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
+    Material material = block.getType();
+    OpenableType type = OpenableType.fromBlockData(block.getBlockData(), material);
     if (type == OpenableType.DOOR) {
       return config.isEnableDoors() && prefs.isDoorsEnabled(playerId);
     }
@@ -366,8 +367,8 @@ public final class DoorInteractListener implements Listener {
   }  
 
   // Kept for code paths that do not involve a specific player (e.g. redstone / villager)
-  static boolean isEnabledType(Material material, PluginConfig config) {
-    OpenableType type = OpenableType.fromMaterial(material);
+  static boolean isEnabledType(Block block, PluginConfig config) {
+    OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
     if (type == OpenableType.DOOR) {
       return config.isEnableDoors();
     }
@@ -389,7 +390,17 @@ public final class DoorInteractListener implements Listener {
    * @return true when this material can be processed by linked behavior
    */
   public static boolean isEnabledTypeForDebug(Material material, PluginConfig config, DoubleDoors plugin) {
-    return isEnabledType(material, config) || plugin.isCustomOpenable(material);
+    OpenableType type = OpenableType.fromMaterial(material);
+    if (type == OpenableType.DOOR) {
+      return config.isEnableDoors();
+    }
+    if (type == OpenableType.FENCE_GATE) {
+      return config.isEnableFenceGates();
+    }
+    if (type == OpenableType.TRAPDOOR) {
+      return config.isEnableTrapdoors();
+    }
+    return plugin.isCustomOpenable(material);
   }
 
   private boolean isInteractionRateLimited(Player player, Block clicked, PluginConfig config) {

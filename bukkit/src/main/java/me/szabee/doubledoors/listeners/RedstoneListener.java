@@ -82,7 +82,7 @@ public final class RedstoneListener implements Listener {
     }
 
     Set<Block> candidates = new HashSet<>();
-    if (DoorInteractListener.isEnabledType(source.getType(), config)) {
+    if (DoorInteractListener.isEnabledType(source, config)) {
       candidates.add(source);
     }
 
@@ -94,7 +94,7 @@ public final class RedstoneListener implements Listener {
       }
 
       Block neighbor = source.getRelative(face);
-      if (DoorInteractListener.isEnabledType(neighbor.getType(), config)) {
+      if (DoorInteractListener.isEnabledType(neighbor, config)) {
         candidates.add(neighbor);
       }
     }
@@ -124,7 +124,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config)) {
       return;
     }
 
@@ -156,7 +156,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config)) {
       return;
     }
 
@@ -192,7 +192,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config)) {
       return;
     }
 

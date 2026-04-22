@@ -1,6 +1,10 @@
 package me.szabee.doubledoors.util;
 
 import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.Gate;
+import org.bukkit.block.data.type.TrapDoor;
 
 /**
  * High-level categories for supported openable block types.
@@ -29,5 +33,25 @@ public enum OpenableType {
       return TRAPDOOR;
     }
     return null;
+  }
+
+  /**
+   * Resolves an openable type from Bukkit block data first, then material fallback.
+   *
+   * @param blockData the block data to inspect
+   * @param material the backing block material
+   * @return detected type, or null if unsupported
+   */
+  public static OpenableType fromBlockData(BlockData blockData, Material material) {
+    if (blockData instanceof Door) {
+      return DOOR;
+    }
+    if (blockData instanceof Gate) {
+      return FENCE_GATE;
+    }
+    if (blockData instanceof TrapDoor) {
+      return TRAPDOOR;
+    }
+    return fromMaterial(material);
   }
 }
