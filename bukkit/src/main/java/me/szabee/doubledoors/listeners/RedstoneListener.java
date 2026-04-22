@@ -35,8 +35,8 @@ import me.szabee.doubledoors.util.SchedulerBridge;
  * Handles redstone and villager-triggered door interactions.
  */
 public final class RedstoneListener implements Listener {
-  /** Ticks to wait before reading door state after a redstone change (0 = next tick). */
-  private static final long REDSTONE_DELAY_TICKS = 0L;
+  /** Ticks to wait before reading door state after a redstone change. */
+  private static final long REDSTONE_DELAY_TICKS = 1L;
   /**
    * Ticks to wait before reading door state after a villager interaction.
    *
@@ -82,7 +82,7 @@ public final class RedstoneListener implements Listener {
     }
 
     Set<Block> candidates = new HashSet<>();
-    if (DoorInteractListener.isEnabledType(source, config)) {
+    if (DoorInteractListener.isEnabledType(source, config, plugin)) {
       candidates.add(source);
     }
 
@@ -94,7 +94,7 @@ public final class RedstoneListener implements Listener {
       }
 
       Block neighbor = source.getRelative(face);
-      if (DoorInteractListener.isEnabledType(neighbor, config)) {
+      if (DoorInteractListener.isEnabledType(neighbor, config, plugin)) {
         candidates.add(neighbor);
       }
     }
@@ -124,7 +124,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block, config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -156,7 +156,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block, config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -192,7 +192,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block, config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -216,7 +216,7 @@ public final class RedstoneListener implements Listener {
     boolean beforeState = beforeOpenable.isOpen();
 
     // Read and mirror state after the configured delay so we sync to vanilla's final result.
-    long effectiveDelay = delayTicks + config.getAnimationSyncExtraDelayTicks();
+    long effectiveDelay = Math.max(1L, delayTicks + config.getAnimationSyncExtraDelayTicks());
     SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), effectiveDelay, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
@@ -292,7 +292,7 @@ public final class RedstoneListener implements Listener {
         }
         linked.setOpen(openState);
         block.setBlockData(linked, false);
-        OpenableType type = OpenableType.fromMaterial(block.getType());
+        OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
         plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
       }
     });

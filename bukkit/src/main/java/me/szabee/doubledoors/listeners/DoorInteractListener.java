@@ -367,7 +367,7 @@ public final class DoorInteractListener implements Listener {
   }  
 
   // Kept for code paths that do not involve a specific player (e.g. redstone / villager)
-  static boolean isEnabledType(Block block, PluginConfig config) {
+  static boolean isEnabledType(Block block, PluginConfig config, DoubleDoors plugin) {
     OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
     if (type == OpenableType.DOOR) {
       return config.isEnableDoors();
@@ -378,7 +378,7 @@ public final class DoorInteractListener implements Listener {
     if (type == OpenableType.TRAPDOOR) {
       return config.isEnableTrapdoors();
     }
-    return false;
+    return plugin.isCustomOpenable(block.getType());
   }
 
   /**
@@ -415,13 +415,14 @@ public final class DoorInteractListener implements Listener {
         clicked.getZ(),
         now
     );
-    lastInteractionByPlayer.put(playerId, current);
 
     if (previous == null) {
+      lastInteractionByPlayer.put(playerId, current);
       return false;
     }
 
     if (!previous.sameBlock(clicked)) {
+      lastInteractionByPlayer.put(playerId, current);
       return false;
     }
 
@@ -432,9 +433,15 @@ public final class DoorInteractListener implements Listener {
 
     long cooldownMillis = config.getInteractionCooldownMillis();
     if (cooldownMillis <= 0L) {
+      lastInteractionByPlayer.put(playerId, current);
       return false;
     }
-    return elapsedNanos <= (cooldownMillis * 1_000_000L);
+    if (elapsedNanos <= (cooldownMillis * 1_000_000L)) {
+      return true;
+    }
+
+    lastInteractionByPlayer.put(playerId, current);
+    return false;
   }
 
   private Block toDoorBottomHalf(Block block) {

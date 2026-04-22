@@ -2,6 +2,7 @@ package me.szabee.doubledoors.util;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -19,6 +20,7 @@ import org.bukkit.block.data.type.Door;
  */
 public final class DoorUtil {
   private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
+  private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
   private static volatile long mirrorCacheTtlMillis = 1_200L;
 
   private DoorUtil() {
@@ -70,7 +72,7 @@ public final class DoorUtil {
         originBase.getZ());
     MirrorCacheEntry cacheEntry = MIRROR_CACHE.get(cacheKey);
     long now = System.currentTimeMillis();
-    if (cacheEntry != null && (now - cacheEntry.timestampMillis()) <= mirrorCacheTtlMillis) {
+    if (cacheEntry != null && isMirrorCacheEntryFresh(now, cacheEntry)) {
       if (!cacheEntry.found()) {
         return MirrorSearchResult.failure(cacheEntry.reason());
       }
@@ -79,6 +81,8 @@ public final class DoorUtil {
       if (validated != null) {
         return MirrorSearchResult.success(validated);
       }
+    } else if (cacheEntry != null) {
+      MIRROR_CACHE.remove(cacheKey, cacheEntry);
     }
 
     Door originDoor = (Door) originBase.getBlockData();
@@ -86,20 +90,51 @@ public final class DoorUtil {
 
     Block leftMatch = matchingMirroredDoor(originBase, originDoor, originBase.getRelative(leftOf(facing)));
     if (leftMatch != null) {
-      MIRROR_CACHE.put(cacheKey, MirrorCacheEntry.found(now, leftMatch));
+      putMirrorCacheEntry(cacheKey, MirrorCacheEntry.found(now, leftMatch), now);
       return MirrorSearchResult.success(leftMatch);
     }
 
     Block rightCandidate = originBase.getRelative(rightOf(facing));
     Block rightMatch = matchingMirroredDoor(originBase, originDoor, rightCandidate);
     if (rightMatch != null) {
-      MIRROR_CACHE.put(cacheKey, MirrorCacheEntry.found(now, rightMatch));
+      putMirrorCacheEntry(cacheKey, MirrorCacheEntry.found(now, rightMatch), now);
       return MirrorSearchResult.success(rightMatch);
     }
 
     String reason = diagnoseMirrorFailure(originBase, originDoor, originBase.getRelative(leftOf(facing)), rightCandidate);
-    MIRROR_CACHE.put(cacheKey, MirrorCacheEntry.miss(now, reason));
+    putMirrorCacheEntry(cacheKey, MirrorCacheEntry.miss(now, reason), now);
     return MirrorSearchResult.failure(reason);
+  }
+
+  private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {
+    return (now - entry.timestampMillis()) <= mirrorCacheTtlMillis;
+  }
+
+  private static void putMirrorCacheEntry(MirrorCacheKey key, MirrorCacheEntry entry, long now) {
+    MIRROR_CACHE.put(key, entry);
+    trimMirrorCache(now);
+  }
+
+  private static void trimMirrorCache(long now) {
+    for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
+      if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
+        MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
+      }
+    }
+    while (MIRROR_CACHE.size() > MIRROR_CACHE_MAX_SIZE) {
+      MirrorCacheKey oldestKey = null;
+      long oldestTimestamp = Long.MAX_VALUE;
+      for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
+        if (entry.getValue().timestampMillis() < oldestTimestamp) {
+          oldestTimestamp = entry.getValue().timestampMillis();
+          oldestKey = entry.getKey();
+        }
+      }
+      if (oldestKey == null) {
+        return;
+      }
+      MIRROR_CACHE.remove(oldestKey);
+    }
   }
 
   /**
@@ -308,4 +343,3 @@ public final class DoorUtil {
     }
   }
 }
-

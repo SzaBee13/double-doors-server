@@ -3,7 +3,10 @@ package me.szabee.doubledoors.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -446,13 +449,25 @@ public final class ProtectionCompat {
         return "";
       }
 
-      for (Object region : getApplicableWorldGuardRegions(block)) {
+      Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+      if (applicableRegionSet == null) {
+        return "";
+      }
+
+      String queriedState = queryWorldGuardStateFromApplicableSet(applicableRegionSet, flag);
+      if (!queriedState.isEmpty()) {
+        return queriedState;
+      }
+
+      List<Object> regions = new ArrayList<>();
+      for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
+        regions.add(region);
+      }
+      regions.sort(Comparator.comparingInt(ProtectionCompat::getWorldGuardRegionPriority).reversed());
+      for (Object region : regions) {
         try {
           Object value = region.getClass().getMethod("getFlag", flag.getClass()).invoke(region, flag);
-          if (value == null) {
-            continue;
-          }
-          String normalized = value.toString().trim().toLowerCase(Locale.ROOT);
+          String normalized = normalizeWorldGuardState(value);
           if (normalized.contains("deny")) {
             return "deny";
           }
@@ -471,7 +486,11 @@ public final class ProtectionCompat {
 
   private static Set<String> getWorldGuardRegionIds(Block block) {
     Set<String> ids = new HashSet<>();
-    for (Object region : getApplicableWorldGuardRegions(block)) {
+    Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+    if (applicableRegionSet == null) {
+      return ids;
+    }
+    for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
       try {
         Object id = region.getClass().getMethod("getId").invoke(region);
         if (id != null) {
@@ -484,7 +503,7 @@ public final class ProtectionCompat {
     return ids;
   }
 
-  private static Iterable<?> getApplicableWorldGuardRegions(Block block) {
+  private static Object getApplicableWorldGuardRegionSet(Block block) {
     try {
       Class<?> worldGuardClass = Class.forName("com.sk89q.worldguard.WorldGuard");
       Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
@@ -513,14 +532,70 @@ public final class ProtectionCompat {
       Object blockVector = blockVectorClass.getMethod("at", int.class, int.class, int.class)
           .invoke(null, block.getX(), block.getY(), block.getZ());
       Object applicable = regionManager.getClass().getMethod("getApplicableRegions", blockVectorClass).invoke(regionManager, blockVector);
-      if (applicable instanceof Iterable<?> iterable) {
-        return iterable;
-      }
+      return applicable;
     } catch (ReflectiveOperationException ignored) {
       // Fail open.
     }
 
+    return null;
+  }
+
+  private static Iterable<?> getApplicableWorldGuardRegions(Object applicableRegionSet) {
+    if (applicableRegionSet instanceof Iterable<?> iterable) {
+      return iterable;
+    }
     return Set.of();
+  }
+
+  private static String queryWorldGuardStateFromApplicableSet(Object applicableRegionSet, Object flag) {
+    try {
+      Class<?> stateFlagClass = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
+      if (!stateFlagClass.isInstance(flag)) {
+        return "";
+      }
+      Object stateFlags = Array.newInstance(stateFlagClass, 1);
+      Array.set(stateFlags, 0, flag);
+
+      for (Method method : applicableRegionSet.getClass().getMethods()) {
+        if (!method.getName().equals("queryState") || method.getParameterCount() != 2) {
+          continue;
+        }
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (!parameterTypes[1].isArray()) {
+          continue;
+        }
+        Object result = method.invoke(applicableRegionSet, new Object[] {null, stateFlags});
+        String normalized = normalizeWorldGuardState(result);
+        if (normalized.contains("deny")) {
+          return "deny";
+        }
+        if (normalized.contains("allow")) {
+          return "allow";
+        }
+      }
+    } catch (ReflectiveOperationException | IllegalArgumentException ignored) {
+      // Fall back to priority-sorted region iteration.
+    }
+    return "";
+  }
+
+  private static int getWorldGuardRegionPriority(Object region) {
+    try {
+      Object value = region.getClass().getMethod("getPriority").invoke(region);
+      if (value instanceof Number number) {
+        return number.intValue();
+      }
+    } catch (ReflectiveOperationException ignored) {
+      // Default priority.
+    }
+    return 0;
+  }
+
+  private static String normalizeWorldGuardState(Object value) {
+    if (value == null) {
+      return "";
+    }
+    return value.toString().trim().toLowerCase(Locale.ROOT);
   }
 
   private static String normalizeLocation(Block block) {

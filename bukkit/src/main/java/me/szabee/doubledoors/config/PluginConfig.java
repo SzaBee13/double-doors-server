@@ -6,7 +6,9 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import org.bukkit.NamespacedKey;
 import org.bukkit.Particle;
+import org.bukkit.Registry;
 import org.bukkit.Sound;
 
 import me.szabee.doubledoors.DoubleDoors;
@@ -810,7 +812,8 @@ public final class PluginConfig {
       return null;
     }
     try {
-      return Sound.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+      NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
+      return key == null ? null : Registry.SOUNDS.get(key);
     } catch (IllegalArgumentException ex) {
       return null;
     }
@@ -821,7 +824,9 @@ public final class PluginConfig {
       return fallback;
     }
     try {
-      return Particle.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+      NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
+      Particle resolved = key == null ? null : Registry.PARTICLE_TYPE.get(key);
+      return resolved == null ? fallback : resolved;
     } catch (IllegalArgumentException ex) {
       return fallback;
     }

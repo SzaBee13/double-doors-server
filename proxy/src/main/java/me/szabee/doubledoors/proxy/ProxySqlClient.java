@@ -52,6 +52,9 @@ public final class ProxySqlClient {
     if (jdbcUrl.startsWith("jdbc:mysql:")) {
       return MYSQL_DRIVER;
     }
+    if (jdbcUrl.startsWith("jdbc:mariadb:")) {
+      return MYSQL_DRIVER;
+    }
     if (jdbcUrl.startsWith("jdbc:sqlite:")) {
       return SQLITE_DRIVER;
     }
@@ -59,6 +62,11 @@ public final class ProxySqlClient {
   }
 
   private static void ensureDriverLoaded(String driverClassName) {
+    if (driverClassName == null) {
+      return;
+    }
+    // JDBC 4+ drivers are typically auto-registered via ServiceLoader;
+    // this explicit load is kept as a fast-fail diagnostic for environments where that is not true.
     try {
       Class.forName(driverClassName);
     } catch (ClassNotFoundException exception) {

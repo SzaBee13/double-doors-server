@@ -105,6 +105,10 @@ public final class DoubleDoors extends JavaPlugin {
         return true;
       }
 
+      if (!pluginConfig.isEnableRecursiveOpening()) {
+        return false;
+      }
+
       var connected = DoorUtil.findConnectedDoors(origin, pluginConfig.getRecursiveOpeningMaxBlocksDistance());
       if (connected.isEmpty()) {
         return false;
@@ -741,7 +745,7 @@ public final class DoubleDoors extends JavaPlugin {
 
     int bursts = Math.max(1, pluginConfig.getPreviewDurationTicks() / 10);
     for (int i = 0; i < bursts; i++) {
-      int tickDelay = i * 10;
+      int tickDelay = Math.max(1, i * 10);
       SchedulerBridge.runLaterAtLocation(this, center, tickDelay, () -> partner.getWorld().spawnParticle(
           pluginConfig.getPreviewParticle(),
           center,

@@ -3,6 +3,7 @@ package me.szabee.doubledoors.api;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Public integration API for DoubleDoors.
@@ -19,11 +20,13 @@ public interface DoubleDoorsAPI {
   /**
    * Triggers linked behavior from an origin block.
    *
+   * <p>This method must be called from the main server thread because it mutates block state.</p>
+   *
    * @param origin the origin openable block
    * @param actor the player responsible for permission checks; null skips player-based checks
    * @return true if at least one linked block was changed
    */
-  boolean triggerLinkedOpen(Block origin, Player actor);
+  boolean triggerLinkedOpen(Block origin, @Nullable Player actor);
 
   /**
    * Registers a custom openable material for linked behavior.

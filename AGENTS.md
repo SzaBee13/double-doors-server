@@ -43,6 +43,7 @@ When releasing a new version:
 1. Update `<version>` in `pom.xml`.
 2. Update `version:` in `src/main/resources/plugin.yml`.
 3. Create `releases/v<version>/RELEASE_NOTE.md` using `releases/RELEASE_NOTE_EXAMPLE.md` as a template.
+4. If `maven.compiler.release` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 
 ## Dangerous areas
 
