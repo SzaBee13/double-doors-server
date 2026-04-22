@@ -130,6 +130,7 @@ public final class PluginConfig {
     Set<String> configuredRegions = normalizeRegionEntries(plugin.getConfig().getStringList("worldGuardRegionFilter.regions"));
     String worldGuardCustomFlag = normalizeLower(plugin.getConfig().getString("worldGuardCustomFlag", "double-doors-allow"));
     boolean worldGuardRespectBuildPermission = plugin.getConfig().getBoolean("worldGuardRespectBuildPermission", true);
+    boolean worldGuardRespectUseFlag = plugin.getConfig().getBoolean("worldGuardRespectUseFlag", true);
 
     boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
     boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
@@ -216,6 +217,7 @@ public final class PluginConfig {
         Set.copyOf(configuredRegions),
         worldGuardCustomFlag,
         worldGuardRespectBuildPermission,
+        worldGuardRespectUseFlag,
         enableAnonymousTracking,
         enableExtendedAnonymousTracking,
         List.copyOf(trackingCountries),
@@ -491,6 +493,15 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets whether WorldGuard use-flag checks should be enforced.
+   *
+   * @return true when use-flag checks should run
+   */
+  public boolean isWorldGuardRespectUseFlag() {
+    return snapshot.worldGuardRespectUseFlag();
+  }
+
+  /**
    * Gets whether anonymous tracking is enabled.
    *
    * @return true when FastStats tracking is enabled
@@ -659,6 +670,7 @@ public final class PluginConfig {
       Set<String> regionIds,
       String worldGuardCustomFlag,
       boolean worldGuardRespectBuildPermission,
+      boolean worldGuardRespectUseFlag,
       boolean enableAnonymousTracking,
       boolean enableExtendedAnonymousTracking,
       List<String> trackingCountries,
@@ -706,6 +718,7 @@ public final class PluginConfig {
           RegionMode.DISABLED,
           Set.of(),
           "double-doors-allow",
+          true,
           true,
           true,
           false,
@@ -756,6 +769,7 @@ public final class PluginConfig {
           regionIds,
           worldGuardCustomFlag,
           worldGuardRespectBuildPermission,
+          worldGuardRespectUseFlag,
           enableAnonymousTracking,
           enableExtendedAnonymousTracking,
           trackingCountries,

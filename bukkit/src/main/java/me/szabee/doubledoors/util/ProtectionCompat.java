@@ -1,5 +1,6 @@
 package me.szabee.doubledoors.util;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.HashSet;
@@ -375,6 +376,10 @@ public final class ProtectionCompat {
       }
     }
 
+    if (config.isWorldGuardRespectUseFlag() && !isWorldGuardUseAllowed(player, block)) {
+      return "worldguard_use_denied";
+    }
+
     String customFlag = config.getWorldGuardCustomFlag();
     if (!customFlag.isEmpty()) {
       String state = resolveWorldGuardCustomFlagState(block, customFlag);
@@ -386,6 +391,49 @@ public final class ProtectionCompat {
       }
     }
     return "";
+  }
+
+  private static boolean isWorldGuardUseAllowed(Player player, Block block) {
+    try {
+      Class<?> worldGuardClass = Class.forName("com.sk89q.worldguard.WorldGuard");
+      Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+      Object platform = worldGuard.getClass().getMethod("getPlatform").invoke(worldGuard);
+      Object regionContainer = platform.getClass().getMethod("getRegionContainer").invoke(platform);
+      Object regionQuery = regionContainer.getClass().getMethod("createQuery").invoke(regionContainer);
+
+      Class<?> bukkitAdapterClass = Class.forName("com.sk89q.worldedit.bukkit.BukkitAdapter");
+      Object adaptedLocation = bukkitAdapterClass.getMethod("adapt", org.bukkit.Location.class).invoke(null, block.getLocation());
+
+      Class<?> worldGuardPluginClass = Class.forName("com.sk89q.worldguard.bukkit.WorldGuardPlugin");
+      Object worldGuardPlugin = worldGuardPluginClass.getMethod("inst").invoke(null);
+      Object localPlayer = worldGuardPluginClass.getMethod("wrapPlayer", Player.class).invoke(worldGuardPlugin, player);
+
+      Class<?> flagsClass = Class.forName("com.sk89q.worldguard.protection.flags.Flags");
+      Object useFlag = flagsClass.getField("USE").get(null);
+      Class<?> stateFlagClass = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
+      Object stateFlags = Array.newInstance(stateFlagClass, 1);
+      Array.set(stateFlags, 0, useFlag);
+
+      Method testState = null;
+      for (Method method : regionQuery.getClass().getMethods()) {
+        if (!method.getName().equals("testState") || method.getParameterCount() != 3) {
+          continue;
+        }
+        if (!method.getParameterTypes()[2].isArray()) {
+          continue;
+        }
+        testState = method;
+        break;
+      }
+      if (testState == null) {
+        return true;
+      }
+
+      Object result = testState.invoke(regionQuery, adaptedLocation, localPlayer, stateFlags);
+      return !(result instanceof Boolean allowed) || allowed;
+    } catch (ReflectiveOperationException | IllegalArgumentException ex) {
+      return true;
+    }
   }
 
   private static String resolveWorldGuardCustomFlagState(Block block, String flagName) {
@@ -482,4 +530,3 @@ public final class ProtectionCompat {
         + ":" + block.getZ();
   }
 }
-
