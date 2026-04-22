@@ -34,8 +34,8 @@ import me.szabee.doubledoors.util.SchedulerBridge;
  * Handles redstone and villager-triggered door interactions.
  */
 public final class RedstoneListener implements Listener {
-  /** Ticks to wait before reading door state after a redstone change (vanilla needs 1 tick). */
-  private static final long REDSTONE_DELAY_TICKS = 1L;
+  /** Ticks to wait before reading door state after a redstone change (0 = next tick). */
+  private static final long REDSTONE_DELAY_TICKS = 0L;
   /**
    * Ticks to wait before reading door state after a villager interaction.
    *
@@ -99,7 +99,7 @@ public final class RedstoneListener implements Listener {
     }
 
     for (Block candidate : candidates) {
-      applyConnectedState(candidate, config, true, REDSTONE_DELAY_TICKS);
+      applyConnectedState(candidate, config, false, REDSTONE_DELAY_TICKS);
     }
   }
 
