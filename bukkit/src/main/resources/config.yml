@@ -16,6 +16,70 @@ enableTrapdoors: true
 # Whether villagers trigger linked-door behavior (open/close partner doors when pathfinding)
 enableVillagerLinkedDoors: true
 
+# Whether player-triggered opens should auto-close after a delay.
+enableAutoClose: false
+
+# Delay in seconds before auto-closing an opened block.
+autoCloseDelaySeconds: 5
+
+# Whether players can left-click doors to play a local knock sound.
+enableKnockFeature: true
+
+# Maximum distance in blocks where players can hear the knock sound.
+knockDistanceBlocks: 12
+
+# Play a sound at linked partner blocks when DoubleDoors updates them.
+playPartnerSound: true
+
+# Optional generic override sound for linked updates. Empty means no manual override.
+# Example: BLOCK_WOODEN_DOOR_OPEN
+partnerSound: ""
+
+# Optional per-type sound overrides.
+partnerSoundOverrides:
+  doors: ""
+  fenceGates: ""
+  trapdoors: ""
+
+# Emit subtle particles on the linked partner block.
+enablePartnerParticles: false
+partnerParticle: END_ROD
+partnerParticleCount: 6
+
+# Extra ticks to wait before mirroring partner state to improve animation sync.
+animationSyncExtraDelayTicks: 0
+
+# Preview command visual options.
+previewParticle: WAX_OFF
+previewParticleCount: 18
+previewDurationTicks: 60
+
+# Cache TTL for mirrored door lookups in milliseconds.
+lookupCacheTtlMillis: 1200
+
+# Cooldown in milliseconds before the same player can toggle the same block again.
+# Set to 0 to disable cooldown logic (duplicate-fire debounce still remains).
+interactionCooldownMillis: 250
+
+# Exact location filter for linked behavior, format world:x:y:z.
+locationFilter:
+  mode: DISABLED
+  locations: []
+
+# Optional WorldGuard region filtering for linked behavior.
+worldGuardRegionFilter:
+  mode: DISABLED
+  regions: []
+
+# Optional WorldGuard custom state-flag name.
+worldGuardCustomFlag: double-doors-allow
+
+# Also enforce WorldGuard's build check for linked door actions.
+worldGuardRespectBuildPermission: true
+
+# Also enforce WorldGuard's use flag for linked door actions.
+worldGuardRespectUseFlag: true
+
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true
 
@@ -61,3 +125,14 @@ sql:
 
   # Bukkit considers proxy heartbeats newer than this as "proxy online".
   proxyHeartbeatMaxAgeSeconds: 180
+
+# Built-in updater configuration (PluginUpdater shadeable API).
+updateChecker:
+  # Enable automatic checks for new releases.
+  enabled: true
+
+  # How often to check for updates, in seconds (300-86400).
+  checkScheduleSeconds: 3600
+
+  # Notify online players with permission when an update is available.
+  notify: true

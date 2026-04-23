@@ -13,6 +13,7 @@ import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.Openable;
 import org.bukkit.block.data.type.Door;
+import org.bukkit.block.data.type.Gate;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.EventHandler;
@@ -26,6 +27,7 @@ import org.bukkit.event.world.GenericGameEvent;
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.util.DoorUtil;
+import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
 
@@ -33,7 +35,7 @@ import me.szabee.doubledoors.util.SchedulerBridge;
  * Handles redstone and villager-triggered door interactions.
  */
 public final class RedstoneListener implements Listener {
-  /** Ticks to wait before reading door state after a redstone change (vanilla needs 1 tick). */
+  /** Ticks to wait before reading door state after a redstone change. */
   private static final long REDSTONE_DELAY_TICKS = 1L;
   /**
    * Ticks to wait before reading door state after a villager interaction.
@@ -75,9 +77,12 @@ public final class RedstoneListener implements Listener {
     }
 
     Block source = event.getBlock();
+    if (!plugin.isLocationAllowed(source)) {
+      return;
+    }
 
     Set<Block> candidates = new HashSet<>();
-    if (DoorInteractListener.isEnabledType(source.getType(), config)) {
+    if (DoorInteractListener.isEnabledType(source, config, plugin)) {
       candidates.add(source);
     }
 
@@ -89,13 +94,13 @@ public final class RedstoneListener implements Listener {
       }
 
       Block neighbor = source.getRelative(face);
-      if (DoorInteractListener.isEnabledType(neighbor.getType(), config)) {
+      if (DoorInteractListener.isEnabledType(neighbor, config, plugin)) {
         candidates.add(neighbor);
       }
     }
 
     for (Block candidate : candidates) {
-      applyConnectedState(candidate, config, true, REDSTONE_DELAY_TICKS);
+      applyConnectedState(candidate, config, false, REDSTONE_DELAY_TICKS);
     }
   }
 
@@ -119,7 +124,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -151,7 +156,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -187,7 +192,7 @@ public final class RedstoneListener implements Listener {
     if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
       return;
     }
-    if (!DoorInteractListener.isEnabledType(block.getType(), config)) {
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
@@ -211,20 +216,26 @@ public final class RedstoneListener implements Listener {
     boolean beforeState = beforeOpenable.isOpen();
 
     // Read and mirror state after the configured delay so we sync to vanilla's final result.
-    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), delayTicks, () -> {
+    long effectiveDelay = Math.max(1L, delayTicks + config.getAnimationSyncExtraDelayTicks());
+    SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), effectiveDelay, () -> {
       BlockData originData = origin.getBlockData();
       if (!(originData instanceof Openable openable)) {
         return;
       }
 
       boolean openState = openable.isOpen();
+      BlockFace targetGateFacing = originData instanceof Gate gate ? gate.getFacing() : null;
       if (requireOriginStateChange && beforeState == openState) {
         return;
       }
 
       if (originData instanceof Door) {
-        Block partner = DoorUtil.findMirroredDoubleDoorPartner(origin);
-        if (partner == null) {
+        DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+        if (!search.found()) {
+          return;
+        }
+        Block partner = search.partner();
+        if (!plugin.isLocationAllowed(partner)) {
           return;
         }
 
@@ -239,6 +250,7 @@ public final class RedstoneListener implements Listener {
 
         linked.setOpen(openState);
         partner.setBlockData(linked, false);
+        plugin.playLinkedFeedback(partner, OpenableType.DOOR);
 
         // Keep the upper half of the partner door in sync too.
         Block partnerTop = partner.getRelative(BlockFace.UP);
@@ -271,8 +283,17 @@ public final class RedstoneListener implements Listener {
           continue;
         }
 
+        if (!plugin.isLocationAllowed(block)) {
+          continue;
+        }
+
+        if (openState && targetGateFacing != null && linked instanceof Gate gate) {
+          gate.setFacing(targetGateFacing);
+        }
         linked.setOpen(openState);
         block.setBlockData(linked, false);
+        OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
+        plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
       }
     });
   }

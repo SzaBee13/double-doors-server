@@ -2,9 +2,14 @@ package me.szabee.doubledoors.util;
 
 import java.util.ArrayDeque;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
-import org.bukkit.World;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import org.bukkit.Material;
+import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
@@ -14,7 +19,24 @@ import org.bukkit.block.data.type.Door;
  * Utility methods for finding connected door-like blocks.
  */
 public final class DoorUtil {
+  private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
+  private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
+  private static volatile long mirrorCacheTtlMillis = 1_200L;
+
   private DoorUtil() {
+  }
+
+  /**
+   * Sets the mirror lookup cache TTL.
+   *
+   * @param ttlMillis cache TTL in milliseconds
+   */
+  public static void setMirrorCacheTtlMillis(long ttlMillis) {
+    if (ttlMillis < 1L) {
+      mirrorCacheTtlMillis = 1L;
+      return;
+    }
+    mirrorCacheTtlMillis = ttlMillis;
   }
 
   /**
@@ -27,9 +49,40 @@ public final class DoorUtil {
    * @return the lower-half partner door block, or null when no mirrored partner exists
    */
   public static Block findMirroredDoubleDoorPartner(Block origin) {
+    MirrorSearchResult analyzed = analyzeMirroredDoubleDoorPartner(origin);
+    return analyzed.partner();
+  }
+
+  /**
+   * Analyzes mirrored double-door partner lookup and includes a failure reason.
+   *
+   * @param origin the clicked or triggered door block (upper or lower half)
+   * @return a detailed lookup result
+   */
+  public static MirrorSearchResult analyzeMirroredDoubleDoorPartner(Block origin) {
     Block originBase = toLowerDoorBlock(origin);
     if (originBase == null) {
-      return null;
+      return MirrorSearchResult.failure("origin_is_not_door");
+    }
+
+    MirrorCacheKey cacheKey = new MirrorCacheKey(
+        originBase.getWorld().getUID(),
+        originBase.getX(),
+        originBase.getY(),
+        originBase.getZ());
+    MirrorCacheEntry cacheEntry = MIRROR_CACHE.get(cacheKey);
+    long now = System.currentTimeMillis();
+    if (cacheEntry != null && isMirrorCacheEntryFresh(now, cacheEntry)) {
+      if (!cacheEntry.found()) {
+        return MirrorSearchResult.failure(cacheEntry.reason());
+      }
+      Block cachedPartner = originBase.getWorld().getBlockAt(cacheEntry.partnerX(), cacheEntry.partnerY(), cacheEntry.partnerZ());
+      Block validated = matchingMirroredDoor(originBase, (Door) originBase.getBlockData(), cachedPartner);
+      if (validated != null) {
+        return MirrorSearchResult.success(validated);
+      }
+    } else if (cacheEntry != null) {
+      MIRROR_CACHE.remove(cacheKey, cacheEntry);
     }
 
     Door originDoor = (Door) originBase.getBlockData();
@@ -37,10 +90,51 @@ public final class DoorUtil {
 
     Block leftMatch = matchingMirroredDoor(originBase, originDoor, originBase.getRelative(leftOf(facing)));
     if (leftMatch != null) {
-      return leftMatch;
+      putMirrorCacheEntry(cacheKey, MirrorCacheEntry.found(now, leftMatch), now);
+      return MirrorSearchResult.success(leftMatch);
     }
 
-    return matchingMirroredDoor(originBase, originDoor, originBase.getRelative(rightOf(facing)));
+    Block rightCandidate = originBase.getRelative(rightOf(facing));
+    Block rightMatch = matchingMirroredDoor(originBase, originDoor, rightCandidate);
+    if (rightMatch != null) {
+      putMirrorCacheEntry(cacheKey, MirrorCacheEntry.found(now, rightMatch), now);
+      return MirrorSearchResult.success(rightMatch);
+    }
+
+    String reason = diagnoseMirrorFailure(originBase, originDoor, originBase.getRelative(leftOf(facing)), rightCandidate);
+    putMirrorCacheEntry(cacheKey, MirrorCacheEntry.miss(now, reason), now);
+    return MirrorSearchResult.failure(reason);
+  }
+
+  private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {
+    return (now - entry.timestampMillis()) <= mirrorCacheTtlMillis;
+  }
+
+  private static void putMirrorCacheEntry(MirrorCacheKey key, MirrorCacheEntry entry, long now) {
+    MIRROR_CACHE.put(key, entry);
+    trimMirrorCache(now);
+  }
+
+  private static void trimMirrorCache(long now) {
+    for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
+      if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
+        MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
+      }
+    }
+    while (MIRROR_CACHE.size() > MIRROR_CACHE_MAX_SIZE) {
+      MirrorCacheKey oldestKey = null;
+      long oldestTimestamp = Long.MAX_VALUE;
+      for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
+        if (entry.getValue().timestampMillis() < oldestTimestamp) {
+          oldestTimestamp = entry.getValue().timestampMillis();
+          oldestKey = entry.getKey();
+        }
+      }
+      if (oldestKey == null) {
+        return;
+      }
+      MIRROR_CACHE.remove(oldestKey);
+    }
   }
 
   /**
@@ -106,6 +200,31 @@ public final class DoorUtil {
     }
 
     return candidateBase;
+  }
+
+  private static String diagnoseMirrorFailure(Block originBase, Door originDoor, Block leftCandidate, Block rightCandidate) {
+    String leftReason = diagnoseCandidate(originBase, originDoor, leftCandidate, "left");
+    String rightReason = diagnoseCandidate(originBase, originDoor, rightCandidate, "right");
+    return leftReason + ";" + rightReason;
+  }
+
+  private static String diagnoseCandidate(Block originBase, Door originDoor, Block candidate, String side) {
+    Block candidateBase = toLowerDoorBlock(candidate);
+    if (candidateBase == null) {
+      return side + "_not_door";
+    }
+    if (candidateBase.getType() != originBase.getType()) {
+      return side + "_different_material";
+    }
+
+    Door candidateDoor = (Door) candidateBase.getBlockData();
+    if (candidateDoor.getFacing() != originDoor.getFacing()) {
+      return side + "_different_facing";
+    }
+    if (candidateDoor.getHinge() == originDoor.getHinge()) {
+      return side + "_same_hinge";
+    }
+    return side + "_unknown";
   }
 
   private static Block toLowerDoorBlock(Block block) {
@@ -185,5 +304,42 @@ public final class DoorUtil {
 
   private record SearchNode(Block block, int depth) {
   }
-}
 
+  /**
+   * Detailed result for mirrored-partner lookup.
+   *
+   * @param partner the matched partner block, null when not found
+   * @param reason failure reason key, empty when success
+   */
+  public record MirrorSearchResult(Block partner, String reason) {
+    /**
+     * Checks whether a partner was found.
+     *
+     * @return true when partner is non-null
+     */
+    public boolean found() {
+      return partner != null;
+    }
+
+    private static MirrorSearchResult success(Block partner) {
+      return new MirrorSearchResult(partner, "");
+    }
+
+    private static MirrorSearchResult failure(String reason) {
+      return new MirrorSearchResult(null, reason == null ? "not_found" : reason);
+    }
+  }
+
+  private record MirrorCacheKey(UUID worldId, int x, int y, int z) {
+  }
+
+  private record MirrorCacheEntry(long timestampMillis, boolean found, int partnerX, int partnerY, int partnerZ, String reason) {
+    private static MirrorCacheEntry found(long now, Block partner) {
+      return new MirrorCacheEntry(now, true, partner.getX(), partner.getY(), partner.getZ(), "");
+    }
+
+    private static MirrorCacheEntry miss(long now, String reason) {
+      return new MirrorCacheEntry(now, false, 0, 0, 0, reason == null ? "not_found" : reason);
+    }
+  }
+}

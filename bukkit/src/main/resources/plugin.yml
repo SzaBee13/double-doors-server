@@ -1,20 +1,26 @@
 name: DoubleDoors
-version: 1.3.2
+version: 1.3.3
 main: me.szabee.doubledoors.DoubleDoors
 api-version: '26.1'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
-softdepend: [LuckPerms, GriefPrevention, Geyser-Spigot, floodgate]
+softdepend: [LuckPerms, GriefPrevention, WorldGuard, Geyser-Spigot, floodgate]
 folia-supported: true
 commands:
   doubledoors:
     description: Main DoubleDoors command
     aliases: [dd]
-    usage: /doubledoors <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers>
+    usage: /doubledoors <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers|debug|preview>
 permissions:
   doubledoors.use:
     description: Allows using DoubleDoors linked opening behavior
     default: true
+  doubledoors.knock:
+    description: Allows playing knock sounds by left-clicking doors
+    default: true
+  doubledoors.iron.manual:
+    description: Allows manually toggling iron doors by right-click
+    default: op
   doubledoors.reload:
     description: Allows reloading the config
     default: op
@@ -27,5 +33,14 @@ permissions:
   doubledoors.grief:
     description: Allows toggling per-claim villager linked-door access
     default: true
+  doubledoors.debug:
+    description: Allows toggling debug mode for linked-door diagnostics
+    default: op
+  doubledoors.preview:
+    description: Allows showing partner-door preview particles
+    default: true
+  doubledoors.update.notify:
+    description: Receives update notifications from the built-in updater
+    default: op
 modrinth-project-id: "Fdj5mcgC"
 github-repo: "SzaBee13/double-doors-server"
