@@ -21,6 +21,8 @@ public interface DoubleDoorsAPI {
    * Triggers linked behavior from an origin block.
    *
    * <p>This method must be called from the main server thread because it mutates block state.</p>
+   * <p>Global config, block-type config, and location filters are always enforced.
+   * Passing {@code null} for {@code actor} skips actor-specific permission and preference checks only.</p>
    *
    * @param origin the origin openable block
    * @param actor the player responsible for permission checks; null skips player-based checks

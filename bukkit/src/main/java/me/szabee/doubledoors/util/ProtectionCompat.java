@@ -344,16 +344,14 @@ public final class ProtectionCompat {
     }
 
     Set<String> regionIds = getWorldGuardRegionIds(block);
-    if (!regionIds.isEmpty()) {
-      PluginConfig.RegionMode regionMode = config.getWorldGuardRegionMode();
-      Set<String> configuredRegionIds = config.getWorldGuardRegionIds();
-      boolean anyConfigured = regionIds.stream().anyMatch(configuredRegionIds::contains);
-      if (regionMode == PluginConfig.RegionMode.BLACKLIST && anyConfigured) {
-        return "worldguard_region_blacklist";
-      }
-      if (regionMode == PluginConfig.RegionMode.WHITELIST && !anyConfigured) {
-        return "worldguard_region_not_whitelisted";
-      }
+    PluginConfig.RegionMode regionMode = config.getWorldGuardRegionMode();
+    Set<String> configuredRegionIds = config.getWorldGuardRegionIds();
+    boolean anyConfigured = regionIds.stream().anyMatch(configuredRegionIds::contains);
+    if (regionMode == PluginConfig.RegionMode.BLACKLIST && anyConfigured) {
+      return "worldguard_region_blacklist";
+    }
+    if (regionMode == PluginConfig.RegionMode.WHITELIST && !anyConfigured) {
+      return "worldguard_region_not_whitelisted";
     }
     return "";
   }

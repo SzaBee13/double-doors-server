@@ -21,6 +21,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lushplugins.pluginupdater.api.updater.Updater;
 
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.core.data.Metric;
@@ -37,7 +38,6 @@ import me.szabee.doubledoors.util.DoorUtil;
 import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
-import org.lushplugins.pluginupdater.api.updater.Updater;
 
 /**
  * Main plugin class for DoubleDoors.
@@ -60,12 +60,15 @@ public final class DoubleDoors extends JavaPlugin {
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
     @Override
     public boolean isDoubleBehaviorEnabled(Player player) {
-      return player != null && isEnabledForPlayer(player);
+      return player != null
+          && pluginConfig.isServerWideEnabled()
+          && isEnabledForPlayer(player)
+          && player.hasPermission("doubledoors.use");
     }
 
     @Override
     public boolean triggerLinkedOpen(Block origin, Player actor) {
-      if (origin == null) {
+      if (!isApiTriggerAllowed(origin, actor)) {
         return false;
       }
 
@@ -81,6 +84,9 @@ public final class DoubleDoors extends JavaPlugin {
           return false;
         }
         Block partner = search.partner();
+        if (!isLocationAllowed(partner)) {
+          return false;
+        }
         if (actor != null) {
           String denyReason = ProtectionCompat.explainLinkedDoorDeniedReason(DoubleDoors.this, actor, partner);
           if (!denyReason.isEmpty()) {
@@ -116,6 +122,9 @@ public final class DoubleDoors extends JavaPlugin {
 
       boolean changedAny = false;
       for (Block block : connected) {
+        if (!isLocationAllowed(block)) {
+          continue;
+        }
         if (actor != null) {
           String denyReason = ProtectionCompat.explainLinkedDoorDeniedReason(DoubleDoors.this, actor, block);
           if (!denyReason.isEmpty()) {
@@ -205,6 +214,44 @@ public final class DoubleDoors extends JavaPlugin {
    */
   public DoubleDoorsAPI getApi() {
     return api;
+  }
+
+  private boolean isApiTriggerAllowed(Block origin, Player actor) {
+    if (origin == null || !pluginConfig.isServerWideEnabled()) {
+      return false;
+    }
+    if (!isLocationAllowed(origin)) {
+      return false;
+    }
+
+    OpenableType type = OpenableType.fromBlockData(origin.getBlockData(), origin.getType());
+    if (type == null) {
+      return false;
+    }
+    boolean typeEnabled = switch (type) {
+      case DOOR -> pluginConfig.isEnableDoors();
+      case FENCE_GATE -> pluginConfig.isEnableFenceGates();
+      case TRAPDOOR -> pluginConfig.isEnableTrapdoors();
+      case CUSTOM -> isCustomOpenable(origin.getType());
+    };
+    if (!typeEnabled) {
+      return false;
+    }
+
+    if (actor == null) {
+      return true;
+    }
+
+    if (!actor.hasPermission("doubledoors.use") || !isEnabledForPlayer(actor)) {
+      return false;
+    }
+
+    return switch (type) {
+      case DOOR -> playerPreferences.isDoorsEnabled(actor.getUniqueId());
+      case FENCE_GATE -> playerPreferences.isFenceGatesEnabled(actor.getUniqueId());
+      case TRAPDOOR -> playerPreferences.isTrapdoorsEnabled(actor.getUniqueId());
+      case CUSTOM -> playerPreferences.isEnabled(actor.getUniqueId());
+    };
   }
 
   /**
@@ -375,6 +422,7 @@ public final class DoubleDoors extends JavaPlugin {
         }
       }
     } finally {
+      disableUpdater();
       if (playerPreferences != null) {
         playerPreferences.save();
       }
@@ -477,7 +525,7 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void initializeUpdater() {
-    updater = null;
+    disableUpdater();
     if (!pluginConfig.isUpdateCheckerEnabled()) {
       return;
     }
@@ -492,6 +540,15 @@ public final class DoubleDoors extends JavaPlugin {
     } catch (RuntimeException | LinkageError e) {
       getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
     }
+  }
+
+  private void disableUpdater() {
+    if (updater == null) {
+      return;
+    }
+
+    updater.getPluginData().setEnabled(false);
+    updater = null;
   }
 
   private String normalizeFastStatsToken(String rawToken) {
@@ -543,6 +600,7 @@ public final class DoubleDoors extends JavaPlugin {
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
       restartFastStats();
+      initializeUpdater();
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);
