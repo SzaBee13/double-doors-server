@@ -1,5 +1,6 @@
 package me.szabee.doubledoors;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -21,6 +22,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
 import dev.faststats.bukkit.BukkitMetrics;
@@ -530,16 +532,40 @@ public final class DoubleDoors extends JavaPlugin {
       return;
     }
 
+    if (isPluginUpdaterPluginPresent()) {
+      getLogger().info("PluginUpdater plugin detected; built-in update checks are disabled.");
+      return;
+    }
+
     try {
-      updater = Updater.builder(this)
+      Updater.Builder builder = Updater.builder(this);
+      injectMutablePluginData(builder);
+      updater = builder
           .modrinth(MODRINTH_PROJECT_ID)
           .checkSchedule(pluginConfig.getUpdateCheckerScheduleSeconds())
           .notify(pluginConfig.isUpdateCheckerNotify())
           .notificationPermission(UPDATE_NOTIFY_PERMISSION)
           .build();
-    } catch (RuntimeException | LinkageError e) {
+    } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
       getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
     }
+  }
+
+  private boolean isPluginUpdaterPluginPresent() {
+    return hasAnyPluginEnabled(getServer().getPluginManager(),
+        "PluginUpdater",
+        "PluginUpdaterPlugin",
+        "pluginupdater");
+  }
+
+  private void injectMutablePluginData(Updater.Builder builder) throws ReflectiveOperationException {
+    PluginData pluginData = PluginData.builder(this)
+        .platformData(new ArrayList<>())
+        .build();
+
+    Field pluginDataField = Updater.Builder.class.getDeclaredField("pluginData");
+    pluginDataField.setAccessible(true);
+    pluginDataField.set(builder, pluginData);
   }
 
   private void disableUpdater() {
