@@ -13,6 +13,7 @@ Release date: 2026-04-26
 ## Fixed
 
 - Resolved an issue where the PluginUpdater integration could fail during startup with `UnsupportedOperationException` while registering the Modrinth platform.
+- Fixed fence gate linked-opening alignment to respect the gate's placed axis (north/south vs east/west) instead of player look direction, preventing occasional wrong-direction gate rotation.
 
 ## Breaking Changes
 
@@ -33,4 +34,4 @@ Release date: 2026-04-26
 
 ## Notes
 
-- This release only changes updater compatibility and does not affect core door-linking behavior.
+- This release includes updater compatibility improvements and a fence gate linked-opening orientation fix.

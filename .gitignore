@@ -2,7 +2,6 @@
 target/
 dist/
 build/
-
 # IDEs
 .idea/
 .vscode/*
@@ -29,3 +28,6 @@ coverage/
 .env
 .env.local
 .env.*.local
+
+# Other
+.m2/
