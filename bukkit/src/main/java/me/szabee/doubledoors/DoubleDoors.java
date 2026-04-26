@@ -3,6 +3,7 @@ package me.szabee.doubledoors;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -49,6 +50,8 @@ public final class DoubleDoors extends JavaPlugin {
   private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
   private static final String MODRINTH_PROJECT_ID = "Fdj5mcgC";
   private static final String UPDATE_NOTIFY_PERMISSION = "doubledoors.update.notify";
+  private static final String UPDATE_DELEGATED_LOG =
+      "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -529,11 +532,14 @@ public final class DoubleDoors extends JavaPlugin {
   private void initializeUpdater() {
     disableUpdater();
     if (!pluginConfig.isUpdateCheckerEnabled()) {
+      getLogger().info("Built-in updater checks are disabled by config (updateChecker.enabled=false).");
       return;
     }
 
     if (isPluginUpdaterPluginPresent()) {
-      getLogger().info("PluginUpdater plugin detected; built-in update checks are disabled.");
+      // Delegate update checks to the standalone plugin to avoid duplicate checks/notices.
+      getLogger().info(UPDATE_DELEGATED_LOG);
+      getLogger().info("Ensure the external PluginUpdater plugin is configured to include DoubleDoors update checks.");
       return;
     }
 
@@ -546,6 +552,7 @@ public final class DoubleDoors extends JavaPlugin {
           .notify(pluginConfig.isUpdateCheckerNotify())
           .notificationPermission(UPDATE_NOTIFY_PERMISSION)
           .build();
+      getLogger().info("Built-in updater checks are enabled for DoubleDoors.");
     } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
       getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
     }
@@ -559,12 +566,17 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void injectMutablePluginData(Updater.Builder builder) throws ReflectiveOperationException {
+    Objects.requireNonNull(builder, "builder");
     PluginData pluginData = PluginData.builder(this)
         .platformData(new ArrayList<>())
         .build();
 
     Field pluginDataField = Updater.Builder.class.getDeclaredField("pluginData");
     pluginDataField.setAccessible(true);
+    if (!PluginData.class.isAssignableFrom(pluginDataField.getType())) {
+      throw new ReflectiveOperationException(
+          "Unexpected Updater.Builder#pluginData type: " + pluginDataField.getType().getName());
+    }
     pluginDataField.set(builder, pluginData);
   }
 
@@ -573,7 +585,10 @@ public final class DoubleDoors extends JavaPlugin {
       return;
     }
 
-    updater.getPluginData().setEnabled(false);
+    PluginData pluginData = updater.getPluginData();
+    if (pluginData != null) {
+      pluginData.setEnabled(false);
+    }
     updater = null;
   }
 

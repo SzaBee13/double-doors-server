@@ -138,6 +138,22 @@ sql.heartbeatSeconds=30
 - `serverWideEnabled` (default: `true`)
 - `language` (default: `en_US`)
 
+### Update Checker
+
+- Built-in update checks are controlled by `updateChecker.enabled` in `config.yml`.
+- If a standalone `PluginUpdater` plugin is installed, DoubleDoors automatically disables its own built-in checks to avoid duplicate notifications.
+- Startup logs explicitly state whether update checks are:
+  - enabled via DoubleDoors built-in updater,
+  - disabled by config,
+  - or delegated to standalone `PluginUpdater`.
+- When delegating to standalone `PluginUpdater`, configure that plugin to include DoubleDoors update notifications.
+
+Troubleshooting:
+
+- If you do not receive update notifications, first check startup logs to see which updater path is active.
+- If built-in checks are active, verify `updateChecker.enabled` and related notify/schedule settings.
+- If checks are delegated, verify standalone `PluginUpdater` configuration and permissions for who should receive update notices.
+
 Language files:
 
 - Built-in fallback file: `src/main/resources/lang/en_US.json`
