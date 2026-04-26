@@ -170,7 +170,7 @@ public final class DoorInteractListener implements Listener {
       }
 
       boolean openState = openable.isOpen();
-      BlockFace targetGateFacing = resolveTargetGateFacing(originData, player);
+      BlockFace targetGateFacing = resolveTargetGateFacing(originData);
 
       if (originData instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
@@ -454,15 +454,11 @@ public final class DoorInteractListener implements Listener {
     return block.getRelative(BlockFace.DOWN);
   }
 
-  private BlockFace resolveTargetGateFacing(BlockData originData, Player player) {
+  private BlockFace resolveTargetGateFacing(BlockData originData) {
     if (!(originData instanceof Gate gate)) {
       return null;
     }
-    BlockFace playerFacing = player.getFacing();
-    return switch (playerFacing) {
-      case NORTH, SOUTH, EAST, WEST -> playerFacing;
-      default -> gate.getFacing();
-    };
+    return gate.getFacing();
   }
 
   private record InteractionStamp(UUID worldId, int x, int y, int z, long timestampNanos) {

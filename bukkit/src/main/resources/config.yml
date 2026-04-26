@@ -127,6 +127,7 @@ sql:
   proxyHeartbeatMaxAgeSeconds: 180
 
 # Built-in updater configuration (PluginUpdater shadeable API).
+# If a separate PluginUpdater plugin is installed, this plugin's own update checker is disabled automatically.
 updateChecker:
   # Enable automatic checks for new releases.
   enabled: true

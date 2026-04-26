@@ -1,12 +1,15 @@
 package me.szabee.doubledoors;
 
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -21,6 +24,8 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
+import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
 import dev.faststats.bukkit.BukkitMetrics;
@@ -47,6 +52,8 @@ public final class DoubleDoors extends JavaPlugin {
   private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
   private static final String MODRINTH_PROJECT_ID = "Fdj5mcgC";
   private static final String UPDATE_NOTIFY_PERMISSION = "doubledoors.update.notify";
+  private static final String UPDATE_DELEGATED_LOG =
+      "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -55,6 +62,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
   private volatile Updater updater;
+  private volatile BukkitTask updaterCheckTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
@@ -527,27 +535,91 @@ public final class DoubleDoors extends JavaPlugin {
   private void initializeUpdater() {
     disableUpdater();
     if (!pluginConfig.isUpdateCheckerEnabled()) {
+      getLogger().info("Built-in updater checks are disabled by config (updateChecker.enabled=false).");
+      return;
+    }
+
+    if (isPluginUpdaterPluginPresent()) {
+      // Delegate update checks to the standalone plugin to avoid duplicate checks/notices.
+      getLogger().info(UPDATE_DELEGATED_LOG);
+      getLogger().info("Ensure the external PluginUpdater plugin is configured to include DoubleDoors update checks.");
       return;
     }
 
     try {
-      updater = Updater.builder(this)
+      Updater.Builder builder = Updater.builder(this);
+      injectMutablePluginData(builder);
+      updater = builder
           .modrinth(MODRINTH_PROJECT_ID)
-          .checkSchedule(pluginConfig.getUpdateCheckerScheduleSeconds())
           .notify(pluginConfig.isUpdateCheckerNotify())
           .notificationPermission(UPDATE_NOTIFY_PERMISSION)
           .build();
-    } catch (RuntimeException | LinkageError e) {
+      scheduleUpdaterChecks();
+      getLogger().info("Built-in updater checks are enabled for DoubleDoors.");
+    } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
       getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
     }
   }
 
-  private void disableUpdater() {
+  private boolean isPluginUpdaterPluginPresent() {
+    return hasAnyPluginEnabled(getServer().getPluginManager(),
+        "PluginUpdater",
+        "PluginUpdaterPlugin");
+  }
+
+  private void injectMutablePluginData(Updater.Builder builder) throws ReflectiveOperationException {
+    Objects.requireNonNull(builder, "builder");
+    PluginData pluginData = PluginData.builder(this)
+        .platformData(new ArrayList<>())
+        .build();
+
+    // Upstream API request tracker (open when authenticated): https://github.com/OakLoaf/PluginUpdater/issues/new?title=Expose%20Builder%20API%20for%20platformData%20injection
+    Field pluginDataField = Updater.Builder.class.getDeclaredField("pluginData");
+    pluginDataField.setAccessible(true);
+    if (!pluginDataField.getType().isAssignableFrom(pluginData.getClass())) {
+      throw new ReflectiveOperationException(
+          "Unexpected Updater.Builder#pluginData type: " + pluginDataField.getType().getName());
+    }
+    pluginDataField.set(builder, pluginData);
+  }
+
+  private void scheduleUpdaterChecks() {
     if (updater == null) {
       return;
     }
+    long checkFrequencySeconds = pluginConfig.getUpdateCheckerScheduleSeconds();
+    if (checkFrequencySeconds <= 0L) {
+      return;
+    }
+    long periodTicks = checkFrequencySeconds * 20L;
+    updaterCheckTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
+        this,
+        () -> {
+          Updater localUpdater = updater;
+          if (localUpdater != null) {
+            localUpdater.checkForUpdate();
+          }
+        },
+        0L,
+        periodTicks);
+  }
 
-    updater.getPluginData().setEnabled(false);
+  private void disableUpdater() {
+    BukkitTask localTask = updaterCheckTask;
+    updaterCheckTask = null;
+    if (localTask != null) {
+      localTask.cancel();
+    }
+
+    Updater localUpdater = updater;
+    if (localUpdater == null) {
+      return;
+    }
+
+    PluginData pluginData = localUpdater.getPluginData();
+    if (pluginData != null) {
+      pluginData.setEnabled(false);
+    }
     updater = null;
   }
 
