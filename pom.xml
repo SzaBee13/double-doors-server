@@ -17,7 +17,18 @@
   <properties>
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <pluginupdater.api.version>2.0.0</pluginupdater.api.version>
   </properties>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.lushplugins.pluginupdater</groupId>
+        <artifactId>PluginUpdater-API</artifactId>
+        <version>${pluginupdater.api.version}</version>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
 
   <distributionManagement>
     <repository>

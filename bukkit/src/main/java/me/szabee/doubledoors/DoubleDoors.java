@@ -9,6 +9,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
 
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -23,6 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.scheduler.BukkitTask;
 import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
@@ -60,6 +62,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
   private volatile Updater updater;
+  private volatile BukkitTask updaterCheckTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
@@ -548,10 +551,10 @@ public final class DoubleDoors extends JavaPlugin {
       injectMutablePluginData(builder);
       updater = builder
           .modrinth(MODRINTH_PROJECT_ID)
-          .checkSchedule(pluginConfig.getUpdateCheckerScheduleSeconds())
           .notify(pluginConfig.isUpdateCheckerNotify())
           .notificationPermission(UPDATE_NOTIFY_PERMISSION)
           .build();
+      scheduleUpdaterChecks();
       getLogger().info("Built-in updater checks are enabled for DoubleDoors.");
     } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
       getLogger().log(Level.WARNING, "Plugin updater could not be initialized; continuing without update checks.", e);
@@ -561,8 +564,7 @@ public final class DoubleDoors extends JavaPlugin {
   private boolean isPluginUpdaterPluginPresent() {
     return hasAnyPluginEnabled(getServer().getPluginManager(),
         "PluginUpdater",
-        "PluginUpdaterPlugin",
-        "pluginupdater");
+        "PluginUpdaterPlugin");
   }
 
   private void injectMutablePluginData(Updater.Builder builder) throws ReflectiveOperationException {
@@ -571,21 +573,50 @@ public final class DoubleDoors extends JavaPlugin {
         .platformData(new ArrayList<>())
         .build();
 
+    // Upstream API request tracker (open when authenticated): https://github.com/OakLoaf/PluginUpdater/issues/new?title=Expose%20Builder%20API%20for%20platformData%20injection
     Field pluginDataField = Updater.Builder.class.getDeclaredField("pluginData");
     pluginDataField.setAccessible(true);
-    if (!PluginData.class.isAssignableFrom(pluginDataField.getType())) {
+    if (!pluginDataField.getType().isAssignableFrom(pluginData.getClass())) {
       throw new ReflectiveOperationException(
           "Unexpected Updater.Builder#pluginData type: " + pluginDataField.getType().getName());
     }
     pluginDataField.set(builder, pluginData);
   }
 
-  private void disableUpdater() {
+  private void scheduleUpdaterChecks() {
     if (updater == null) {
       return;
     }
+    long checkFrequencySeconds = pluginConfig.getUpdateCheckerScheduleSeconds();
+    if (checkFrequencySeconds <= 0L) {
+      return;
+    }
+    long periodTicks = checkFrequencySeconds * 20L;
+    updaterCheckTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
+        this,
+        () -> {
+          Updater localUpdater = updater;
+          if (localUpdater != null) {
+            localUpdater.checkForUpdate();
+          }
+        },
+        0L,
+        periodTicks);
+  }
 
-    PluginData pluginData = updater.getPluginData();
+  private void disableUpdater() {
+    BukkitTask localTask = updaterCheckTask;
+    updaterCheckTask = null;
+    if (localTask != null) {
+      localTask.cancel();
+    }
+
+    Updater localUpdater = updater;
+    if (localUpdater == null) {
+      return;
+    }
+
+    PluginData pluginData = localUpdater.getPluginData();
     if (pluginData != null) {
       pluginData.setEnabled(false);
     }
