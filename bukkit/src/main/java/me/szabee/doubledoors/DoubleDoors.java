@@ -24,7 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
+import me.szabee.doubledoors.util.TaskToken;
 import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
@@ -63,7 +63,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
   private volatile Updater updater;
-  private volatile BukkitTask updaterCheckTask;
+  private volatile TaskToken updaterCheckTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
@@ -594,20 +594,21 @@ public final class DoubleDoors extends JavaPlugin {
       return;
     }
     long periodTicks = checkFrequencySeconds * 20L;
-    updaterCheckTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
+    updaterCheckTask = me.szabee.doubledoors.util.SchedulerBridge.runTimerAsync(
         this,
+        0L,
+        periodTicks,
         () -> {
           Updater localUpdater = updater;
           if (localUpdater != null) {
             localUpdater.checkForUpdate();
           }
-        },
-        0L,
-        periodTicks);
+        }
+    );
   }
 
   private void disableUpdater() {
-    BukkitTask localTask = updaterCheckTask;
+    TaskToken localTask = updaterCheckTask;
     updaterCheckTask = null;
     if (localTask != null) {
       localTask.cancel();
