@@ -64,7 +64,7 @@ public final class DoorCacheInvalidationListener implements Listener {
     if (block == null) {
       return;
     }
-    if (OpenableType.fromBlockData(block.getBlockData(), block.getType()) != OpenableType.DOOR) {
+    if (OpenableType.fromMaterial(block.getType()) != OpenableType.DOOR) {
       return;
     }
     DoorUtil.invalidateMirrorCacheNear(block);

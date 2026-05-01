@@ -109,22 +109,37 @@ public final class DoorUtil {
   }
 
   /**
-   * Invalidates the mirror cache for the given door block.
+   * Invalidates the mirror cache for the given door block coordinates.
    *
    * @param block the door block to invalidate
    */
   public static void invalidateMirrorCacheAt(Block block) {
-    Block base = toLowerDoorBlock(block);
-    if (base == null) {
+    if (block == null) {
       return;
     }
-    UUID worldId = base.getWorld().getUID();
-    MirrorCacheKey key = new MirrorCacheKey(worldId, base.getX(), base.getY(), base.getZ());
+    UUID worldId = block.getWorld().getUID();
+    int x = block.getX();
+    int y = block.getY();
+    int z = block.getZ();
+    invalidateMirrorCacheAt(worldId, x, y, z);
+    invalidateMirrorCacheAt(worldId, x, y - 1, z);
+  }
+
+  /**
+   * Invalidates the mirror cache for the given coordinate.
+   *
+   * @param worldId world UUID
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @param z Z coordinate
+   */
+  public static void invalidateMirrorCacheAt(UUID worldId, int x, int y, int z) {
+    MirrorCacheKey key = new MirrorCacheKey(worldId, x, y, z);
     MIRROR_CACHE.remove(key);
   }
 
   /**
-   * Invalidates mirror cache entries near the given door block.
+   * Invalidates mirror cache entries near the given door block coordinates.
    *
    * <p>Clears the cache for the door itself plus adjacent bases that could pair
    * with it in a standard double-door configuration.</p>
@@ -132,18 +147,17 @@ public final class DoorUtil {
    * @param block the door block to invalidate around
    */
   public static void invalidateMirrorCacheNear(Block block) {
-    Block base = toLowerDoorBlock(block);
-    if (base == null) {
+    if (block == null) {
       return;
     }
-    UUID worldId = base.getWorld().getUID();
-    int baseX = base.getX();
-    int baseY = base.getY();
-    int baseZ = base.getZ();
+    UUID worldId = block.getWorld().getUID();
+    int baseX = block.getX();
+    int baseY = block.getY();
+    int baseZ = block.getZ();
     for (int dx = -1; dx <= 1; dx++) {
       for (int dz = -1; dz <= 1; dz++) {
-        MirrorCacheKey key = new MirrorCacheKey(worldId, baseX + dx, baseY, baseZ + dz);
-        MIRROR_CACHE.remove(key);
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY, baseZ + dz);
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY - 1, baseZ + dz);
       }
     }
   }
