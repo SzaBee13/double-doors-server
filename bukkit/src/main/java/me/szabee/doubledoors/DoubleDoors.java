@@ -746,6 +746,38 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
+    if (args[0].equalsIgnoreCase("knock-volume")) {
+      if (!(sender instanceof Player player)) {
+        sender.sendMessage(t("cmd.only_players.knock_volume", label));
+        return true;
+      }
+      if (!sender.hasPermission("doubledoors.knock.volume")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
+      if (args.length < 2) {
+        sender.sendMessage(t("cmd.usage.knock_volume", label));
+        return true;
+      }
+
+      double volume;
+      try {
+        volume = Double.parseDouble(args[1]);
+      } catch (NumberFormatException ex) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      if (volume < 0.0 || volume > 1.0) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      double normalized = playerPreferences.setKnockVolume(player.getUniqueId(), volume);
+      sender.sendMessage(t("cmd.knock_volume.set", normalized));
+      return true;
+    }
+
     if (args[0].equalsIgnoreCase("server-toggle")) {
       if (!sender.hasPermission("doubledoors.server-toggle")) {
         sender.sendMessage(t("cmd.no_permission"));
@@ -841,7 +873,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 1) {
-      for (String sub : List.of("reload", "toggle", "server-toggle", "grief", "debug", "preview")) {
+      for (String sub : List.of("reload", "toggle", "knock-volume", "server-toggle", "grief", "debug", "preview")) {
         if (sub.startsWith(args[0].toLowerCase())) {
           completions.add(sub);
         }

@@ -133,6 +133,11 @@ public final class DoorInteractListener implements Listener {
       return;
     }
 
+    float volume = (float) plugin.getPlayerPreferences().getKnockVolume(player.getUniqueId());
+    if (volume <= 0.0f) {
+      return;
+    }
+
     double maxDistance = config.getKnockDistanceBlocks();
     double maxDistanceSquared = maxDistance * maxDistance;
     var soundLocation = clicked.getLocation().add(0.5, 0.5, 0.5);
@@ -140,7 +145,7 @@ public final class DoorInteractListener implements Listener {
       if (nearby.getLocation().distanceSquared(soundLocation) > maxDistanceSquared) {
         continue;
       }
-      nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, 1.0f, 1.0f);
+      nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, volume, 1.0f);
     }
   }
 
