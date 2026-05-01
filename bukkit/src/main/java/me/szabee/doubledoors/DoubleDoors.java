@@ -35,6 +35,7 @@ import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.i18n.TranslationManager;
+import me.szabee.doubledoors.listeners.DoorCacheInvalidationListener;
 import me.szabee.doubledoors.listeners.DoorInteractListener;
 import me.szabee.doubledoors.listeners.RedstoneListener;
 import me.szabee.doubledoors.migration.YamlToSqlMigrator;
@@ -385,6 +386,7 @@ public final class DoubleDoors extends JavaPlugin {
     initializeSqlIfEnabledAsync();
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
+    getServer().getPluginManager().registerEvents(new DoorCacheInvalidationListener(), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
 
     var doubledoorsCommand = getCommand("doubledoors");

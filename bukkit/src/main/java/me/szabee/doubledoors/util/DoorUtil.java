@@ -21,7 +21,9 @@ import org.bukkit.block.data.type.Door;
 public final class DoorUtil {
   private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
   private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
+  private static final long MIRROR_CACHE_TRIM_INTERVAL_MILLIS = 5_000L;
   private static volatile long mirrorCacheTtlMillis = 1_200L;
+  private static volatile long lastMirrorCacheTrimMillis;
 
   private DoorUtil() {
   }
@@ -106,6 +108,60 @@ public final class DoorUtil {
     return MirrorSearchResult.failure(reason);
   }
 
+  /**
+   * Invalidates the mirror cache for the given door block coordinates.
+   *
+   * @param block the door block to invalidate
+   */
+  public static void invalidateMirrorCacheAt(Block block) {
+    if (block == null) {
+      return;
+    }
+    UUID worldId = block.getWorld().getUID();
+    int x = block.getX();
+    int y = block.getY();
+    int z = block.getZ();
+    invalidateMirrorCacheAt(worldId, x, y, z);
+    invalidateMirrorCacheAt(worldId, x, y - 1, z);
+  }
+
+  /**
+   * Invalidates the mirror cache for the given coordinate.
+   *
+   * @param worldId world UUID
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @param z Z coordinate
+   */
+  public static void invalidateMirrorCacheAt(UUID worldId, int x, int y, int z) {
+    MirrorCacheKey key = new MirrorCacheKey(worldId, x, y, z);
+    MIRROR_CACHE.remove(key);
+  }
+
+  /**
+   * Invalidates mirror cache entries near the given door block coordinates.
+   *
+   * <p>Clears the cache for the door itself plus adjacent bases that could pair
+   * with it in a standard double-door configuration.</p>
+   *
+   * @param block the door block to invalidate around
+   */
+  public static void invalidateMirrorCacheNear(Block block) {
+    if (block == null) {
+      return;
+    }
+    UUID worldId = block.getWorld().getUID();
+    int baseX = block.getX();
+    int baseY = block.getY();
+    int baseZ = block.getZ();
+    for (int dx = -1; dx <= 1; dx++) {
+      for (int dz = -1; dz <= 1; dz++) {
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY, baseZ + dz);
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY - 1, baseZ + dz);
+      }
+    }
+  }
+
   private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {
     return (now - entry.timestampMillis()) <= mirrorCacheTtlMillis;
   }
@@ -116,6 +172,11 @@ public final class DoorUtil {
   }
 
   private static void trimMirrorCache(long now) {
+    if (MIRROR_CACHE.size() <= MIRROR_CACHE_MAX_SIZE
+        && (now - lastMirrorCacheTrimMillis) < MIRROR_CACHE_TRIM_INTERVAL_MILLIS) {
+      return;
+    }
+    lastMirrorCacheTrimMillis = now;
     for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
       if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
         MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
