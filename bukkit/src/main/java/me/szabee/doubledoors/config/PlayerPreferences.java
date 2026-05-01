@@ -81,7 +81,7 @@ public final class PlayerPreferences {
         boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
         boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
         boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
-        double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
+    double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
         cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume));
       } catch (IllegalArgumentException ignored) {
         // Non-UUID top-level key — skip silently.
