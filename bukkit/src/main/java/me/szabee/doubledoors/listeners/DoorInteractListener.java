@@ -105,7 +105,7 @@ public final class DoorInteractListener implements Listener {
 
     scheduleManualIronDoorToggleIfPermitted(player, clicked);
     applyConnectedState(player, clicked, config);
-    scheduleAutoCloseAfterOpen(clicked, config);
+    scheduleAutoCloseAfterOpen(player, clicked, config);
   }
 
   private void playDoorKnock(Player player, Block clicked, PluginConfig config) {
@@ -113,6 +113,9 @@ public final class DoorInteractListener implements Listener {
       return;
     }
     if (!player.hasPermission("doubledoors.knock")) {
+      return;
+    }
+    if (!plugin.getPlayerPreferences().isKnockSoundEnabled(player.getUniqueId())) {
       return;
     }
     if (!config.isEnableDoors()) {
@@ -130,6 +133,11 @@ public final class DoorInteractListener implements Listener {
       return;
     }
 
+    float volume = (float) plugin.getPlayerPreferences().getKnockVolume(player.getUniqueId());
+    if (volume <= 0.0f) {
+      return;
+    }
+
     double maxDistance = config.getKnockDistanceBlocks();
     double maxDistanceSquared = maxDistance * maxDistance;
     var soundLocation = clicked.getLocation().add(0.5, 0.5, 0.5);
@@ -137,7 +145,7 @@ public final class DoorInteractListener implements Listener {
       if (nearby.getLocation().distanceSquared(soundLocation) > maxDistanceSquared) {
         continue;
       }
-      nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, 1.0f, 1.0f);
+      nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, volume, 1.0f);
     }
   }
 
@@ -278,8 +286,14 @@ public final class DoorInteractListener implements Listener {
     });
   }
 
-  private void scheduleAutoCloseAfterOpen(Block origin, PluginConfig config) {
+  private void scheduleAutoCloseAfterOpen(Player player, Block origin, PluginConfig config) {
     if (!config.isEnableAutoClose()) {
+      return;
+    }
+    if (!player.hasPermission("doubledoors.autoclose")) {
+      return;
+    }
+    if (!plugin.getPlayerPreferences().isAutoCloseEnabled(player.getUniqueId())) {
       return;
     }
 

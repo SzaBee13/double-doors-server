@@ -19,6 +19,9 @@ import me.szabee.doubledoors.util.SchedulerBridge;
  * or for specific block types (doors, fence gates, trapdoors).</p>
  */
 public final class PlayerPreferences {
+  private static final double MIN_KNOCK_VOLUME = 0.0;
+  private static final double MAX_KNOCK_VOLUME = 1.0;
+  private static final double DEFAULT_KNOCK_VOLUME = 1.0;
 
   private final DoubleDoors plugin;
   private final File dataFile;
@@ -51,7 +54,10 @@ public final class PlayerPreferences {
             pref.enabled(),
             pref.enableDoors(),
             pref.enableFenceGates(),
-            pref.enableTrapdoors()));
+            pref.enableTrapdoors(),
+            pref.enableAutoClose(),
+            pref.enableKnockSound(),
+            normalizeKnockVolume(pref.knockVolume())));
       }
       return;
     }
@@ -73,7 +79,10 @@ public final class PlayerPreferences {
         boolean doors = data.getBoolean(key + ".enableDoors", true);
         boolean gates = data.getBoolean(key + ".enableFenceGates", true);
         boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
-        cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors));
+        boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
+        boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
+    double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
+        cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume));
       } catch (IllegalArgumentException ignored) {
         // Non-UUID top-level key — skip silently.
       }
@@ -96,6 +105,9 @@ public final class PlayerPreferences {
       data.set(key + ".enableDoors", pref.enableDoors());
       data.set(key + ".enableFenceGates", pref.enableFenceGates());
       data.set(key + ".enableTrapdoors", pref.enableTrapdoors());
+      data.set(key + ".enableAutoClose", pref.enableAutoClose());
+      data.set(key + ".enableKnockSound", pref.enableKnockSound());
+      data.set(key + ".knockVolume", pref.knockVolume());
     }
     try {
       data.save(dataFile);
@@ -115,7 +127,10 @@ public final class PlayerPreferences {
           pref.enabled(),
           pref.enableDoors(),
           pref.enableFenceGates(),
-          pref.enableTrapdoors());
+          pref.enableTrapdoors(),
+          pref.enableAutoClose(),
+          pref.enableKnockSound(),
+          pref.knockVolume());
       SchedulerBridge.runAsync(plugin, () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
       return;
     }
@@ -124,7 +139,14 @@ public final class PlayerPreferences {
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
-    return cache.computeIfAbsent(uuid, k -> new PlayerPref(true, true, true, true));
+    return cache.computeIfAbsent(uuid, k -> new PlayerPref(
+        true,
+        true,
+        true,
+        true,
+        true,
+        true,
+        DEFAULT_KNOCK_VOLUME));
   }
 
   /** Returns whether the player has not globally disabled linked-door behavior. */
@@ -147,6 +169,21 @@ public final class PlayerPreferences {
     return getOrDefault(uuid).enableTrapdoors();
   }
 
+  /** Returns whether the player has auto-close enabled for their interactions. */
+  public boolean isAutoCloseEnabled(UUID uuid) {
+    return getOrDefault(uuid).enableAutoClose();
+  }
+
+  /** Returns whether the player has knock sound enabled for their interactions. */
+  public boolean isKnockSoundEnabled(UUID uuid) {
+    return getOrDefault(uuid).enableKnockSound();
+  }
+
+  /** Returns the player's knock sound volume (0.0-1.0). */
+  public double getKnockVolume(UUID uuid) {
+    return getOrDefault(uuid).knockVolume();
+  }
+
   /**
    * Toggles the player's global linked-door on/off switch.
    *
@@ -156,7 +193,14 @@ public final class PlayerPreferences {
   public boolean toggleAll(UUID uuid) {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enabled();
-    cache.put(uuid, new PlayerPref(next, current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors()));
+    cache.put(uuid, new PlayerPref(
+        next,
+        current.enableDoors(),
+        current.enableFenceGates(),
+        current.enableTrapdoors(),
+        current.enableAutoClose(),
+        current.enableKnockSound(),
+        current.knockVolume()));
     saveAsync(uuid);
     return next;
   }
@@ -170,7 +214,14 @@ public final class PlayerPreferences {
   public boolean toggleDoors(UUID uuid) {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableDoors();
-    cache.put(uuid, new PlayerPref(current.enabled(), next, current.enableFenceGates(), current.enableTrapdoors()));
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        next,
+        current.enableFenceGates(),
+        current.enableTrapdoors(),
+        current.enableAutoClose(),
+        current.enableKnockSound(),
+        current.knockVolume()));
     saveAsync(uuid);
     return next;
   }
@@ -184,7 +235,14 @@ public final class PlayerPreferences {
   public boolean toggleFenceGates(UUID uuid) {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableFenceGates();
-    cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), next, current.enableTrapdoors()));
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        current.enableDoors(),
+        next,
+        current.enableTrapdoors(),
+        current.enableAutoClose(),
+        current.enableKnockSound(),
+        current.knockVolume()));
     saveAsync(uuid);
     return next;
   }
@@ -198,9 +256,93 @@ public final class PlayerPreferences {
   public boolean toggleTrapdoors(UUID uuid) {
     PlayerPref current = getOrDefault(uuid);
     boolean next = !current.enableTrapdoors();
-    cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), next));
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        current.enableDoors(),
+        current.enableFenceGates(),
+        next,
+        current.enableAutoClose(),
+        current.enableKnockSound(),
+        current.knockVolume()));
     saveAsync(uuid);
     return next;
+  }
+
+  /**
+   * Toggles auto-close preference for the given player.
+   *
+   * @param uuid the player's unique ID
+   * @return the new enabled state
+   */
+  public boolean toggleAutoClose(UUID uuid) {
+    PlayerPref current = getOrDefault(uuid);
+    boolean next = !current.enableAutoClose();
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        current.enableDoors(),
+        current.enableFenceGates(),
+        current.enableTrapdoors(),
+        next,
+        current.enableKnockSound(),
+        current.knockVolume()));
+    saveAsync(uuid);
+    return next;
+  }
+
+  /**
+   * Toggles knock-sound preference for the given player.
+   *
+   * @param uuid the player's unique ID
+   * @return the new enabled state
+   */
+  public boolean toggleKnockSound(UUID uuid) {
+    PlayerPref current = getOrDefault(uuid);
+    boolean next = !current.enableKnockSound();
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        current.enableDoors(),
+        current.enableFenceGates(),
+        current.enableTrapdoors(),
+        current.enableAutoClose(),
+        next,
+        current.knockVolume()));
+    saveAsync(uuid);
+    return next;
+  }
+
+  /**
+   * Sets the player's knock volume preference.
+   *
+   * @param uuid the player's unique ID
+   * @param volume volume between 0.0 and 1.0
+   * @return the normalized volume that was stored
+   */
+  public double setKnockVolume(UUID uuid, double volume) {
+    PlayerPref current = getOrDefault(uuid);
+    double normalized = normalizeKnockVolume(volume);
+    cache.put(uuid, new PlayerPref(
+        current.enabled(),
+        current.enableDoors(),
+        current.enableFenceGates(),
+        current.enableTrapdoors(),
+        current.enableAutoClose(),
+        current.enableKnockSound(),
+        normalized));
+    saveAsync(uuid);
+    return normalized;
+  }
+
+  private static double normalizeKnockVolume(double value) {
+    if (Double.isNaN(value) || Double.isInfinite(value)) {
+      return DEFAULT_KNOCK_VOLUME;
+    }
+    if (value < MIN_KNOCK_VOLUME) {
+      return MIN_KNOCK_VOLUME;
+    }
+    if (value > MAX_KNOCK_VOLUME) {
+      return MAX_KNOCK_VOLUME;
+    }
+    return value;
   }
 
   /**
@@ -210,12 +352,17 @@ public final class PlayerPreferences {
    * @param enableDoors      door-linking on/off
    * @param enableFenceGates fence-gate-linking on/off
    * @param enableTrapdoors  trapdoor-linking on/off
+   * @param enableAutoClose  per-player auto-close on/off
+   * @param enableKnockSound per-player knock sound on/off
+   * @param knockVolume      per-player knock volume (0.0-1.0)
    */
   public record PlayerPref(
       boolean enabled,
       boolean enableDoors,
       boolean enableFenceGates,
-      boolean enableTrapdoors
+      boolean enableTrapdoors,
+      boolean enableAutoClose,
+      boolean enableKnockSound,
+      double knockVolume
   ) {}
 }
-
