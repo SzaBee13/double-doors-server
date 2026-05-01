@@ -63,8 +63,10 @@ public final class YamlToSqlMigrator {
         boolean doors = data.getBoolean(key + ".enableDoors", true);
         boolean gates = data.getBoolean(key + ".enableFenceGates", true);
         boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
+        boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
+        boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
         boolean wrote = sqlStorage.savePlayerPreference(uuid,
-            new SharedSqlStorage.SqlPlayerPref(enabled, doors, gates, trapdoors));
+            new SharedSqlStorage.SqlPlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound));
         if (wrote) {
           migrated++;
         } else {

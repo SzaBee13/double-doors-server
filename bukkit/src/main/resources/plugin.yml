@@ -10,13 +10,16 @@ commands:
   doubledoors:
     description: Main DoubleDoors command
     aliases: [dd]
-    usage: /doubledoors <reload|toggle [doors|gates|trapdoors]|server-toggle|grief villagers|debug|preview>
+    usage: /doubledoors <reload|toggle [doors|gates|trapdoors|autoclose|knock]|server-toggle|grief villagers|debug|preview>
 permissions:
   doubledoors.use:
     description: Allows using DoubleDoors linked opening behavior
     default: true
   doubledoors.knock:
     description: Allows playing knock sounds by left-clicking doors
+    default: true
+  doubledoors.autoclose:
+    description: Allows player-triggered linked opens to use auto-close
     default: true
   doubledoors.iron.manual:
     description: Allows manually toggling iron doors by right-click
@@ -26,6 +29,12 @@ permissions:
     default: op
   doubledoors.toggle:
     description: Allows toggling double door behavior per player
+    default: true
+  doubledoors.toggle.autoclose:
+    description: Allows toggling personal auto-close preference
+    default: true
+  doubledoors.toggle.knock:
+    description: Allows toggling personal knock-sound preference
     default: true
   doubledoors.server-toggle:
     description: Allows toggling DoubleDoors server-wide behavior

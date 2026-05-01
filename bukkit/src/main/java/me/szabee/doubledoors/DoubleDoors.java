@@ -688,32 +688,59 @@ public final class DoubleDoors extends JavaPlugin {
         return true;
       }
 
-      if (!sender.hasPermission("doubledoors.toggle")) {
-        sender.sendMessage(t("cmd.no_permission"));
-        return true;
-      }
-
-      // /doubledoors toggle [doors|gates|trapdoors]
+      // /doubledoors toggle [doors|gates|trapdoors|autoclose|knock]
       if (args.length >= 2) {
         UUID uuid = player.getUniqueId();
         switch (args[1].toLowerCase()) {
           case "doors" -> {
+            if (!sender.hasPermission("doubledoors.toggle")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
             boolean next = playerPreferences.toggleDoors(uuid);
             sender.sendMessage(next ? t("cmd.toggle.doors.enabled") : t("cmd.toggle.doors.disabled"));
           }
           case "gates" -> {
+            if (!sender.hasPermission("doubledoors.toggle")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
             boolean next = playerPreferences.toggleFenceGates(uuid);
             sender.sendMessage(next ? t("cmd.toggle.gates.enabled") : t("cmd.toggle.gates.disabled"));
           }
           case "trapdoors" -> {
+            if (!sender.hasPermission("doubledoors.toggle")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
             boolean next = playerPreferences.toggleTrapdoors(uuid);
             sender.sendMessage(next ? t("cmd.toggle.trapdoors.enabled") : t("cmd.toggle.trapdoors.disabled"));
+          }
+          case "autoclose" -> {
+            if (!sender.hasPermission("doubledoors.toggle.autoclose")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
+            boolean next = playerPreferences.toggleAutoClose(uuid);
+            sender.sendMessage(next ? t("cmd.toggle.autoclose.enabled") : t("cmd.toggle.autoclose.disabled"));
+          }
+          case "knock" -> {
+            if (!sender.hasPermission("doubledoors.toggle.knock")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
+            boolean next = playerPreferences.toggleKnockSound(uuid);
+            sender.sendMessage(next ? t("cmd.toggle.knock.enabled") : t("cmd.toggle.knock.disabled"));
           }
           default -> sender.sendMessage(t("cmd.usage.toggle", label));
         }
         return true;
       }
 
+      if (!sender.hasPermission("doubledoors.toggle")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
       boolean enabled = playerPreferences.toggleAll(player.getUniqueId());
       sender.sendMessage(enabled ? t("cmd.toggle.all.enabled") : t("cmd.toggle.all.disabled"));
       return true;
@@ -820,7 +847,7 @@ public final class DoubleDoors extends JavaPlugin {
         }
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("toggle")) {
-      for (String sub : List.of("doors", "gates", "trapdoors")) {
+      for (String sub : List.of("doors", "gates", "trapdoors", "autoclose", "knock")) {
         if (sub.startsWith(args[1].toLowerCase())) {
           completions.add(sub);
         }
