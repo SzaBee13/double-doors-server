@@ -21,7 +21,9 @@ import org.bukkit.block.data.type.Door;
 public final class DoorUtil {
   private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
   private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
+  private static final long MIRROR_CACHE_TRIM_INTERVAL_MILLIS = 5_000L;
   private static volatile long mirrorCacheTtlMillis = 1_200L;
+  private static volatile long lastMirrorCacheTrimMillis;
 
   private DoorUtil() {
   }
@@ -106,6 +108,46 @@ public final class DoorUtil {
     return MirrorSearchResult.failure(reason);
   }
 
+  /**
+   * Invalidates the mirror cache for the given door block.
+   *
+   * @param block the door block to invalidate
+   */
+  public static void invalidateMirrorCacheAt(Block block) {
+    Block base = toLowerDoorBlock(block);
+    if (base == null) {
+      return;
+    }
+    UUID worldId = base.getWorld().getUID();
+    MirrorCacheKey key = new MirrorCacheKey(worldId, base.getX(), base.getY(), base.getZ());
+    MIRROR_CACHE.remove(key);
+  }
+
+  /**
+   * Invalidates mirror cache entries near the given door block.
+   *
+   * <p>Clears the cache for the door itself plus adjacent bases that could pair
+   * with it in a standard double-door configuration.</p>
+   *
+   * @param block the door block to invalidate around
+   */
+  public static void invalidateMirrorCacheNear(Block block) {
+    Block base = toLowerDoorBlock(block);
+    if (base == null) {
+      return;
+    }
+    UUID worldId = base.getWorld().getUID();
+    int baseX = base.getX();
+    int baseY = base.getY();
+    int baseZ = base.getZ();
+    for (int dx = -1; dx <= 1; dx++) {
+      for (int dz = -1; dz <= 1; dz++) {
+        MirrorCacheKey key = new MirrorCacheKey(worldId, baseX + dx, baseY, baseZ + dz);
+        MIRROR_CACHE.remove(key);
+      }
+    }
+  }
+
   private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {
     return (now - entry.timestampMillis()) <= mirrorCacheTtlMillis;
   }
@@ -116,6 +158,11 @@ public final class DoorUtil {
   }
 
   private static void trimMirrorCache(long now) {
+    if (MIRROR_CACHE.size() <= MIRROR_CACHE_MAX_SIZE
+        && (now - lastMirrorCacheTrimMillis) < MIRROR_CACHE_TRIM_INTERVAL_MILLIS) {
+      return;
+    }
+    lastMirrorCacheTrimMillis = now;
     for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
       if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
         MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
