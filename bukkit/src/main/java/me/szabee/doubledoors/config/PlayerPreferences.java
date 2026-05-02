@@ -2,7 +2,6 @@ package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -170,6 +169,9 @@ public final class PlayerPreferences {
    * Flushes all pending async writes and blocks until persistence has completed.
    */
   public void flush() {
+    if (writerExecutor.isShutdown()) {
+      return;
+    }
     try {
       writerExecutor.submit(this::drainPendingWrites).get();
     } catch (InterruptedException e) {
@@ -215,17 +217,21 @@ public final class PlayerPreferences {
     boolean reschedule = true;
     try {
       while (true) {
-        Map<UUID, PendingSave> batch = new HashMap<>(pendingSaves);
-        if (batch.isEmpty()) {
+        // Create a copy of the keys to iterate over without removing upfront
+        Set<UUID> keysToProcess = Set.copyOf(pendingSaves.keySet());
+        if (keysToProcess.isEmpty()) {
           return;
         }
         boolean failed = false;
-        for (Map.Entry<UUID, PendingSave> entry : batch.entrySet()) {
-          UUID uuid = entry.getKey();
-          PendingSave pending = entry.getValue();
+        for (UUID uuid : keysToProcess) {
+          PendingSave pending = pendingSaves.get(uuid);
+          if (pending == null) {
+            continue; // Entry was removed by another thread
+          }
           if (pending.sqlSnapshot() != null && useSql) {
             try {
               sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+              // Only remove after successful persistence
               pendingSaves.remove(uuid, pending);
             } catch (RuntimeException e) {
               failed = true;
@@ -237,6 +243,7 @@ public final class PlayerPreferences {
           if (!useSql && pendingYamlSaves.add(uuid)) {
             try {
               saveYaml();
+              // Only remove after successful persistence
               pendingSaves.remove(uuid, pending);
             } catch (IOException e) {
               failed = true;
