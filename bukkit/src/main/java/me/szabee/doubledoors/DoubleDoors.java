@@ -436,9 +436,7 @@ public final class DoubleDoors extends JavaPlugin {
       }
     } finally {
       disableUpdater();
-      if (playerPreferences != null) {
-        playerPreferences.flush();
-      }
+      closePlayerPreferences();
       getLogger().info(t("log.disabled"));
     }
   }
@@ -476,6 +474,7 @@ public final class DoubleDoors extends JavaPlugin {
           YamlToSqlMigrator.migrateIfNeeded(this, storage);
         }
         SchedulerBridge.runNextTick(this, () -> {
+          closePlayerPreferences();
           sqlStorage = storage;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
@@ -483,6 +482,7 @@ public final class DoubleDoors extends JavaPlugin {
       } catch (RuntimeException e) {
         getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
         SchedulerBridge.runNextTick(this, () -> {
+          closePlayerPreferences();
           sqlStorage = null;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
@@ -521,6 +521,14 @@ public final class DoubleDoors extends JavaPlugin {
     } catch (RuntimeException e) {
       metrics = null;
       getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+  }
+
+  private void closePlayerPreferences() {
+    PlayerPreferences preferences = playerPreferences;
+    if (preferences != null) {
+      preferences.close();
+      playerPreferences = null;
     }
   }
 
@@ -675,6 +683,7 @@ public final class DoubleDoors extends JavaPlugin {
       }
 
       reloadConfig();
+      closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
       restartFastStats();
@@ -770,6 +779,11 @@ public final class DoubleDoors extends JavaPlugin {
       try {
         volume = Double.parseDouble(args[1]);
       } catch (NumberFormatException ex) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      if (!Double.isFinite(volume)) {
         sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
         return true;
       }

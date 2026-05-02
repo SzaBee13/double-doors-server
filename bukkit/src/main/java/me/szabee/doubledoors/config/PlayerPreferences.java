@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -109,6 +110,14 @@ public final class PlayerPreferences {
       return;
     }
 
+    try {
+      saveYaml();
+    } catch (IOException e) {
+      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
+    }
+  }
+
+  private void saveYaml() throws IOException {
     YamlConfiguration data = new YamlConfiguration();
     for (Map.Entry<UUID, PlayerPref> entry : Map.copyOf(cache).entrySet()) {
       String key = entry.getKey().toString();
@@ -121,11 +130,7 @@ public final class PlayerPreferences {
       data.set(key + ".enableKnockSound", pref.enableKnockSound());
       data.set(key + ".knockVolume", pref.knockVolume());
     }
-    try {
-      data.save(dataFile);
-    } catch (IOException e) {
-      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
-    }
+    data.save(dataFile);
   }
 
   /**
@@ -165,10 +170,8 @@ public final class PlayerPreferences {
    * Flushes all pending async writes and blocks until persistence has completed.
    */
   public void flush() {
-    drainPendingWrites();
     try {
-      writerExecutor.submit(() -> {
-      }).get();
+      writerExecutor.submit(this::drainPendingWrites).get();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       plugin.getLogger().warning("Interrupted while waiting for player preference writes to flush.");
@@ -177,7 +180,31 @@ public final class PlayerPreferences {
     }
   }
 
+  /**
+   * Flushes pending writes and terminates the player-preference writer thread.
+   */
+  public void close() {
+    flush();
+    writerExecutor.shutdown();
+    try {
+      if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+        writerExecutor.shutdownNow();
+        // Wait a bit more for shutdownNow to complete
+        if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+          plugin.getLogger().warning("Player preference writer did not terminate gracefully.");
+        }
+      }
+    } catch (InterruptedException e) {
+      writerExecutor.shutdownNow();
+      Thread.currentThread().interrupt();
+      plugin.getLogger().warning("Interrupted while shutting down player preference writer.");
+    }
+  }
+
   private void scheduleWriter() {
+    if (writerExecutor.isShutdown()) {
+      return;
+    }
     if (!writerScheduled.compareAndSet(false, true)) {
       return;
     }
@@ -185,33 +212,48 @@ public final class PlayerPreferences {
   }
 
   private void drainPendingWrites() {
+    boolean reschedule = true;
     try {
       while (true) {
-        Map<UUID, PendingSave> batch = new HashMap<>();
-        for (Map.Entry<UUID, PendingSave> entry : pendingSaves.entrySet()) {
-          if (pendingSaves.remove(entry.getKey(), entry.getValue())) {
-            batch.put(entry.getKey(), entry.getValue());
-          }
-        }
+        Map<UUID, PendingSave> batch = new HashMap<>(pendingSaves);
         if (batch.isEmpty()) {
           return;
         }
+        boolean failed = false;
         for (Map.Entry<UUID, PendingSave> entry : batch.entrySet()) {
           UUID uuid = entry.getKey();
           PendingSave pending = entry.getValue();
           if (pending.sqlSnapshot() != null && useSql) {
-            sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+            try {
+              sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+              pendingSaves.remove(uuid, pending);
+            } catch (RuntimeException e) {
+              failed = true;
+              plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
+                  .formatted(uuid, e.getMessage()));
+            }
             continue;
           }
           if (!useSql && pendingYamlSaves.add(uuid)) {
-            save();
-            pendingYamlSaves.remove(uuid);
+            try {
+              saveYaml();
+              pendingSaves.remove(uuid, pending);
+            } catch (IOException e) {
+              failed = true;
+              plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
+            } finally {
+              pendingYamlSaves.remove(uuid);
+            }
           }
+        }
+        if (failed) {
+          reschedule = false;
+          return;
         }
       }
     } finally {
       writerScheduled.set(false);
-      if (!pendingSaves.isEmpty()) {
+      if (reschedule && !pendingSaves.isEmpty()) {
         scheduleWriter();
       }
     }
@@ -445,9 +487,19 @@ public final class PlayerPreferences {
       double knockVolume
   ) {}
 
-  private record PendingSave(SharedSqlStorage.SqlPlayerPref sqlSnapshot) {
+  private static final class PendingSave {
+    private final SharedSqlStorage.SqlPlayerPref sqlSnapshot;
+
+    private PendingSave(SharedSqlStorage.SqlPlayerPref sqlSnapshot) {
+      this.sqlSnapshot = sqlSnapshot;
+    }
+
     private static PendingSave forYaml() {
       return new PendingSave(null);
+    }
+
+    private SharedSqlStorage.SqlPlayerPref sqlSnapshot() {
+      return sqlSnapshot;
     }
   }
 
