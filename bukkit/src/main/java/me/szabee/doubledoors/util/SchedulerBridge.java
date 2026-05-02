@@ -37,6 +37,17 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, task);
   }
 
+  /**
+   * Schedules a repeating asynchronous task using Folia if available, otherwise Bukkit.
+   *
+   * @param plugin      the plugin instance
+   * @param delayTicks  the delay in ticks before the first execution
+   * @param periodTicks the period in ticks between successive executions
+   * @param task        the task to run
+   * @return a TaskToken used to cancel the scheduled task. Returns the result of runFoliaTimerAsync
+   * when non-null, otherwise wraps BukkitTask::cancel from
+   * plugin.getServer().getScheduler().runTaskTimerAsynchronously.
+   */
   public static TaskToken runTimerAsync(Plugin plugin, long delayTicks, long periodTicks, Runnable task) {
     TaskToken foliaTask = runFoliaTimerAsync(plugin, delayTicks, periodTicks, task);
     if (foliaTask != null) {

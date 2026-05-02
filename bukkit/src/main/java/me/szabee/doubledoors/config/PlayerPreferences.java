@@ -91,6 +91,7 @@ public final class PlayerPreferences {
 
   /**
    * Saves all in-memory preferences synchronously to {@code players.yml}.
+   * Performs blocking I/O.
    */
   public void save() {
     if (useSql) {
@@ -116,8 +117,11 @@ public final class PlayerPreferences {
     }
   }
 
-  /** Saves asynchronously; safe to call from the main thread after every mutation. */
-  private void saveAsync(UUID changedUuid) {
+  /**
+   * Saves asynchronously; safe to call from the main thread after every mutation.
+   * Should be used from the main thread to avoid disk-blocking.
+   */
+  public void saveAsync(UUID changedUuid) {
     if (useSql) {
       PlayerPref pref = cache.get(changedUuid);
       if (pref == null) {

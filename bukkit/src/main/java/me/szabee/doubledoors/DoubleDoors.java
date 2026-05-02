@@ -434,7 +434,7 @@ public final class DoubleDoors extends JavaPlugin {
     } finally {
       disableUpdater();
       if (playerPreferences != null) {
-        playerPreferences.save();
+        playerPreferences.saveAsync(null);
       }
       getLogger().info(t("log.disabled"));
     }
@@ -594,7 +594,7 @@ public final class DoubleDoors extends JavaPlugin {
       return;
     }
     long periodTicks = checkFrequencySeconds * 20L;
-    updaterCheckTask = me.szabee.doubledoors.util.SchedulerBridge.runTimerAsync(
+    updaterCheckTask = SchedulerBridge.runTimerAsync(
         this,
         0L,
         periodTicks,
@@ -886,6 +886,10 @@ public final class DoubleDoors extends JavaPlugin {
         if (sub.startsWith(args[1].toLowerCase())) {
           completions.add(sub);
         }
+      }
+    } else if (args.length == 2 && args[0].equalsIgnoreCase("knock-volume")) {
+      if ("0-1".startsWith(args[1].toLowerCase()) || "<0-1>".startsWith(args[1].toLowerCase())) {
+        completions.add("<0-1>");
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("grief")) {
       if ("villagers".startsWith(args[1].toLowerCase())) {

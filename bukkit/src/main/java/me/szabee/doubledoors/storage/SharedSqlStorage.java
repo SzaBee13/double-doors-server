@@ -53,9 +53,9 @@ public final class SharedSqlStorage {
         + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
         + "knock_volume DOUBLE NOT NULL DEFAULT 1.0"
         + ")");
-      executeStatement("ALTER TABLE dd_player_preferences ADD COLUMN IF NOT EXISTS enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
-      executeStatement("ALTER TABLE dd_player_preferences ADD COLUMN IF NOT EXISTS enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
-      executeStatement("ALTER TABLE dd_player_preferences ADD COLUMN IF NOT EXISTS knock_volume DOUBLE NOT NULL DEFAULT 1.0");
+      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
+      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
+      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
 
       executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
         + "claim_id BIGINT PRIMARY KEY,"
@@ -282,6 +282,18 @@ public final class SharedSqlStorage {
     try (Connection connection = openConnection();
          Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
+    }
+  }
+
+  private void executeAlterAddColumnIfAbsent(String sql) throws SQLException {
+    try {
+      executeStatement(sql);
+    } catch (SQLException e) {
+      // MySQL 1060: Duplicate column name
+      if (e.getErrorCode() == 1060 || e.getMessage().toLowerCase().contains("duplicate column") || e.getMessage().toLowerCase().contains("already exists")) {
+        return;
+      }
+      throw e;
     }
   }
 
