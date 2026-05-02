@@ -124,7 +124,7 @@ public final class TranslationManager {
     }
 
     String defaultRelativePath = bundledLanguagePaths.getOrDefault(DEFAULT_LANGUAGE, DEFAULT_LANGUAGE + ".json");
-    String normalizedPath = defaultRelativePath.replace('\u005c', '/');
+    String normalizedPath = defaultRelativePath.replace('\\', '/');
     if (normalizedPath.startsWith("lang/")) {
       normalizedPath = normalizedPath.substring("lang/".length());
     }

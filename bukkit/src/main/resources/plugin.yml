@@ -1,5 +1,5 @@
 name: DoubleDoors
-version: 1.4.0
+version: 1.4.0-beta.1
 main: me.szabee.doubledoors.DoubleDoors
 api-version: '26.1'
 author: SzaBee13
