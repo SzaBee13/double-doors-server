@@ -2,15 +2,21 @@ package me.szabee.doubledoors.config;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.bukkit.configuration.file.YamlConfiguration;
 
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
-import me.szabee.doubledoors.util.SchedulerBridge;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
@@ -28,6 +34,10 @@ public final class PlayerPreferences {
   private final SharedSqlStorage sqlStorage;
   private final boolean useSql;
   private final Map<UUID, PlayerPref> cache = new ConcurrentHashMap<>();
+  private final Map<UUID, PendingSave> pendingSaves = new ConcurrentHashMap<>();
+  private final Set<UUID> pendingYamlSaves = ConcurrentHashMap.newKeySet();
+  private final AtomicBoolean writerScheduled = new AtomicBoolean(false);
+  private final ExecutorService writerExecutor = Executors.newSingleThreadExecutor(new WriterThreadFactory());
 
   /**
    * Loads player preferences from {@code players.yml}.
@@ -95,6 +105,7 @@ public final class PlayerPreferences {
    */
   public void save() {
     if (useSql) {
+      flush();
       return;
     }
 
@@ -138,11 +149,72 @@ public final class PlayerPreferences {
           pref.enableAutoClose(),
           pref.enableKnockSound(),
           pref.knockVolume());
-      SchedulerBridge.runAsync(plugin, () -> sqlStorage.savePlayerPreference(changedUuid, snapshot));
+      pendingSaves.put(changedUuid, new PendingSave(snapshot));
+      scheduleWriter();
       return;
     }
 
-    SchedulerBridge.runAsync(plugin, this::save);
+    if (changedUuid == null) {
+      return;
+    }
+    pendingSaves.put(changedUuid, PendingSave.forYaml());
+    scheduleWriter();
+  }
+
+  /**
+   * Flushes all pending async writes and blocks until persistence has completed.
+   */
+  public void flush() {
+    drainPendingWrites();
+    try {
+      writerExecutor.submit(() -> {
+      }).get();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      plugin.getLogger().warning("Interrupted while waiting for player preference writes to flush.");
+    } catch (ExecutionException e) {
+      plugin.getLogger().warning("Failed while flushing player preference writes: %s".formatted(e.getMessage()));
+    }
+  }
+
+  private void scheduleWriter() {
+    if (!writerScheduled.compareAndSet(false, true)) {
+      return;
+    }
+    writerExecutor.execute(this::drainPendingWrites);
+  }
+
+  private void drainPendingWrites() {
+    try {
+      while (true) {
+        Map<UUID, PendingSave> batch = new HashMap<>();
+        for (Map.Entry<UUID, PendingSave> entry : pendingSaves.entrySet()) {
+          if (pendingSaves.remove(entry.getKey(), entry.getValue())) {
+            batch.put(entry.getKey(), entry.getValue());
+          }
+        }
+        if (batch.isEmpty()) {
+          return;
+        }
+        for (Map.Entry<UUID, PendingSave> entry : batch.entrySet()) {
+          UUID uuid = entry.getKey();
+          PendingSave pending = entry.getValue();
+          if (pending.sqlSnapshot() != null && useSql) {
+            sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+            continue;
+          }
+          if (!useSql && pendingYamlSaves.add(uuid)) {
+            save();
+            pendingYamlSaves.remove(uuid);
+          }
+        }
+      }
+    } finally {
+      writerScheduled.set(false);
+      if (!pendingSaves.isEmpty()) {
+        scheduleWriter();
+      }
+    }
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
@@ -372,4 +444,19 @@ public final class PlayerPreferences {
       boolean enableKnockSound,
       double knockVolume
   ) {}
+
+  private record PendingSave(SharedSqlStorage.SqlPlayerPref sqlSnapshot) {
+    private static PendingSave forYaml() {
+      return new PendingSave(null);
+    }
+  }
+
+  private static final class WriterThreadFactory implements ThreadFactory {
+    @Override
+    public Thread newThread(Runnable runnable) {
+      Thread thread = new Thread(runnable, "DoubleDoors-PlayerPrefWriter");
+      thread.setDaemon(true);
+      return thread;
+    }
+  }
 }

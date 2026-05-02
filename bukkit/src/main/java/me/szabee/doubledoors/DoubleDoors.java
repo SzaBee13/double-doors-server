@@ -90,6 +90,9 @@ public final class DoubleDoors extends JavaPlugin {
       if (data instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
         if (!search.found()) {
+          search = DoorUtil.analyzeCornerDoorPartner(origin);
+        }
+        if (!search.found()) {
           return false;
         }
         Block partner = search.partner();
@@ -434,7 +437,7 @@ public final class DoubleDoors extends JavaPlugin {
     } finally {
       disableUpdater();
       if (playerPreferences != null) {
-        playerPreferences.save();
+        playerPreferences.flush();
       }
       getLogger().info(t("log.disabled"));
     }
