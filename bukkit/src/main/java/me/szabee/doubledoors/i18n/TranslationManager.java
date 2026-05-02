@@ -124,7 +124,11 @@ public final class TranslationManager {
     }
 
     String defaultRelativePath = bundledLanguagePaths.getOrDefault(DEFAULT_LANGUAGE, DEFAULT_LANGUAGE + ".json");
-    File defaultFile = new File(langFolder, defaultRelativePath);
+    String normalizedPath = defaultRelativePath.replace('\u005c', '/');
+    if (normalizedPath.startsWith("lang/")) {
+      normalizedPath = normalizedPath.substring("lang/".length());
+    }
+    File defaultFile = new File(langFolder, normalizedPath);
     if (!defaultFile.exists()) {
       plugin.saveResource("lang/" + defaultRelativePath, false);
     }
@@ -318,4 +322,3 @@ public final class TranslationManager {
     }
   }
 }
-
