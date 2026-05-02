@@ -123,6 +123,9 @@ public final class PlayerPreferences {
    */
   public void saveAsync(UUID changedUuid) {
     if (useSql) {
+      if (changedUuid == null) {
+        return;
+      }
       PlayerPref pref = cache.get(changedUuid);
       if (pref == null) {
         return;

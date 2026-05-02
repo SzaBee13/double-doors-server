@@ -290,7 +290,9 @@ public final class SharedSqlStorage {
       executeStatement(sql);
     } catch (SQLException e) {
       // MySQL 1060: Duplicate column name
-      if (e.getErrorCode() == 1060 || e.getMessage().toLowerCase().contains("duplicate column") || e.getMessage().toLowerCase().contains("already exists")) {
+      String message = e.getMessage();
+      String normalizedMessage = message == null ? "" : message.toLowerCase();
+      if (e.getErrorCode() == 1060 || normalizedMessage.contains("duplicate column") || normalizedMessage.contains("already exists")) {
         return;
       }
       throw e;

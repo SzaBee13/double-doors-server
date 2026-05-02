@@ -130,7 +130,7 @@ public final class TranslationManager {
     }
     File defaultFile = new File(langFolder, normalizedPath);
     if (!defaultFile.exists()) {
-      plugin.saveResource("lang/" + defaultRelativePath, false);
+      plugin.saveResource("lang/" + normalizedPath, false);
     }
   }
 

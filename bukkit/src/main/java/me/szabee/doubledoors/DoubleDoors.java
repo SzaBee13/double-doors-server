@@ -434,7 +434,7 @@ public final class DoubleDoors extends JavaPlugin {
     } finally {
       disableUpdater();
       if (playerPreferences != null) {
-        playerPreferences.saveAsync(null);
+        playerPreferences.save();
       }
       getLogger().info(t("log.disabled"));
     }
@@ -888,8 +888,8 @@ public final class DoubleDoors extends JavaPlugin {
         }
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("knock-volume")) {
-      if ("0-1".startsWith(args[1].toLowerCase()) || "<0-1>".startsWith(args[1].toLowerCase())) {
-        completions.add("<0-1>");
+      if (!args[1].isBlank() && "0.5".startsWith(args[1].toLowerCase())) {
+        completions.add("0.5");
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("grief")) {
       if ("villagers".startsWith(args[1].toLowerCase())) {
