@@ -911,6 +911,9 @@ public final class DoubleDoors extends JavaPlugin {
     if (origin.getBlockData() instanceof Door) {
       DoorUtil.MirrorSearchResult result = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
       if (!result.found()) {
+        result = DoorUtil.analyzeCornerDoorPartner(origin);
+      }
+      if (!result.found()) {
         player.sendMessage(t("cmd.preview.not_found", result.reason()));
         return;
       }

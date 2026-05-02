@@ -109,6 +109,44 @@ public final class DoorUtil {
   }
 
   /**
+   * Finds a corner partner door that is adjacent with perpendicular facing.
+   *
+   * <p>A valid corner partner has the same material and a facing direction that is
+   * perpendicular to the origin door's facing, while being placed adjacent to the
+   * origin (side-adjacent or diagonal).</p>
+   *
+   * @param origin the clicked or triggered door block (upper or lower half)
+   * @return a detailed lookup result
+   */
+  public static MirrorSearchResult analyzeCornerDoorPartner(Block origin) {
+    Block originBase = toLowerDoorBlock(origin);
+    if (originBase == null) {
+      return MirrorSearchResult.failure("origin_is_not_door");
+    }
+
+    Door originDoor = (Door) originBase.getBlockData();
+    Block[] candidates = {
+        originBase.getRelative(1, 0, 0),
+        originBase.getRelative(-1, 0, 0),
+        originBase.getRelative(0, 0, 1),
+        originBase.getRelative(0, 0, -1),
+        originBase.getRelative(1, 0, 1),
+        originBase.getRelative(1, 0, -1),
+        originBase.getRelative(-1, 0, 1),
+        originBase.getRelative(-1, 0, -1)
+    };
+
+    for (Block candidate : candidates) {
+      Block match = matchingCornerDoor(originBase, originDoor, candidate);
+      if (match != null) {
+        return MirrorSearchResult.success(match);
+      }
+    }
+
+    return MirrorSearchResult.failure("corner_not_found");
+  }
+
+  /**
    * Invalidates the mirror cache for the given door block coordinates.
    *
    * @param block the door block to invalidate
@@ -263,6 +301,23 @@ public final class DoorUtil {
     return candidateBase;
   }
 
+  private static Block matchingCornerDoor(Block originBase, Door originDoor, Block candidate) {
+    Block candidateBase = toLowerDoorBlock(candidate);
+    if (candidateBase == null) {
+      return null;
+    }
+    if (candidateBase.getType() != originBase.getType()) {
+      return null;
+    }
+
+    Door candidateDoor = (Door) candidateBase.getBlockData();
+    if (!isPerpendicularFacing(originDoor.getFacing(), candidateDoor.getFacing())) {
+      return null;
+    }
+
+    return candidateBase;
+  }
+
   private static String diagnoseMirrorFailure(Block originBase, Door originDoor, Block leftCandidate, Block rightCandidate) {
     String leftReason = diagnoseCandidate(originBase, originDoor, leftCandidate, "left");
     String rightReason = diagnoseCandidate(originBase, originDoor, rightCandidate, "right");
@@ -325,6 +380,16 @@ public final class DoorUtil {
       case WEST -> BlockFace.NORTH;
       default -> BlockFace.SELF;
     };
+  }
+
+  private static boolean isPerpendicularFacing(BlockFace first, BlockFace second) {
+    if (first == BlockFace.NORTH || first == BlockFace.SOUTH) {
+      return second == BlockFace.EAST || second == BlockFace.WEST;
+    }
+    if (first == BlockFace.EAST || first == BlockFace.WEST) {
+      return second == BlockFace.NORTH || second == BlockFace.SOUTH;
+    }
+    return false;
   }
 
   private static void addNeighborIfMatching(

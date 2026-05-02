@@ -183,6 +183,9 @@ public final class DoorInteractListener implements Listener {
       if (originData instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
         if (!search.found()) {
+          search = DoorUtil.analyzeCornerDoorPartner(origin);
+        }
+        if (!search.found()) {
           if (plugin.isDebugEnabled(player)) {
             player.sendMessage(plugin.getTranslationManager().tr("cmd.debug.partner_missing", search.reason()));
           }
@@ -321,6 +324,9 @@ public final class DoorInteractListener implements Listener {
     if (originData instanceof Door) {
       closeDoor(origin);
       DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+      if (!search.found()) {
+        search = DoorUtil.analyzeCornerDoorPartner(origin);
+      }
       if (search.found()) {
         closeDoor(search.partner());
       }

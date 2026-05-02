@@ -1,6 +1,6 @@
 # DoubleDoors v1.4.0 Release Notes
 
-Release date: 2026-05-01
+Release date: 2026-05-03
 
 ## Highlights
 
@@ -13,6 +13,7 @@ Release date: 2026-05-01
 - Added personal toggle commands for `autoclose` and `knock` sounds (`/doubledoors toggle [autoclose|knock]`).
 - Added personal `knock-volume` command (`/doubledoors knock-volume <0-1>`).
 - Added missing translations across all language files.
+- Added support for corner doors in the plugin's internal door detection logic.
 
 ## Changed
 
@@ -32,7 +33,7 @@ Release date: 2026-05-01
 
 ## Artifacts
 
-- Bukkit/Paper: doubledoors-bukkit-1.4.0.jar
+- Bukkit/Spigot/Paper/Purpur: doubledoors-bukkit-1.4.0.jar
 - Optional proxy companion: doubledoors-proxy-1.4.0.jar
 
 ## Notes
