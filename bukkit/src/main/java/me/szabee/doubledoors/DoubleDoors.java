@@ -705,29 +705,22 @@ public final class DoubleDoors extends JavaPlugin {
 
       // /doubledoors toggle [doors|gates|trapdoors|autoclose|knock]
       if (args.length >= 2) {
+        if (!sender.hasPermission("doubledoors.toggle")) {
+          sender.sendMessage(t("cmd.no_permission"));
+          return true;
+        }
+        
         UUID uuid = player.getUniqueId();
         switch (args[1].toLowerCase()) {
           case "doors" -> {
-            if (!sender.hasPermission("doubledoors.toggle")) {
-              sender.sendMessage(t("cmd.no_permission"));
-              return true;
-            }
             boolean next = playerPreferences.toggleDoors(uuid);
             sender.sendMessage(next ? t("cmd.toggle.doors.enabled") : t("cmd.toggle.doors.disabled"));
           }
           case "gates" -> {
-            if (!sender.hasPermission("doubledoors.toggle")) {
-              sender.sendMessage(t("cmd.no_permission"));
-              return true;
-            }
             boolean next = playerPreferences.toggleFenceGates(uuid);
             sender.sendMessage(next ? t("cmd.toggle.gates.enabled") : t("cmd.toggle.gates.disabled"));
           }
           case "trapdoors" -> {
-            if (!sender.hasPermission("doubledoors.toggle")) {
-              sender.sendMessage(t("cmd.no_permission"));
-              return true;
-            }
             boolean next = playerPreferences.toggleTrapdoors(uuid);
             sender.sendMessage(next ? t("cmd.toggle.trapdoors.enabled") : t("cmd.toggle.trapdoors.disabled"));
           }

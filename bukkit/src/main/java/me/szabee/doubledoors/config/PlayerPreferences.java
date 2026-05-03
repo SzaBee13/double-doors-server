@@ -223,12 +223,15 @@ public final class PlayerPreferences {
           return;
         }
         boolean failed = false;
-        for (UUID uuid : keysToProcess) {
-          PendingSave pending = pendingSaves.get(uuid);
-          if (pending == null) {
-            continue; // Entry was removed by another thread
-          }
-          if (pending.sqlSnapshot() != null && useSql) {
+        if (useSql) {
+          for (UUID uuid : keysToProcess) {
+            PendingSave pending = pendingSaves.get(uuid);
+            if (pending == null || pending.sqlSnapshot() == null) {
+              // Remove YAML entries from pendingSaves when using SQL
+              pendingSaves.remove(uuid, pending);
+              continue;
+            }
+            
             try {
               sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
               // Only remove after successful persistence
@@ -238,18 +241,28 @@ public final class PlayerPreferences {
               plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
                   .formatted(uuid, e.getMessage()));
             }
-            continue;
           }
-          if (!useSql && pendingYamlSaves.add(uuid)) {
-            try {
-              saveYaml();
-              // Only remove after successful persistence
-              pendingSaves.remove(uuid, pending);
-            } catch (IOException e) {
-              failed = true;
-              plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
-            } finally {
-              pendingYamlSaves.remove(uuid);
+        } else {
+          // For YAML, we only save once per batch to avoid excessive I/O
+          boolean yamlSaved = false;
+          for (UUID uuid : keysToProcess) {
+            PendingSave pending = pendingSaves.get(uuid);
+            if (pending == null) {
+              continue; // Entry was removed by another thread
+            }
+            
+            // We only need to save once for YAML since it's a full file write
+            if (!yamlSaved) {
+              try {
+                saveYaml();
+                yamlSaved = true;
+                // Remove all processed entries
+                pendingSaves.keySet().removeAll(keysToProcess);
+              } catch (IOException e) {
+                failed = true;
+                plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
+                break;
+              }
             }
           }
         }
