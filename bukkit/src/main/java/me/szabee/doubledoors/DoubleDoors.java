@@ -24,7 +24,7 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitTask;
+import me.szabee.doubledoors.util.TaskToken;
 import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
@@ -35,6 +35,7 @@ import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
 import me.szabee.doubledoors.i18n.TranslationManager;
+import me.szabee.doubledoors.listeners.DoorCacheInvalidationListener;
 import me.szabee.doubledoors.listeners.DoorInteractListener;
 import me.szabee.doubledoors.listeners.RedstoneListener;
 import me.szabee.doubledoors.migration.YamlToSqlMigrator;
@@ -62,7 +63,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile SharedSqlStorage sqlStorage;
   private volatile BukkitMetrics metrics;
   private volatile Updater updater;
-  private volatile BukkitTask updaterCheckTask;
+  private volatile TaskToken updaterCheckTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
@@ -88,6 +89,9 @@ public final class DoubleDoors extends JavaPlugin {
       boolean targetState = !openable.isOpen();
       if (data instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+        if (!search.found()) {
+          search = DoorUtil.analyzeCornerDoorPartner(origin);
+        }
         if (!search.found()) {
           return false;
         }
@@ -385,6 +389,7 @@ public final class DoubleDoors extends JavaPlugin {
     initializeSqlIfEnabledAsync();
 
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
+    getServer().getPluginManager().registerEvents(new DoorCacheInvalidationListener(), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
 
     var doubledoorsCommand = getCommand("doubledoors");
@@ -431,9 +436,7 @@ public final class DoubleDoors extends JavaPlugin {
       }
     } finally {
       disableUpdater();
-      if (playerPreferences != null) {
-        playerPreferences.save();
-      }
+      closePlayerPreferences();
       getLogger().info(t("log.disabled"));
     }
   }
@@ -471,6 +474,7 @@ public final class DoubleDoors extends JavaPlugin {
           YamlToSqlMigrator.migrateIfNeeded(this, storage);
         }
         SchedulerBridge.runNextTick(this, () -> {
+          closePlayerPreferences();
           sqlStorage = storage;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
@@ -478,6 +482,7 @@ public final class DoubleDoors extends JavaPlugin {
       } catch (RuntimeException e) {
         getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
         SchedulerBridge.runNextTick(this, () -> {
+          closePlayerPreferences();
           sqlStorage = null;
           playerPreferences = new PlayerPreferences(this);
           claimSettings = new ClaimSettings(this);
@@ -516,6 +521,14 @@ public final class DoubleDoors extends JavaPlugin {
     } catch (RuntimeException e) {
       metrics = null;
       getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+  }
+
+  private void closePlayerPreferences() {
+    PlayerPreferences preferences = playerPreferences;
+    if (preferences != null) {
+      preferences.close();
+      playerPreferences = null;
     }
   }
 
@@ -592,20 +605,21 @@ public final class DoubleDoors extends JavaPlugin {
       return;
     }
     long periodTicks = checkFrequencySeconds * 20L;
-    updaterCheckTask = Bukkit.getScheduler().runTaskTimerAsynchronously(
+    updaterCheckTask = SchedulerBridge.runTimerAsync(
         this,
+        0L,
+        periodTicks,
         () -> {
           Updater localUpdater = updater;
           if (localUpdater != null) {
             localUpdater.checkForUpdate();
           }
-        },
-        0L,
-        periodTicks);
+        }
+    );
   }
 
   private void disableUpdater() {
-    BukkitTask localTask = updaterCheckTask;
+    TaskToken localTask = updaterCheckTask;
     updaterCheckTask = null;
     if (localTask != null) {
       localTask.cancel();
@@ -669,6 +683,7 @@ public final class DoubleDoors extends JavaPlugin {
       }
 
       reloadConfig();
+      closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
       restartFastStats();
@@ -688,13 +703,13 @@ public final class DoubleDoors extends JavaPlugin {
         return true;
       }
 
-      if (!sender.hasPermission("doubledoors.toggle")) {
-        sender.sendMessage(t("cmd.no_permission"));
-        return true;
-      }
-
-      // /doubledoors toggle [doors|gates|trapdoors]
+      // /doubledoors toggle [doors|gates|trapdoors|autoclose|knock]
       if (args.length >= 2) {
+        if (!sender.hasPermission("doubledoors.toggle")) {
+          sender.sendMessage(t("cmd.no_permission"));
+          return true;
+        }
+        
         UUID uuid = player.getUniqueId();
         switch (args[1].toLowerCase()) {
           case "doors" -> {
@@ -709,13 +724,70 @@ public final class DoubleDoors extends JavaPlugin {
             boolean next = playerPreferences.toggleTrapdoors(uuid);
             sender.sendMessage(next ? t("cmd.toggle.trapdoors.enabled") : t("cmd.toggle.trapdoors.disabled"));
           }
+          case "autoclose" -> {
+            if (!sender.hasPermission("doubledoors.toggle.autoclose")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
+            boolean next = playerPreferences.toggleAutoClose(uuid);
+            sender.sendMessage(next ? t("cmd.toggle.autoclose.enabled") : t("cmd.toggle.autoclose.disabled"));
+          }
+          case "knock" -> {
+            if (!sender.hasPermission("doubledoors.toggle.knock")) {
+              sender.sendMessage(t("cmd.no_permission"));
+              return true;
+            }
+            boolean next = playerPreferences.toggleKnockSound(uuid);
+            sender.sendMessage(next ? t("cmd.toggle.knock.enabled") : t("cmd.toggle.knock.disabled"));
+          }
           default -> sender.sendMessage(t("cmd.usage.toggle", label));
         }
         return true;
       }
 
+      if (!sender.hasPermission("doubledoors.toggle")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
       boolean enabled = playerPreferences.toggleAll(player.getUniqueId());
       sender.sendMessage(enabled ? t("cmd.toggle.all.enabled") : t("cmd.toggle.all.disabled"));
+      return true;
+    }
+
+    if (args[0].equalsIgnoreCase("knock-volume")) {
+      if (!(sender instanceof Player player)) {
+        sender.sendMessage(t("cmd.only_players.knock_volume", label));
+        return true;
+      }
+      if (!sender.hasPermission("doubledoors.knock.volume")) {
+        sender.sendMessage(t("cmd.no_permission"));
+        return true;
+      }
+      if (args.length < 2) {
+        sender.sendMessage(t("cmd.usage.knock_volume", label));
+        return true;
+      }
+
+      double volume;
+      try {
+        volume = Double.parseDouble(args[1]);
+      } catch (NumberFormatException ex) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      if (!Double.isFinite(volume)) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      if (volume < 0.0 || volume > 1.0) {
+        sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+        return true;
+      }
+
+      double normalized = playerPreferences.setKnockVolume(player.getUniqueId(), volume);
+      sender.sendMessage(t("cmd.knock_volume.set", normalized));
       return true;
     }
 
@@ -814,16 +886,20 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 1) {
-      for (String sub : List.of("reload", "toggle", "server-toggle", "grief", "debug", "preview")) {
+      for (String sub : List.of("reload", "toggle", "knock-volume", "server-toggle", "grief", "debug", "preview")) {
         if (sub.startsWith(args[0].toLowerCase())) {
           completions.add(sub);
         }
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("toggle")) {
-      for (String sub : List.of("doors", "gates", "trapdoors")) {
+      for (String sub : List.of("doors", "gates", "trapdoors", "autoclose", "knock")) {
         if (sub.startsWith(args[1].toLowerCase())) {
           completions.add(sub);
         }
+      }
+    } else if (args.length == 2 && args[0].equalsIgnoreCase("knock-volume")) {
+      if (!args[1].isBlank() && "0.5".startsWith(args[1].toLowerCase())) {
+        completions.add("0.5");
       }
     } else if (args.length == 2 && args[0].equalsIgnoreCase("grief")) {
       if ("villagers".startsWith(args[1].toLowerCase())) {
@@ -848,6 +924,9 @@ public final class DoubleDoors extends JavaPlugin {
     String facing;
     if (origin.getBlockData() instanceof Door) {
       DoorUtil.MirrorSearchResult result = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+      if (!result.found()) {
+        result = DoorUtil.analyzeCornerDoorPartner(origin);
+      }
       if (!result.found()) {
         player.sendMessage(t("cmd.preview.not_found", result.reason()));
         return;

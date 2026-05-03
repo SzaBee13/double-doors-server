@@ -116,11 +116,13 @@ sql.heartbeatSeconds=30
 
 - `/doubledoors reload` - reload config
 - `/doubledoors toggle` - toggle behavior for yourself
+- `/doubledoors knock-volume <0-1>` - set personal knock sound volume
 - `/doubledoors server-toggle` - toggle behavior server-wide
 
 ## Permissions
 
 - `doubledoors.use` (default: `true`)
+- `doubledoors.knock.volume` (default: `true`)
 - `doubledoors.toggle` (default: `true`)
 - `doubledoors.reload` (default: `op`)
 - `doubledoors.server-toggle` (default: `op`)
@@ -165,7 +167,7 @@ Language files:
 
 Requirements:
 
-- Java 21
+- Java 25
 - Maven
 
 Build command:

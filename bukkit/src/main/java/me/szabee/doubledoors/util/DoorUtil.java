@@ -21,7 +21,9 @@ import org.bukkit.block.data.type.Door;
 public final class DoorUtil {
   private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
   private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
+  private static final long MIRROR_CACHE_TRIM_INTERVAL_MILLIS = 5_000L;
   private static volatile long mirrorCacheTtlMillis = 1_200L;
+  private static volatile long lastMirrorCacheTrimMillis;
 
   private DoorUtil() {
   }
@@ -106,6 +108,98 @@ public final class DoorUtil {
     return MirrorSearchResult.failure(reason);
   }
 
+  /**
+   * Finds a corner partner door that is adjacent with perpendicular facing.
+   *
+   * <p>A valid corner partner has the same material and a facing direction that is
+   * perpendicular to the origin door's facing, while being placed adjacent to the
+   * origin (side-adjacent or diagonal).</p>
+   *
+   * @param origin the clicked or triggered door block (upper or lower half)
+   * @return a detailed lookup result
+   */
+  public static MirrorSearchResult analyzeCornerDoorPartner(Block origin) {
+    Block originBase = toLowerDoorBlock(origin);
+    if (originBase == null) {
+      return MirrorSearchResult.failure("origin_is_not_door");
+    }
+
+    Door originDoor = (Door) originBase.getBlockData();
+    Block[] candidates = {
+        originBase.getRelative(1, 0, 0),
+        originBase.getRelative(-1, 0, 0),
+        originBase.getRelative(0, 0, 1),
+        originBase.getRelative(0, 0, -1),
+        originBase.getRelative(1, 0, 1),
+        originBase.getRelative(1, 0, -1),
+        originBase.getRelative(-1, 0, 1),
+        originBase.getRelative(-1, 0, -1)
+    };
+
+    for (Block candidate : candidates) {
+      Block match = matchingCornerDoor(originBase, originDoor, candidate);
+      if (match != null) {
+        return MirrorSearchResult.success(match);
+      }
+    }
+
+    return MirrorSearchResult.failure("corner_not_found");
+  }
+
+  /**
+   * Invalidates the mirror cache for the given door block coordinates.
+   *
+   * @param block the door block to invalidate
+   */
+  public static void invalidateMirrorCacheAt(Block block) {
+    if (block == null) {
+      return;
+    }
+    UUID worldId = block.getWorld().getUID();
+    int x = block.getX();
+    int y = block.getY();
+    int z = block.getZ();
+    invalidateMirrorCacheAt(worldId, x, y, z);
+    invalidateMirrorCacheAt(worldId, x, y - 1, z);
+  }
+
+  /**
+   * Invalidates the mirror cache for the given coordinate.
+   *
+   * @param worldId world UUID
+   * @param x X coordinate
+   * @param y Y coordinate
+   * @param z Z coordinate
+   */
+  public static void invalidateMirrorCacheAt(UUID worldId, int x, int y, int z) {
+    MirrorCacheKey key = new MirrorCacheKey(worldId, x, y, z);
+    MIRROR_CACHE.remove(key);
+  }
+
+  /**
+   * Invalidates mirror cache entries near the given door block coordinates.
+   *
+   * <p>Clears the cache for the door itself plus adjacent bases that could pair
+   * with it in a standard double-door configuration.</p>
+   *
+   * @param block the door block to invalidate around
+   */
+  public static void invalidateMirrorCacheNear(Block block) {
+    if (block == null) {
+      return;
+    }
+    UUID worldId = block.getWorld().getUID();
+    int baseX = block.getX();
+    int baseY = block.getY();
+    int baseZ = block.getZ();
+    for (int dx = -1; dx <= 1; dx++) {
+      for (int dz = -1; dz <= 1; dz++) {
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY, baseZ + dz);
+        invalidateMirrorCacheAt(worldId, baseX + dx, baseY - 1, baseZ + dz);
+      }
+    }
+  }
+
   private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {
     return (now - entry.timestampMillis()) <= mirrorCacheTtlMillis;
   }
@@ -116,6 +210,11 @@ public final class DoorUtil {
   }
 
   private static void trimMirrorCache(long now) {
+    if (MIRROR_CACHE.size() <= MIRROR_CACHE_MAX_SIZE
+        && (now - lastMirrorCacheTrimMillis) < MIRROR_CACHE_TRIM_INTERVAL_MILLIS) {
+      return;
+    }
+    lastMirrorCacheTrimMillis = now;
     for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
       if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
         MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
@@ -202,6 +301,23 @@ public final class DoorUtil {
     return candidateBase;
   }
 
+  private static Block matchingCornerDoor(Block originBase, Door originDoor, Block candidate) {
+    Block candidateBase = toLowerDoorBlock(candidate);
+    if (candidateBase == null) {
+      return null;
+    }
+    if (candidateBase.getType() != originBase.getType()) {
+      return null;
+    }
+
+    Door candidateDoor = (Door) candidateBase.getBlockData();
+    if (!isPerpendicularFacing(originDoor.getFacing(), candidateDoor.getFacing())) {
+      return null;
+    }
+
+    return candidateBase;
+  }
+
   private static String diagnoseMirrorFailure(Block originBase, Door originDoor, Block leftCandidate, Block rightCandidate) {
     String leftReason = diagnoseCandidate(originBase, originDoor, leftCandidate, "left");
     String rightReason = diagnoseCandidate(originBase, originDoor, rightCandidate, "right");
@@ -264,6 +380,16 @@ public final class DoorUtil {
       case WEST -> BlockFace.NORTH;
       default -> BlockFace.SELF;
     };
+  }
+
+  private static boolean isPerpendicularFacing(BlockFace first, BlockFace second) {
+    if (first == BlockFace.NORTH || first == BlockFace.SOUTH) {
+      return second == BlockFace.EAST || second == BlockFace.WEST;
+    }
+    if (first == BlockFace.EAST || first == BlockFace.WEST) {
+      return second == BlockFace.NORTH || second == BlockFace.SOUTH;
+    }
+    return false;
   }
 
   private static void addNeighborIfMatching(

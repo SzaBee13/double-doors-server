@@ -1,10 +1,12 @@
 package me.szabee.doubledoors.util;
 
 import java.lang.reflect.Method;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.Plugin;
 
 /**
@@ -14,12 +16,6 @@ public final class SchedulerBridge {
   private SchedulerBridge() {
   }
 
-  /**
-   * Runs a task on the next server tick.
-   *
-   * @param plugin the owning plugin
-   * @param task the task to run
-   */
   public static void runNextTick(Plugin plugin, Runnable task) {
     if (runFoliaGlobal(plugin, task, 1L)) {
       return;
@@ -27,14 +23,6 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTask(plugin, task);
   }
 
-  /**
-   * Runs a task later at the region that owns the given location.
-   *
-   * @param plugin the owning plugin
-   * @param location the target location
-   * @param delayTicks the delay in ticks
-   * @param task the task to run
-   */
   public static void runLaterAtLocation(Plugin plugin, Location location, long delayTicks, Runnable task) {
     if (runFoliaRegion(plugin, location, delayTicks, task)) {
       return;
@@ -42,17 +30,31 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTaskLater(plugin, task, delayTicks);
   }
 
-  /**
-   * Runs a task asynchronously.
-   *
-   * @param plugin the owning plugin
-   * @param task the task to run
-   */
   public static void runAsync(Plugin plugin, Runnable task) {
     if (runFoliaAsync(plugin, task)) {
       return;
     }
     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, task);
+  }
+
+  /**
+   * Schedules a repeating asynchronous task using Folia if available, otherwise Bukkit.
+   *
+   * @param plugin      the plugin instance
+   * @param delayTicks  the delay in ticks before the first execution
+   * @param periodTicks the period in ticks between successive executions
+   * @param task        the task to run
+   * @return a TaskToken used to cancel the scheduled task. Returns the result of runFoliaTimerAsync
+   * when non-null, otherwise wraps BukkitTask::cancel from
+   * plugin.getServer().getScheduler().runTaskTimerAsynchronously.
+   */
+  public static TaskToken runTimerAsync(Plugin plugin, long delayTicks, long periodTicks, Runnable task) {
+    TaskToken foliaTask = runFoliaTimerAsync(plugin, delayTicks, periodTicks, task);
+    if (foliaTask != null) {
+      return foliaTask;
+    }
+    BukkitTask bukkitTask = plugin.getServer().getScheduler().runTaskTimerAsynchronously(plugin, task, delayTicks, periodTicks);
+    return bukkitTask::cancel;
   }
 
   private static boolean runFoliaGlobal(Plugin plugin, Runnable task, long delayTicks) {
@@ -85,6 +87,23 @@ public final class SchedulerBridge {
       return true;
     } catch (ReflectiveOperationException ignored) {
       return false;
+    }
+  }
+
+  private static TaskToken runFoliaTimerAsync(Plugin plugin, long delayTicks, long periodTicks, Runnable task) {
+    try {
+      Object scheduler = Bukkit.class.getMethod("getAsyncScheduler").invoke(null);
+      Method runAtFixedRate = scheduler.getClass().getMethod("runAtFixedRate", Plugin.class, Consumer.class, long.class, long.class, TimeUnit.class);
+      Object scheduledTask = runAtFixedRate.invoke(scheduler, plugin, consumer(task), delayTicks * 50L, periodTicks * 50L, TimeUnit.MILLISECONDS);
+      Method cancel = scheduledTask.getClass().getMethod("cancel");
+      return () -> {
+        try {
+          cancel.invoke(scheduledTask);
+        } catch (ReflectiveOperationException ignored) {
+        }
+      };
+    } catch (ReflectiveOperationException ignored) {
+      return null;
     }
   }
 

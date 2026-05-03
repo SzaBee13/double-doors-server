@@ -232,6 +232,9 @@ public final class RedstoneListener implements Listener {
       if (originData instanceof Door) {
         DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
         if (!search.found()) {
+          search = DoorUtil.analyzeCornerDoorPartner(origin);
+        }
+        if (!search.found()) {
           return;
         }
         Block partner = search.partner();

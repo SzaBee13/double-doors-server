@@ -5,16 +5,16 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 ## Repository at a glance
 
 | Item | Value |
-|---|---|
-| Language | Java 21 |
-| Framework | Paper/Spigot 1.21 plugin API |
+| --- | --- |
+| Language | Java 26 |
+| Framework | Paper/Spigot 26.1 plugin API |
 | Build | Maven (`mvn package`) |
 | Output | `target/doubledoors-<version>.jar` (shaded) |
 
 ## Key source files
 
 | File | Role |
-|---|---|
+| --- | --- |
 | [`DoubleDoors.java`](src/main/java/szabee13/doubledoors/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
 | [`PluginConfig.java`](src/main/java/szabee13/doubledoors/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
 | [`PlayerPreferences.java`](src/main/java/szabee13/doubledoors/config/PlayerPreferences.java) | Reads/writes `players.yml` (per-player settings, persistent) |
@@ -25,7 +25,7 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 
 ## Coding conventions
 
-- Java 21 features are expected (records, switch expressions, pattern-matching `instanceof`).
+- Java 26 features are expected (records, switch expressions, pattern-matching `instanceof`).
 - All public methods require Javadoc.
 - `final` on classes/fields unless mutability is necessary.
 - No wildcard imports.
@@ -40,6 +40,7 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 ## Version bumping checklist
 
 When releasing a new version:
+
 1. Update `<version>` in `pom.xml`.
 2. Update `version:` in `src/main/resources/plugin.yml`.
 3. Create `releases/v<version>/RELEASE_NOTE.md` using `releases/RELEASE_NOTE_EXAMPLE.md` as a template.
@@ -50,3 +51,10 @@ When releasing a new version:
 - `ProtectionCompat` uses unchecked reflection — changes here need careful null/exception handling.
 - `PlayerPreferences.save()` writes to disk; only call it via `saveAsync()` from the main thread.
 - The Geyser/Floodgate duplicate-interaction debounce in `DoorInteractListener` uses nanosecond timestamps — do not remove it without understanding Bedrock client double-fire behavior.
+
+## Localization
+
+- Only `en_US` is updated by default; other locales inherit from it until explicitly localized.
+- When adding/modifying message keys, update `src/main/resources/lang/defaults.json` and `src/main/resources/lang/english/en_US.json` first.  
+- If localization for other languages is requested, propagate changes to all regional variants (en_GB, fr_FR, de_DE, etc.) to maintain consistency.
+- See `TRANSLATING.md` and skill translation for details on contributing translations via Crowdin.
