@@ -30,7 +30,7 @@ import dev.faststats.velocity.VelocityMetrics;
 @Plugin(
     id = "doubledoors-proxy",
     name = "DoubleDoorsProxy",
-    version = "1.3.2",
+    version = "${project.version}",
     description = "Proxy companion plugin for DoubleDoors shared SQL detection",
     authors = {"SzaBee13"}
 )

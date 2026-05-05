@@ -39,6 +39,18 @@
       <scope>test</scope>
     </dependency>
     <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-junit-jupiter</artifactId>
+      <version>5.11.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
       <version>${spigot.api.version}</version>
@@ -85,40 +97,28 @@
   <build>
     <plugins>
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.15.0</version>
-        <configuration>
-          <compileSourceRoots>
-            <compileSourceRoot>src/main/java</compileSourceRoot>
-          </compileSourceRoots>
-        </configuration>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>build-helper-maven-plugin</artifactId>
+        <version>3.5.0</version>
         <executions>
           <execution>
-            <id>compile-common</id>
-            <phase>compile</phase>
+            <id>add-source</id>
+            <phase>generate-sources</phase>
             <goals>
-              <goal>compile</goal>
+              <goal>add-source</goal>
             </goals>
             <configuration>
-              <compileSourceRoots>
-                <compileSourceRoot>src/main/java-common</compileSourceRoot>
-              </compileSourceRoots>
-            </configuration>
-          </execution>
-          <execution>
-            <id>compile-version</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <compileSourceRoots>
-                <compileSourceRoot>src/main/java-${minecraft.version.id}</compileSourceRoot>
-              </compileSourceRoots>
+              <sources>
+                <source>src/main/java-${minecraft.version.id}</source>
+              </sources>
             </configuration>
           </execution>
         </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <version>3.15.0</version>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -155,7 +155,33 @@
           </execution>
         </executions>
       </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-resources-plugin</artifactId>
+        <version>3.4.0</version>
+        <configuration>
+          <encoding>${project.build.sourceEncoding}</encoding>
+        </configuration>
+      </plugin>
     </plugins>
+    <sourceDirectory>src/main/java-common</sourceDirectory>
+
+    <resources>
+      <resource>
+        <directory>src/main/resources</directory>
+        <excludes>
+          <exclude>plugin.yml</exclude>
+        </excludes>
+        <filtering>false</filtering>
+      </resource>
+      <resource>
+        <directory>src/main/resources</directory>
+        <includes>
+          <include>plugin.yml</include>
+        </includes>
+        <filtering>true</filtering>
+      </resource>
+    </resources>
   </build>
 
   <profiles>

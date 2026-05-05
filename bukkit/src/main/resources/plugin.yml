@@ -1,5 +1,5 @@
 name: DoubleDoors
-version: 1.4.1-beta-1
+version: ${project.version}
 main: me.szabee.doubledoors.DoubleDoors
 api-version: '1.21'
 author: SzaBee13
