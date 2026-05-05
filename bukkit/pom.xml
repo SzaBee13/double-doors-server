@@ -6,7 +6,7 @@
   <parent>
     <groupId>me.szabee.doubledoors</groupId>
     <artifactId>doubledoors-parent</artifactId>
-    <version>1.4.0</version>
+    <version>1.4.1-beta-1</version>
   </parent>
 
   <artifactId>doubledoors-bukkit</artifactId>
@@ -41,7 +41,7 @@
     <dependency>
       <groupId>org.spigotmc</groupId>
       <artifactId>spigot-api</artifactId>
-      <version>1.21-R0.1-SNAPSHOT</version>
+      <version>${spigot.api.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>
@@ -88,6 +88,37 @@
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.15.0</version>
+        <configuration>
+          <compileSourceRoots>
+            <compileSourceRoot>src/main/java</compileSourceRoot>
+          </compileSourceRoots>
+        </configuration>
+        <executions>
+          <execution>
+            <id>compile-common</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <compileSourceRoots>
+                <compileSourceRoot>src/main/java-common</compileSourceRoot>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+          <execution>
+            <id>compile-version</id>
+            <phase>compile</phase>
+            <goals>
+              <goal>compile</goal>
+            </goals>
+            <configuration>
+              <compileSourceRoots>
+                <compileSourceRoot>src/main/java-${minecraft.version.id}</compileSourceRoot>
+              </compileSourceRoots>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
@@ -126,4 +157,21 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>mc-1.21.x</id>
+      <properties>
+        <minecraft.version.id>v1_21_x</minecraft.version.id>
+        <spigot.api.version>1.21-R0.1-SNAPSHOT</spigot.api.version>
+      </properties>
+    </profile>
+    <profile>
+      <id>mc-26.1.x</id>
+      <properties>
+        <minecraft.version.id>v26_1_x</minecraft.version.id>
+        <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
+      </properties>
+    </profile>
+  </profiles>
 </project>

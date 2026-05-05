@@ -5,7 +5,7 @@
 
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.0</version>
+  <version>1.4.1-beta-1</version>
   <name>DoubleDoors Parent</name>
   <packaging>pom</packaging>
 
@@ -18,6 +18,8 @@
     <maven.compiler.release>25</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <pluginupdater.api.version>2.0.0</pluginupdater.api.version>
+    <minecraft.version.id>v26_1_x</minecraft.version.id>
+    <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
   </properties>
 
   <dependencyManagement>
@@ -55,4 +57,3 @@
     </pluginManagement>
   </build>
 </project>
-

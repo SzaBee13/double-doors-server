@@ -7,7 +7,7 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 | Item | Value |
 | --- | --- |
 | Language | Java 26 |
-| Framework | Paper/Spigot 26.1 plugin API |
+| Framework | Paper/Spigot 1.21.x + 26.1 plugin API |
 | Build | Maven (`mvn package`) |
 | Output | `target/doubledoors-<version>.jar` (shaded) |
 
