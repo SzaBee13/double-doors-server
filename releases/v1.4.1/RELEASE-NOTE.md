@@ -1,6 +1,6 @@
 # DoubleDoors v1.4.1 Release Notes
 
-Release date: 2026-05-
+Release date: 2026-05-07
 
 ## Highlights
 
@@ -9,7 +9,7 @@ Release date: 2026-05-
 ## Added
 
 - Added multiversion support for Minecraft 1.21.X, allowing users to run DoubleDoors on both 1.21.X and 26.1.X servers with the same plugin version.
-- Added tests to ensure compatibility across supported Minecraft versions.
+- Added tests to ensure compatibility across supported Minecraft versions - this will future-proof the plugin for new versions.
 
 ## Artifacts
 
