@@ -473,10 +473,7 @@ public final class DoubleDoors extends JavaPlugin {
     if (localBridge == null) {
       return;
     }
-    Listener listener = localBridge.createVersionListener();
-    if (listener != null) {
-      getServer().getPluginManager().registerEvents(listener, this);
-    }
+    localBridge.createVersionListener().ifPresent(l -> getServer().getPluginManager().registerEvents(l, this));
   }
 
   private String t(String key, Object... args) {

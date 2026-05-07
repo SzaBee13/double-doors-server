@@ -1,5 +1,6 @@
 package me.szabee.doubledoors.version;
 
+import java.util.Optional;
 import org.bukkit.event.Listener;
 
 /**
@@ -16,7 +17,7 @@ public interface VersionBridge {
   /**
    * Creates a listener instance for any version-specific event handling.
    *
-   * @return listener or null when no version-specific listener is needed
+   * @return an optional listener
    */
-  Listener createVersionListener();
+  Optional<Listener> createVersionListener();
 }

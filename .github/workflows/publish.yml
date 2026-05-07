@@ -113,7 +113,7 @@ jobs:
           RELEASE_BODY: ${{ github.event.release.body }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
         run: |
-          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
+          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE-NOTE.md"
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
           if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then

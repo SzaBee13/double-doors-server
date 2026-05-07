@@ -141,7 +141,6 @@ jobs:
             echo "Mapped ${file} -> ${target}"
           done
 
-          find .crowdin -type f -exec rm -rf .crowdin
           if [ -d ".crowdin" ]; then
             echo "Warning: .crowdin directory still exists"
             rm -rf .crowdin
