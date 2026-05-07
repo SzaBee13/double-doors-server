@@ -21,6 +21,7 @@ import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -44,6 +45,7 @@ import me.szabee.doubledoors.util.DoorUtil;
 import me.szabee.doubledoors.util.OpenableType;
 import me.szabee.doubledoors.util.ProtectionCompat;
 import me.szabee.doubledoors.util.SchedulerBridge;
+import me.szabee.doubledoors.version.VersionBridge;
 
 /**
  * Main plugin class for DoubleDoors.
@@ -66,6 +68,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile TaskToken updaterCheckTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
+  private volatile VersionBridge versionBridge;
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
     @Override
     public boolean isDoubleBehaviorEnabled(Player player) {
@@ -378,6 +381,8 @@ public final class DoubleDoors extends JavaPlugin {
     pluginConfig = new PluginConfig(this);
     DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
 
+    versionBridge = loadVersionBridge();
+
     restartFastStats();
     initializeUpdater();
 
@@ -391,6 +396,7 @@ public final class DoubleDoors extends JavaPlugin {
     getServer().getPluginManager().registerEvents(new DoorInteractListener(this), this);
     getServer().getPluginManager().registerEvents(new DoorCacheInvalidationListener(), this);
     getServer().getPluginManager().registerEvents(new RedstoneListener(this), this);
+    registerVersionListener();
 
     var doubledoorsCommand = getCommand("doubledoors");
     if (doubledoorsCommand != null) {
@@ -420,6 +426,9 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     getLogger().info(t("log.enabled"));
+    if (versionBridge != null) {
+      getLogger().info("Server API version: " + versionBridge.getServerApiVersion());
+    }
   }
 
   @Override
@@ -436,9 +445,35 @@ public final class DoubleDoors extends JavaPlugin {
       }
     } finally {
       disableUpdater();
+      versionBridge = null;
       closePlayerPreferences();
       getLogger().info(t("log.disabled"));
     }
+  }
+
+  private VersionBridge loadVersionBridge() {
+    try {
+      Class<?> bridgeClass = Class.forName("me.szabee.doubledoors.version.VersionBridgeImpl");
+      if (!VersionBridge.class.isAssignableFrom(bridgeClass)) {
+        getLogger().warning("Version bridge class does not implement VersionBridge.");
+        return null;
+      }
+      return (VersionBridge) bridgeClass.getDeclaredConstructor().newInstance();
+    } catch (ClassNotFoundException e) {
+      getLogger().warning("Version bridge not found; running without version-specific hooks.");
+      return null;
+    } catch (ReflectiveOperationException e) {
+      getLogger().log(Level.WARNING, "Failed to initialize version bridge.", e);
+      return null;
+    }
+  }
+
+  private void registerVersionListener() {
+    VersionBridge localBridge = versionBridge;
+    if (localBridge == null) {
+      return;
+    }
+    localBridge.createVersionListener().ifPresent(l -> getServer().getPluginManager().registerEvents(l, this));
   }
 
   private String t(String key, Object... args) {

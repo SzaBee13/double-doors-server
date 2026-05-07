@@ -19,15 +19,11 @@ logs/
 wiki/ 
 # its a separate repo but just in case
 
-# Testing
-tests/
-test/
-coverage/
-
 # Environment files
 .env
 .env.local
 .env.*.local
+!.env.example
 
 # Other
 .m2/
