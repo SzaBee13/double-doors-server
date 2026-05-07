@@ -105,7 +105,7 @@ jobs:
             VERSION_TYPE="beta"
           fi
 
-          echo "version_type=$VERSION_TYP            E" >> "$GITHUB_OUTPUT"
+          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
 
       - name: Get release notes
         id: release_notes
