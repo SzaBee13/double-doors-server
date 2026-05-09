@@ -1,6 +1,6 @@
 { 
   "credits": [
-    "SzaBee13"
+  "SzaBee13"
   ],
   "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
   "log.griefprevention_detected": "GriefPrevention detected: linked door opens will respect claim build checks.",

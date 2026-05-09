@@ -5,24 +5,24 @@ labels:
   - documentation
 body:
   - type: textarea
-    id: location
-    attributes:
-      label: Documentation location
-      description: Which file/page needs updates?
-      placeholder: README.md section "Config", wiki page "Permissions", etc.
-    validations:
-      required: true
+  id: location
+  attributes:
+    label: Documentation location
+    description: Which file/page needs updates?
+    placeholder: README.md section "Config", wiki page "Permissions", etc.
+  validations:
+    required: true
   - type: textarea
-    id: current
-    attributes:
-      label: Current issue
-      description: What is missing, confusing, or incorrect?
-    validations:
-      required: true
+  id: current
+  attributes:
+    label: Current issue
+    description: What is missing, confusing, or incorrect?
+  validations:
+    required: true
   - type: textarea
-    id: proposed
-    attributes:
-      label: Suggested improvement
-      description: How should it be documented instead?
-    validations:
-      required: true
+  id: proposed
+  attributes:
+    label: Suggested improvement
+    description: How should it be documented instead?
+  validations:
+    required: true

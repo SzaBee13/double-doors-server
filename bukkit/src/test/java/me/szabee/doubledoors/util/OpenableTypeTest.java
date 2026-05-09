@@ -7,12 +7,12 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 
 class OpenableTypeTest {
 
-    @Test
-    void testFromMaterial() {
-        assertEquals(OpenableType.DOOR, OpenableType.fromMaterial(Material.OAK_DOOR));
-        assertEquals(OpenableType.DOOR, OpenableType.fromMaterial(Material.IRON_DOOR));
-        assertEquals(OpenableType.FENCE_GATE, OpenableType.fromMaterial(Material.OAK_FENCE_GATE));
-        assertEquals(OpenableType.TRAPDOOR, OpenableType.fromMaterial(Material.OAK_TRAPDOOR));
-        assertNull(OpenableType.fromMaterial(Material.OAK_PLANKS));
-    }
+  @Test
+  void testFromMaterial() {
+    assertEquals(OpenableType.DOOR, OpenableType.fromMaterial(Material.OAK_DOOR));
+    assertEquals(OpenableType.DOOR, OpenableType.fromMaterial(Material.IRON_DOOR));
+    assertEquals(OpenableType.FENCE_GATE, OpenableType.fromMaterial(Material.OAK_FENCE_GATE));
+    assertEquals(OpenableType.TRAPDOOR, OpenableType.fromMaterial(Material.OAK_TRAPDOOR));
+    assertNull(OpenableType.fromMaterial(Material.OAK_PLANKS));
+  }
 }

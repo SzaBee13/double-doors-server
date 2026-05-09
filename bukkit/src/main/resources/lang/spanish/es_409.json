@@ -1,7 +1,7 @@
 {
   "credits": [
-    "SzaBee13",
-    "Google Translate"
+  "SzaBee13",
+  "Google Translate"
   ],
   "log.luckperms_detected": "LuckPerms detectado: los permisos se gestionan mediante nodos doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: las aperturas de puertas vinculadas respetarán las comprobaciones de construcción en claims.",

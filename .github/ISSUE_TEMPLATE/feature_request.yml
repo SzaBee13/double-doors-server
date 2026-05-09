@@ -5,33 +5,33 @@ labels:
   - feature request
 body:
   - type: markdown
-    attributes:
-      value: |
-        Thanks for the suggestion.
-        Please describe the problem and your proposed solution.
+  attributes:
+    value: |
+    Thanks for the suggestion.
+    Please describe the problem and your proposed solution.
   - type: textarea
-    id: problem
-    attributes:
-      label: Problem to solve
-      description: What problem are you trying to solve?
-      placeholder: It is hard to ...
-    validations:
-      required: true
+  id: problem
+  attributes:
+    label: Problem to solve
+    description: What problem are you trying to solve?
+    placeholder: It is hard to ...
+  validations:
+    required: true
   - type: textarea
-    id: proposal
-    attributes:
-      label: Proposed solution
-      description: What would you like to happen?
-      placeholder: Add a config option/command/event that ...
-    validations:
-      required: true
+  id: proposal
+  attributes:
+    label: Proposed solution
+    description: What would you like to happen?
+    placeholder: Add a config option/command/event that ...
+  validations:
+    required: true
   - type: textarea
-    id: alternatives
-    attributes:
-      label: Alternatives considered
-      description: Any workaround or alternative approach you tried.
+  id: alternatives
+  attributes:
+    label: Alternatives considered
+    description: Any workaround or alternative approach you tried.
   - type: textarea
-    id: extra
-    attributes:
-      label: Additional context
-      description: Screenshots, examples, links, or references.
+  id: extra
+  attributes:
+    label: Additional context
+    description: Screenshots, examples, links, or references.

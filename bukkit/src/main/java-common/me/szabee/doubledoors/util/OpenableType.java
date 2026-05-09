@@ -22,17 +22,17 @@ public enum OpenableType {
    * @return detected type, or null if unsupported
    */
   public static OpenableType fromMaterial(Material material) {
-    String name = material.name();
-    if (name.endsWith("_DOOR")) {
-      return DOOR;
-    }
-    if (name.endsWith("_FENCE_GATE")) {
-      return FENCE_GATE;
-    }
-    if (name.endsWith("_TRAPDOOR")) {
-      return TRAPDOOR;
-    }
-    return null;
+  String name = material.name();
+  if (name.endsWith("_DOOR")) {
+    return DOOR;
+  }
+  if (name.endsWith("_FENCE_GATE")) {
+    return FENCE_GATE;
+  }
+  if (name.endsWith("_TRAPDOOR")) {
+    return TRAPDOOR;
+  }
+  return null;
   }
 
   /**
@@ -43,15 +43,15 @@ public enum OpenableType {
    * @return detected type, or null if unsupported
    */
   public static OpenableType fromBlockData(BlockData blockData, Material material) {
-    if (blockData instanceof Door) {
-      return DOOR;
-    }
-    if (blockData instanceof Gate) {
-      return FENCE_GATE;
-    }
-    if (blockData instanceof TrapDoor) {
-      return TRAPDOOR;
-    }
-    return fromMaterial(material);
+  if (blockData instanceof Door) {
+    return DOOR;
+  }
+  if (blockData instanceof Gate) {
+    return FENCE_GATE;
+  }
+  if (blockData instanceof TrapDoor) {
+    return TRAPDOOR;
+  }
+  return fromMaterial(material);
   }
 }

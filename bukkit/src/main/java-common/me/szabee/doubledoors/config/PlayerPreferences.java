@@ -45,58 +45,58 @@ public final class PlayerPreferences {
    * @param plugin the plugin instance
    */
   public PlayerPreferences(DoubleDoors plugin) {
-    this.plugin = plugin;
-    this.dataFile = new File(plugin.getDataFolder(), "players.yml");
-    this.sqlStorage = plugin.getSqlStorage();
-    this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
-    load();
+  this.plugin = plugin;
+  this.dataFile = new File(plugin.getDataFolder(), "players.yml");
+  this.sqlStorage = plugin.getSqlStorage();
+  this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
+  load();
   }
 
   /**
    * Reloads all preferences from disk, clearing the in-memory cache.
    */
   public void load() {
-    if (useSql) {
-      cache.clear();
-      for (Map.Entry<UUID, SharedSqlStorage.SqlPlayerPref> entry : sqlStorage.loadAllPlayerPreferences().entrySet()) {
-        SharedSqlStorage.SqlPlayerPref pref = entry.getValue();
-        cache.put(entry.getKey(), new PlayerPref(
-            pref.enabled(),
-            pref.enableDoors(),
-            pref.enableFenceGates(),
-            pref.enableTrapdoors(),
-            pref.enableAutoClose(),
-            pref.enableKnockSound(),
-            normalizeKnockVolume(pref.knockVolume())));
-      }
-      return;
-    }
-
-    YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+  if (useSql) {
     cache.clear();
-    for (String key : data.getKeys(false)) {
-      // Fast path: skip obviously-invalid UUID formats before attempting UUID.fromString.
-      if (key.length() != 36
-          || key.charAt(8) != '-'
-          || key.charAt(13) != '-'
-          || key.charAt(18) != '-'
-          || key.charAt(23) != '-') {
-        continue;
-      }
-      try {
-        UUID uuid = UUID.fromString(key);
-        boolean enabled = data.getBoolean(key + ".enabled", true);
-        boolean doors = data.getBoolean(key + ".enableDoors", true);
-        boolean gates = data.getBoolean(key + ".enableFenceGates", true);
-        boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
-        boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
-        boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
-    double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
-        cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume));
-      } catch (IllegalArgumentException ignored) {
-        // Non-UUID top-level key — skip silently.
-      }
+    for (Map.Entry<UUID, SharedSqlStorage.SqlPlayerPref> entry : sqlStorage.loadAllPlayerPreferences().entrySet()) {
+    SharedSqlStorage.SqlPlayerPref pref = entry.getValue();
+    cache.put(entry.getKey(), new PlayerPref(
+      pref.enabled(),
+      pref.enableDoors(),
+      pref.enableFenceGates(),
+      pref.enableTrapdoors(),
+      pref.enableAutoClose(),
+      pref.enableKnockSound(),
+      normalizeKnockVolume(pref.knockVolume())));
     }
+    return;
+  }
+
+  YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+  cache.clear();
+  for (String key : data.getKeys(false)) {
+    // Fast path: skip obviously-invalid UUID formats before attempting UUID.fromString.
+    if (key.length() != 36
+      || key.charAt(8) != '-'
+      || key.charAt(13) != '-'
+      || key.charAt(18) != '-'
+      || key.charAt(23) != '-') {
+    continue;
+    }
+    try {
+    UUID uuid = UUID.fromString(key);
+    boolean enabled = data.getBoolean(key + ".enabled", true);
+    boolean doors = data.getBoolean(key + ".enableDoors", true);
+    boolean gates = data.getBoolean(key + ".enableFenceGates", true);
+    boolean trapdoors = data.getBoolean(key + ".enableTrapdoors", true);
+    boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
+    boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
+  double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
+    cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume));
+    } catch (IllegalArgumentException ignored) {
+    // Non-UUID top-level key — skip silently.
+    }
+  }
   }
 
   /**
@@ -104,32 +104,32 @@ public final class PlayerPreferences {
    * Performs blocking I/O.
    */
   public void save() {
-    if (useSql) {
-      flush();
-      return;
-    }
+  if (useSql) {
+    flush();
+    return;
+  }
 
-    try {
-      saveYaml();
-    } catch (IOException e) {
-      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
-    }
+  try {
+    saveYaml();
+  } catch (IOException e) {
+    plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
+  }
   }
 
   private void saveYaml() throws IOException {
-    YamlConfiguration data = new YamlConfiguration();
-    for (Map.Entry<UUID, PlayerPref> entry : Map.copyOf(cache).entrySet()) {
-      String key = entry.getKey().toString();
-      PlayerPref pref = entry.getValue();
-      data.set(key + ".enabled", pref.enabled());
-      data.set(key + ".enableDoors", pref.enableDoors());
-      data.set(key + ".enableFenceGates", pref.enableFenceGates());
-      data.set(key + ".enableTrapdoors", pref.enableTrapdoors());
-      data.set(key + ".enableAutoClose", pref.enableAutoClose());
-      data.set(key + ".enableKnockSound", pref.enableKnockSound());
-      data.set(key + ".knockVolume", pref.knockVolume());
-    }
-    data.save(dataFile);
+  YamlConfiguration data = new YamlConfiguration();
+  for (Map.Entry<UUID, PlayerPref> entry : Map.copyOf(cache).entrySet()) {
+    String key = entry.getKey().toString();
+    PlayerPref pref = entry.getValue();
+    data.set(key + ".enabled", pref.enabled());
+    data.set(key + ".enableDoors", pref.enableDoors());
+    data.set(key + ".enableFenceGates", pref.enableFenceGates());
+    data.set(key + ".enableTrapdoors", pref.enableTrapdoors());
+    data.set(key + ".enableAutoClose", pref.enableAutoClose());
+    data.set(key + ".enableKnockSound", pref.enableKnockSound());
+    data.set(key + ".knockVolume", pref.knockVolume());
+  }
+  data.save(dataFile);
   }
 
   /**
@@ -137,192 +137,192 @@ public final class PlayerPreferences {
    * Should be used from the main thread to avoid disk-blocking.
    */
   public void saveAsync(UUID changedUuid) {
-    if (useSql) {
-      if (changedUuid == null) {
-        return;
-      }
-      PlayerPref pref = cache.get(changedUuid);
-      if (pref == null) {
-        return;
-      }
-      SharedSqlStorage.SqlPlayerPref snapshot = new SharedSqlStorage.SqlPlayerPref(
-          pref.enabled(),
-          pref.enableDoors(),
-          pref.enableFenceGates(),
-          pref.enableTrapdoors(),
-          pref.enableAutoClose(),
-          pref.enableKnockSound(),
-          pref.knockVolume());
-      pendingSaves.put(changedUuid, new PendingSave(snapshot));
-      scheduleWriter();
-      return;
-    }
-
+  if (useSql) {
     if (changedUuid == null) {
-      return;
+    return;
     }
-    pendingSaves.put(changedUuid, PendingSave.forYaml());
+    PlayerPref pref = cache.get(changedUuid);
+    if (pref == null) {
+    return;
+    }
+    SharedSqlStorage.SqlPlayerPref snapshot = new SharedSqlStorage.SqlPlayerPref(
+      pref.enabled(),
+      pref.enableDoors(),
+      pref.enableFenceGates(),
+      pref.enableTrapdoors(),
+      pref.enableAutoClose(),
+      pref.enableKnockSound(),
+      pref.knockVolume());
+    pendingSaves.put(changedUuid, new PendingSave(snapshot));
     scheduleWriter();
+    return;
+  }
+
+  if (changedUuid == null) {
+    return;
+  }
+  pendingSaves.put(changedUuid, PendingSave.forYaml());
+  scheduleWriter();
   }
 
   /**
    * Flushes all pending async writes and blocks until persistence has completed.
    */
   public void flush() {
-    if (writerExecutor.isShutdown()) {
-      return;
-    }
-    try {
-      writerExecutor.submit(this::drainPendingWrites).get();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      plugin.getLogger().warning("Interrupted while waiting for player preference writes to flush.");
-    } catch (ExecutionException e) {
-      plugin.getLogger().warning("Failed while flushing player preference writes: %s".formatted(e.getMessage()));
-    }
+  if (writerExecutor.isShutdown()) {
+    return;
+  }
+  try {
+    writerExecutor.submit(this::drainPendingWrites).get();
+  } catch (InterruptedException e) {
+    Thread.currentThread().interrupt();
+    plugin.getLogger().warning("Interrupted while waiting for player preference writes to flush.");
+  } catch (ExecutionException e) {
+    plugin.getLogger().warning("Failed while flushing player preference writes: %s".formatted(e.getMessage()));
+  }
   }
 
   /**
    * Flushes pending writes and terminates the player-preference writer thread.
    */
   public void close() {
-    flush();
-    writerExecutor.shutdown();
-    try {
-      if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-        writerExecutor.shutdownNow();
-        // Wait a bit more for shutdownNow to complete
-        if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
-          plugin.getLogger().warning("Player preference writer did not terminate gracefully.");
-        }
-      }
-    } catch (InterruptedException e) {
-      writerExecutor.shutdownNow();
-      Thread.currentThread().interrupt();
-      plugin.getLogger().warning("Interrupted while shutting down player preference writer.");
+  flush();
+  writerExecutor.shutdown();
+  try {
+    if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+    writerExecutor.shutdownNow();
+    // Wait a bit more for shutdownNow to complete
+    if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
+      plugin.getLogger().warning("Player preference writer did not terminate gracefully.");
     }
+    }
+  } catch (InterruptedException e) {
+    writerExecutor.shutdownNow();
+    Thread.currentThread().interrupt();
+    plugin.getLogger().warning("Interrupted while shutting down player preference writer.");
+  }
   }
 
   private void scheduleWriter() {
-    if (writerExecutor.isShutdown()) {
-      return;
-    }
-    if (!writerScheduled.compareAndSet(false, true)) {
-      return;
-    }
-    writerExecutor.execute(this::drainPendingWrites);
+  if (writerExecutor.isShutdown()) {
+    return;
+  }
+  if (!writerScheduled.compareAndSet(false, true)) {
+    return;
+  }
+  writerExecutor.execute(this::drainPendingWrites);
   }
 
   private void drainPendingWrites() {
-    boolean reschedule = true;
-    try {
-      while (true) {
-        // Create a copy of the keys to iterate over without removing upfront
-        Set<UUID> keysToProcess = Set.copyOf(pendingSaves.keySet());
-        if (keysToProcess.isEmpty()) {
-          return;
-        }
-        boolean failed = false;
-        if (useSql) {
-          for (UUID uuid : keysToProcess) {
-            PendingSave pending = pendingSaves.get(uuid);
-            if (pending == null || pending.sqlSnapshot() == null) {
-              // Remove YAML entries from pendingSaves when using SQL
-              pendingSaves.remove(uuid, pending);
-              continue;
-            }
-            
-            try {
-              sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
-              // Only remove after successful persistence
-              pendingSaves.remove(uuid, pending);
-            } catch (RuntimeException e) {
-              failed = true;
-              plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
-                  .formatted(uuid, e.getMessage()));
-            }
-          }
-        } else {
-          // For YAML, we only save once per batch to avoid excessive I/O
-          boolean yamlSaved = false;
-          for (UUID uuid : keysToProcess) {
-            PendingSave pending = pendingSaves.get(uuid);
-            if (pending == null) {
-              continue; // Entry was removed by another thread
-            }
-            
-            // We only need to save once for YAML since it's a full file write
-            if (!yamlSaved) {
-              try {
-                saveYaml();
-                yamlSaved = true;
-                // Remove all processed entries
-                pendingSaves.keySet().removeAll(keysToProcess);
-              } catch (IOException e) {
-                failed = true;
-                plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
-                break;
-              }
-            }
-          }
-        }
-        if (failed) {
-          reschedule = false;
-          return;
+  boolean reschedule = true;
+  try {
+    while (true) {
+    // Create a copy of the keys to iterate over without removing upfront
+    Set<UUID> keysToProcess = Set.copyOf(pendingSaves.keySet());
+    if (keysToProcess.isEmpty()) {
+      return;
+    }
+    boolean failed = false;
+    if (useSql) {
+      for (UUID uuid : keysToProcess) {
+      PendingSave pending = pendingSaves.get(uuid);
+      if (pending == null || pending.sqlSnapshot() == null) {
+        // Remove YAML entries from pendingSaves when using SQL
+        pendingSaves.remove(uuid, pending);
+        continue;
+      }
+      
+      try {
+        sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+        // Only remove after successful persistence
+        pendingSaves.remove(uuid, pending);
+      } catch (RuntimeException e) {
+        failed = true;
+        plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
+          .formatted(uuid, e.getMessage()));
+      }
+      }
+    } else {
+      // For YAML, we only save once per batch to avoid excessive I/O
+      boolean yamlSaved = false;
+      for (UUID uuid : keysToProcess) {
+      PendingSave pending = pendingSaves.get(uuid);
+      if (pending == null) {
+        continue; // Entry was removed by another thread
+      }
+      
+      // We only need to save once for YAML since it's a full file write
+      if (!yamlSaved) {
+        try {
+        saveYaml();
+        yamlSaved = true;
+        // Remove all processed entries
+        pendingSaves.keySet().removeAll(keysToProcess);
+        } catch (IOException e) {
+        failed = true;
+        plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
+        break;
         }
       }
-    } finally {
-      writerScheduled.set(false);
-      if (reschedule && !pendingSaves.isEmpty()) {
-        scheduleWriter();
       }
     }
+    if (failed) {
+      reschedule = false;
+      return;
+    }
+    }
+  } finally {
+    writerScheduled.set(false);
+    if (reschedule && !pendingSaves.isEmpty()) {
+    scheduleWriter();
+    }
+  }
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
-    return cache.computeIfAbsent(uuid, k -> new PlayerPref(
-        true,
-        true,
-        true,
-        true,
-        true,
-        true,
-        DEFAULT_KNOCK_VOLUME));
+  return cache.computeIfAbsent(uuid, k -> new PlayerPref(
+    true,
+    true,
+    true,
+    true,
+    true,
+    true,
+    DEFAULT_KNOCK_VOLUME));
   }
 
   /** Returns whether the player has not globally disabled linked-door behavior. */
   public boolean isEnabled(UUID uuid) {
-    return getOrDefault(uuid).enabled();
+  return getOrDefault(uuid).enabled();
   }
 
   /** Returns whether the player has doors linking enabled. */
   public boolean isDoorsEnabled(UUID uuid) {
-    return getOrDefault(uuid).enableDoors();
+  return getOrDefault(uuid).enableDoors();
   }
 
   /** Returns whether the player has fence-gate linking enabled. */
   public boolean isFenceGatesEnabled(UUID uuid) {
-    return getOrDefault(uuid).enableFenceGates();
+  return getOrDefault(uuid).enableFenceGates();
   }
 
   /** Returns whether the player has trapdoor linking enabled. */
   public boolean isTrapdoorsEnabled(UUID uuid) {
-    return getOrDefault(uuid).enableTrapdoors();
+  return getOrDefault(uuid).enableTrapdoors();
   }
 
   /** Returns whether the player has auto-close enabled for their interactions. */
   public boolean isAutoCloseEnabled(UUID uuid) {
-    return getOrDefault(uuid).enableAutoClose();
+  return getOrDefault(uuid).enableAutoClose();
   }
 
   /** Returns whether the player has knock sound enabled for their interactions. */
   public boolean isKnockSoundEnabled(UUID uuid) {
-    return getOrDefault(uuid).enableKnockSound();
+  return getOrDefault(uuid).enableKnockSound();
   }
 
   /** Returns the player's knock sound volume (0.0-1.0). */
   public double getKnockVolume(UUID uuid) {
-    return getOrDefault(uuid).knockVolume();
+  return getOrDefault(uuid).knockVolume();
   }
 
   /**
@@ -332,18 +332,18 @@ public final class PlayerPreferences {
    * @return {@code true} if the feature is now enabled, {@code false} if now disabled
    */
   public boolean toggleAll(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enabled();
-    cache.put(uuid, new PlayerPref(
-        next,
-        current.enableDoors(),
-        current.enableFenceGates(),
-        current.enableTrapdoors(),
-        current.enableAutoClose(),
-        current.enableKnockSound(),
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enabled();
+  cache.put(uuid, new PlayerPref(
+    next,
+    current.enableDoors(),
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -353,18 +353,18 @@ public final class PlayerPreferences {
    * @return the new enabled state
    */
   public boolean toggleDoors(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enableDoors();
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        next,
-        current.enableFenceGates(),
-        current.enableTrapdoors(),
-        current.enableAutoClose(),
-        current.enableKnockSound(),
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enableDoors();
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    next,
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -374,18 +374,18 @@ public final class PlayerPreferences {
    * @return the new enabled state
    */
   public boolean toggleFenceGates(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enableFenceGates();
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        current.enableDoors(),
-        next,
-        current.enableTrapdoors(),
-        current.enableAutoClose(),
-        current.enableKnockSound(),
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enableFenceGates();
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    next,
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -395,18 +395,18 @@ public final class PlayerPreferences {
    * @return the new enabled state
    */
   public boolean toggleTrapdoors(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enableTrapdoors();
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        current.enableDoors(),
-        current.enableFenceGates(),
-        next,
-        current.enableAutoClose(),
-        current.enableKnockSound(),
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enableTrapdoors();
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    current.enableFenceGates(),
+    next,
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -416,18 +416,18 @@ public final class PlayerPreferences {
    * @return the new enabled state
    */
   public boolean toggleAutoClose(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enableAutoClose();
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        current.enableDoors(),
-        current.enableFenceGates(),
-        current.enableTrapdoors(),
-        next,
-        current.enableKnockSound(),
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enableAutoClose();
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    next,
+    current.enableKnockSound(),
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -437,18 +437,18 @@ public final class PlayerPreferences {
    * @return the new enabled state
    */
   public boolean toggleKnockSound(UUID uuid) {
-    PlayerPref current = getOrDefault(uuid);
-    boolean next = !current.enableKnockSound();
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        current.enableDoors(),
-        current.enableFenceGates(),
-        current.enableTrapdoors(),
-        current.enableAutoClose(),
-        next,
-        current.knockVolume()));
-    saveAsync(uuid);
-    return next;
+  PlayerPref current = getOrDefault(uuid);
+  boolean next = !current.enableKnockSound();
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    next,
+    current.knockVolume()));
+  saveAsync(uuid);
+  return next;
   }
 
   /**
@@ -459,76 +459,76 @@ public final class PlayerPreferences {
    * @return the normalized volume that was stored
    */
   public double setKnockVolume(UUID uuid, double volume) {
-    PlayerPref current = getOrDefault(uuid);
-    double normalized = normalizeKnockVolume(volume);
-    cache.put(uuid, new PlayerPref(
-        current.enabled(),
-        current.enableDoors(),
-        current.enableFenceGates(),
-        current.enableTrapdoors(),
-        current.enableAutoClose(),
-        current.enableKnockSound(),
-        normalized));
-    saveAsync(uuid);
-    return normalized;
+  PlayerPref current = getOrDefault(uuid);
+  double normalized = normalizeKnockVolume(volume);
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    normalized));
+  saveAsync(uuid);
+  return normalized;
   }
 
   private static double normalizeKnockVolume(double value) {
-    if (Double.isNaN(value) || Double.isInfinite(value)) {
-      return DEFAULT_KNOCK_VOLUME;
-    }
-    if (value < MIN_KNOCK_VOLUME) {
-      return MIN_KNOCK_VOLUME;
-    }
-    if (value > MAX_KNOCK_VOLUME) {
-      return MAX_KNOCK_VOLUME;
-    }
-    return value;
+  if (Double.isNaN(value) || Double.isInfinite(value)) {
+    return DEFAULT_KNOCK_VOLUME;
+  }
+  if (value < MIN_KNOCK_VOLUME) {
+    return MIN_KNOCK_VOLUME;
+  }
+  if (value > MAX_KNOCK_VOLUME) {
+    return MAX_KNOCK_VOLUME;
+  }
+  return value;
   }
 
   /**
    * Immutable snapshot of a single player's preferences.
    *
-   * @param enabled          global linked-door on/off
-   * @param enableDoors      door-linking on/off
+   * @param enabled      global linked-door on/off
+   * @param enableDoors    door-linking on/off
    * @param enableFenceGates fence-gate-linking on/off
    * @param enableTrapdoors  trapdoor-linking on/off
    * @param enableAutoClose  per-player auto-close on/off
    * @param enableKnockSound per-player knock sound on/off
-   * @param knockVolume      per-player knock volume (0.0-1.0)
+   * @param knockVolume    per-player knock volume (0.0-1.0)
    */
   public record PlayerPref(
-      boolean enabled,
-      boolean enableDoors,
-      boolean enableFenceGates,
-      boolean enableTrapdoors,
-      boolean enableAutoClose,
-      boolean enableKnockSound,
-      double knockVolume
+    boolean enabled,
+    boolean enableDoors,
+    boolean enableFenceGates,
+    boolean enableTrapdoors,
+    boolean enableAutoClose,
+    boolean enableKnockSound,
+    double knockVolume
   ) {}
 
   private static final class PendingSave {
-    private final SharedSqlStorage.SqlPlayerPref sqlSnapshot;
+  private final SharedSqlStorage.SqlPlayerPref sqlSnapshot;
 
-    private PendingSave(SharedSqlStorage.SqlPlayerPref sqlSnapshot) {
-      this.sqlSnapshot = sqlSnapshot;
-    }
+  private PendingSave(SharedSqlStorage.SqlPlayerPref sqlSnapshot) {
+    this.sqlSnapshot = sqlSnapshot;
+  }
 
-    private static PendingSave forYaml() {
-      return new PendingSave(null);
-    }
+  private static PendingSave forYaml() {
+    return new PendingSave(null);
+  }
 
-    private SharedSqlStorage.SqlPlayerPref sqlSnapshot() {
-      return sqlSnapshot;
-    }
+  private SharedSqlStorage.SqlPlayerPref sqlSnapshot() {
+    return sqlSnapshot;
+  }
   }
 
   private static final class WriterThreadFactory implements ThreadFactory {
-    @Override
-    public Thread newThread(Runnable runnable) {
-      Thread thread = new Thread(runnable, "DoubleDoors-PlayerPrefWriter");
-      thread.setDaemon(true);
-      return thread;
-    }
+  @Override
+  public Thread newThread(Runnable runnable) {
+    Thread thread = new Thread(runnable, "DoubleDoors-PlayerPrefWriter");
+    thread.setDaemon(true);
+    return thread;
+  }
   }
 }

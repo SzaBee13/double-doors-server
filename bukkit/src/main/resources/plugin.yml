@@ -8,51 +8,51 @@ softdepend: [LuckPerms, GriefPrevention, WorldGuard, Geyser-Spigot, floodgate]
 folia-supported: true
 commands:
   doubledoors:
-    description: Main DoubleDoors command
-    aliases: [dd]
-    usage: /doubledoors <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>
+  description: Main DoubleDoors command
+  aliases: [dd]
+  usage: /doubledoors <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>
 permissions:
   doubledoors.use:
-    description: Allows using DoubleDoors linked opening behavior
-    default: true
+  description: Allows using DoubleDoors linked opening behavior
+  default: true
   doubledoors.knock:
-    description: Allows playing knock sounds by left-clicking doors
-    default: true
+  description: Allows playing knock sounds by left-clicking doors
+  default: true
   doubledoors.knock.volume:
-    description: Allows setting personal knock sound volume
-    default: true
+  description: Allows setting personal knock sound volume
+  default: true
   doubledoors.autoclose:
-    description: Allows player-triggered linked opens to use auto-close
-    default: true
+  description: Allows player-triggered linked opens to use auto-close
+  default: true
   doubledoors.iron.manual:
-    description: Allows manually toggling iron doors by right-click
-    default: op
+  description: Allows manually toggling iron doors by right-click
+  default: op
   doubledoors.reload:
-    description: Allows reloading the config
-    default: op
+  description: Allows reloading the config
+  default: op
   doubledoors.toggle:
-    description: Allows toggling double door behavior per player
-    default: true
+  description: Allows toggling double door behavior per player
+  default: true
   doubledoors.toggle.autoclose:
-    description: Allows toggling personal auto-close preference
-    default: true
+  description: Allows toggling personal auto-close preference
+  default: true
   doubledoors.toggle.knock:
-    description: Allows toggling personal knock-sound preference
-    default: true
+  description: Allows toggling personal knock-sound preference
+  default: true
   doubledoors.server-toggle:
-    description: Allows toggling DoubleDoors server-wide behavior
-    default: op
+  description: Allows toggling DoubleDoors server-wide behavior
+  default: op
   doubledoors.grief:
-    description: Allows toggling per-claim villager linked-door access
-    default: true
+  description: Allows toggling per-claim villager linked-door access
+  default: true
   doubledoors.debug:
-    description: Allows toggling debug mode for linked-door diagnostics
-    default: op
+  description: Allows toggling debug mode for linked-door diagnostics
+  default: op
   doubledoors.preview:
-    description: Allows showing partner-door preview particles
-    default: true
+  description: Allows showing partner-door preview particles
+  default: true
   doubledoors.update.notify:
-    description: Receives update notifications from the built-in updater
-    default: op
+  description: Receives update notifications from the built-in updater
+  default: op
 modrinth-project-id: "Fdj5mcgC"
 github-repo: "SzaBee13/double-doors-server"

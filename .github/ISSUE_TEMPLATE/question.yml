@@ -5,14 +5,14 @@ labels:
   - question
 body:
   - type: textarea
-    id: question
-    attributes:
-      label: Question
-      description: Ask your question clearly and include context.
-    validations:
-      required: true
+  id: question
+  attributes:
+    label: Question
+    description: Ask your question clearly and include context.
+  validations:
+    required: true
   - type: textarea
-    id: context
-    attributes:
-      label: Context
-      description: Include plugin/server versions, config snippets, and what you already tried.
+  id: context
+  attributes:
+    label: Context
+    description: Include plugin/server versions, config snippets, and what you already tried.
