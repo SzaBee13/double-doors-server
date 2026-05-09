@@ -10,7 +10,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.concurrent.TimeUnit;
 
-import org.slf4j.Logger;
+import com.velocitypowered.api.plugin.PluginLogger;
 
 import com.google.inject.Inject;
 import com.velocitypowered.api.event.Subscribe;
@@ -39,7 +39,7 @@ public final class DoubleDoorsProxy {
   private static final String FASTSTATS_PROJECT_TOKEN = "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
 
   private final ProxyServer proxyServer;
-  private final Logger logger;
+  private final PluginLogger logger;
   private final Path dataDirectory;
   private final VelocityMetrics.Factory metricsFactory;
 
@@ -57,7 +57,7 @@ public final class DoubleDoorsProxy {
    * @param metricsFactory FastStats metrics factory
    */
   @Inject
-  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory,
+  public DoubleDoorsProxy(ProxyServer proxyServer, PluginLogger logger, @DataDirectory Path dataDirectory,
       VelocityMetrics.Factory metricsFactory) {
     this.proxyServer = proxyServer;
     this.logger = logger;
