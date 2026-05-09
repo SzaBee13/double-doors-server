@@ -6,6 +6,7 @@ Release date: 2026-05-09
 ## Fixed
 
 - Proxy logging
+- Iron door sounds
 
 ## Artifacts
 

@@ -18,21 +18,24 @@ public enum OpenableType {
   /**
    * Resolves an openable type from a material name suffix.
    *
-   * @param material the block material
-   * @return detected type, or null if unsupported
+   * @param material the block material, may be {@code null}
+   * @return detected type, or {@code null} if unsupported or material is {@code null}
    */
   public static OpenableType fromMaterial(Material material) {
-  String name = material.name();
-  if (name.endsWith("_DOOR")) {
-    return DOOR;
-  }
-  if (name.endsWith("_FENCE_GATE")) {
-    return FENCE_GATE;
-  }
-  if (name.endsWith("_TRAPDOOR")) {
-    return TRAPDOOR;
-  }
-  return null;
+    if (material == null) {
+      return null;
+    }
+    String name = material.name();
+    if (name.endsWith("_DOOR")) {
+      return DOOR;
+    }
+    if (name.endsWith("_FENCE_GATE")) {
+      return FENCE_GATE;
+    }
+    if (name.endsWith("_TRAPDOOR")) {
+      return TRAPDOOR;
+    }
+    return null;
   }
 
   /**

@@ -232,15 +232,20 @@ public final class PlayerPreferences {
         continue;
       }
       
-      try {
-        sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
-        // Only remove after successful persistence
-        pendingSaves.remove(uuid, pending);
-      } catch (RuntimeException e) {
-        failed = true;
-        plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
-          .formatted(uuid, e.getMessage()));
-      }
+        try {
+          boolean saved = sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+          if (saved) {
+            // Only remove after successful persistence
+            pendingSaves.remove(uuid, pending);
+          } else {
+            failed = true;
+            plugin.getLogger().warning("Could not save SQL player preference for %s: storage returned false".formatted(uuid));
+          }
+        } catch (RuntimeException e) {
+          failed = true;
+          plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
+            .formatted(uuid, e.getMessage()));
+        }
       }
     } else {
       // For YAML, we only save once per batch to avoid excessive I/O
