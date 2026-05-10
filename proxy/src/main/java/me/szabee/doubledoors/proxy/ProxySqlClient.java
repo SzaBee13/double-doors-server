@@ -15,8 +15,13 @@ public final class ProxySqlClient {
 
   private static final String MYSQL_DRIVER = "com.mysql.cj.jdbc.Driver";
   private static final String SQLITE_DRIVER = "org.sqlite.JDBC";
+  private static final String SQLITE_UPSERT_SQL = "INSERT INTO dd_proxy_presence (proxy_id, platform, last_seen_epoch_ms) VALUES (?, ?, ?) "
+    + "ON CONFLICT(proxy_id) DO UPDATE SET platform=excluded.platform, last_seen_epoch_ms=excluded.last_seen_epoch_ms";
+  private static final String MYSQL_UPSERT_SQL = "INSERT INTO dd_proxy_presence (proxy_id, platform, last_seen_epoch_ms) VALUES (?, ?, ?) "
+    + "ON DUPLICATE KEY UPDATE platform=VALUES(platform), last_seen_epoch_ms=VALUES(last_seen_epoch_ms)";
 
   private final HikariDataSource dataSource;
+  private final String upsertSql;
 
   /**
    * Creates a SQL client with HikariCP connection pooling.
@@ -26,23 +31,24 @@ public final class ProxySqlClient {
    * @param password SQL password
    */
   public ProxySqlClient(String jdbcUrl, String username, String password) {
-  HikariConfig config = new HikariConfig();
-  config.setJdbcUrl(jdbcUrl);
-  String driverClassName = detectDriverClassName(jdbcUrl);
-  if (driverClassName != null) {
-    ensureDriverLoaded(driverClassName);
-    config.setDriverClassName(driverClassName);
-  }
-  if (username != null && !username.isBlank()) {
-    config.setUsername(username);
-    config.setPassword(password == null ? "" : password);
-  }
-  config.setMaximumPoolSize(5);
-  config.setMinimumIdle(1);
-  config.setConnectionTimeout(10_000);
-  config.setIdleTimeout(600_000);
-  config.setMaxLifetime(1_800_000);
-  this.dataSource = new HikariDataSource(config);
+    HikariConfig config = new HikariConfig();
+    config.setJdbcUrl(jdbcUrl);
+    String driverClassName = detectDriverClassName(jdbcUrl);
+    if (driverClassName != null) {
+      ensureDriverLoaded(driverClassName);
+      config.setDriverClassName(driverClassName);
+    }
+    if (username != null && !username.isBlank()) {
+      config.setUsername(username);
+      config.setPassword(password == null ? "" : password);
+    }
+    config.setMaximumPoolSize(5);
+    config.setMinimumIdle(1);
+    config.setConnectionTimeout(10_000);
+    config.setIdleTimeout(600_000);
+    config.setMaxLifetime(1_800_000);
+    this.dataSource = new HikariDataSource(config);
+    this.upsertSql = SQLITE_DRIVER.equals(driverClassName) ? SQLITE_UPSERT_SQL : MYSQL_UPSERT_SQL;
   }
 
   private static String detectDriverClassName(String jdbcUrl) {
@@ -97,23 +103,13 @@ public final class ProxySqlClient {
    * @param epochMillis heartbeat time
    */
   public void upsertHeartbeat(String proxyId, String platform, long epochMillis) throws SQLException {
-  String updateSql = "UPDATE dd_proxy_presence SET platform=?, last_seen_epoch_ms=? WHERE proxy_id=?";
-  try (Connection connection = dataSource.getConnection();
-     PreparedStatement update = connection.prepareStatement(updateSql)) {
-    update.setString(1, platform);
-    update.setLong(2, epochMillis);
-    update.setString(3, proxyId);
-    int changed = update.executeUpdate();
-    if (changed == 0) {
-    String insertSql = "INSERT INTO dd_proxy_presence (proxy_id, platform, last_seen_epoch_ms) VALUES (?, ?, ?)";
-    try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
-      insert.setString(1, proxyId);
-      insert.setString(2, platform);
-      insert.setLong(3, epochMillis);
-      insert.executeUpdate();
+    try (Connection connection = dataSource.getConnection();
+      PreparedStatement upsert = connection.prepareStatement(upsertSql)) {
+      upsert.setString(1, proxyId);
+      upsert.setString(2, platform);
+      upsert.setLong(3, epochMillis);
+      upsert.executeUpdate();
     }
-    }
-  }
   }
 
   /**

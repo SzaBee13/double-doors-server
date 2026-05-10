@@ -90,7 +90,7 @@ public final class RedstoneListener implements Listener {
   // rather than directly on the openable, so inspect immediate neighbors too.
   for (BlockFace face : BlockFace.values()) {
     if (!face.isCartesian()) {
-    continue;
+      continue;
     }
 
     Block neighbor = source.getRelative(face);
@@ -220,13 +220,13 @@ public final class RedstoneListener implements Listener {
   SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), effectiveDelay, () -> {
     BlockData originData = origin.getBlockData();
     if (!(originData instanceof Openable openable)) {
-    return;
+      return;
     }
 
     boolean openState = openable.isOpen();
     BlockFace targetGateFacing = originData instanceof Gate gate ? gate.getFacing() : null;
     if (requireOriginStateChange && beforeState == openState) {
-    return;
+      return;
     }
 
     if (originData instanceof Door) {

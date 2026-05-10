@@ -15,8 +15,8 @@ public final class VersionBridgeImpl implements VersionBridge {
    */
   @Override
   public String getServerApiVersion() {
-  String version = Bukkit.getBukkitVersion();
-  return version == null || version.isBlank() ? "unknown" : version;
+    final String version = Bukkit.getBukkitVersion();
+      return version == null || version.isBlank() ? "unknown" : version;
   }
 
   /**
@@ -26,6 +26,6 @@ public final class VersionBridgeImpl implements VersionBridge {
    */
   @Override
   public Optional<Listener> createVersionListener() {
-  return Optional.empty();
+    return Optional.empty();
   }
 }

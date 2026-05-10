@@ -5,15 +5,15 @@ labels:
   - duplicate
 body:
   - type: input
-  id: existing_reference
-  attributes:
-    label: Existing issue/PR reference
-    description: Link the existing issue or pull request.
-    placeholder: https://github.com/<owner>/<repo>/issues/123
-  validations:
-    required: true
+    id: existing_reference
+    attributes:
+      label: Existing issue/PR reference
+      description: Link the existing issue or pull request.
+      placeholder: https://github.com/<owner>/<repo>/issues/123
+    validations:
+      required: true
   - type: textarea
-  id: note
-  attributes:
-    label: Notes
-    description: Optional details about why this is a duplicate.
+    id: note
+    attributes:
+      label: Notes
+      description: Optional details about why this is a duplicate.

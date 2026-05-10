@@ -2,204 +2,205 @@ name: Publish Release
 
 on:
   release:
-  types: [created]
+    types: [created]
   workflow_dispatch:
-  inputs:
-    tag:
-    description: 'Release tag to publish (for example: v3.0.0)'
-    required: true
-    type: string
+    inputs:
+      tag:
+        description: 'Release tag to publish (for example: v3.0.0)'
+        required: true
+        type: string
 
 jobs:
   build:
-  runs-on: ubuntu-latest
-  permissions:
-    contents: write
-    packages: write
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      packages: write
 
-  steps:
-    - uses: actions/checkout@v6
-    with:
-      ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
-      fetch-depth: 0
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+          fetch-depth: 0
 
-    - name: Set up JDK 25
-    uses: actions/setup-java@v5
-    with:
-      java-version: '25'
-      distribution: 'temurin'
-      server-id: github # this auto-generates settings.xml for GitHub Packages auth
-      settings-path: ${{ github.workspace }}
+      - name: Set up JDK 25
+        uses: actions/setup-java@v5
+        with:
+          java-version: '25'
+          distribution: 'temurin'
+          server-id: github # this auto-generates settings.xml for GitHub Packages auth
+          settings-path: ${{ github.workspace }}
 
-    - name: Build with Maven
-    run: mvn -B package --file pom.xml
+      - name: Build with Maven
+        run: mvn -B package --file pom.xml
 
-    - name: Get JAR path
-    id: artifact
-    run: |
-      # Prefer the Bukkit module shaded jar, then fall back to any non-classifier jar.
-      JAR_PATH=$(find bukkit/target -maxdepth 1 -name "doubledoors-bukkit-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
-      if [ -z "$JAR_PATH" ]; then
-      JAR_PATH=$(find bukkit/target -maxdepth 1 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
-      fi
-      if [ -z "$JAR_PATH" ]; then
-      JAR_PATH=$(find target -maxdepth 2 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
-      fi
+      - name: Get JAR path
+        id: artifact
+        run: |
+          # Prefer the Bukkit module shaded jar, then fall back to any non-classifier jar.
+          JAR_PATH=$(find bukkit/target -maxdepth 1 -name "doubledoors-bukkit-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          if [ -z "$JAR_PATH" ]; then
+            JAR_PATH=$(find bukkit/target -maxdepth 1 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          fi
+          if [ -z "$JAR_PATH" ]; then
+            JAR_PATH=$(find target -maxdepth 2 -name "*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          fi
 
-      if [ -z "$JAR_PATH" ]; then
-      echo "Could not find a publishable Bukkit JAR." >&2
-      echo "Contents of bukkit/target:" >&2
-      ls -la bukkit/target >&2 || true
-      echo "Contents of target:" >&2
-      ls -la target >&2 || true
-      exit 1
-      fi
+          if [ -z "$JAR_PATH" ]; then
+            echo "Could not find a publishable Bukkit JAR." >&2
+            echo "Contents of bukkit/target:" >&2
+            ls -la bukkit/target >&2 || true
+            echo "Contents of target:" >&2
+            ls -la target >&2 || true
+            exit 1
+          fi
 
-      echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "jar_path=$JAR_PATH" >> "$GITHUB_OUTPUT"
 
-    - name: Get proxy JAR path
-    id: proxy_artifact
-    run: |
-      PROXY_JAR_PATH=$(find proxy/target -maxdepth 1 -name "doubledoors-proxy-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+      - name: Get proxy JAR path
+        id: proxy_artifact
+        run: |
+          PROXY_JAR_PATH=$(find proxy/target -maxdepth 1 -name "doubledoors-proxy-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
 
-      if [ -z "$PROXY_JAR_PATH" ]; then
-      echo "Could not find a publishable proxy JAR." >&2
-      echo "Contents of proxy/target:" >&2
-      ls -la proxy/target >&2 || true
-      exit 1
-      fi
+          if [ -z "$PROXY_JAR_PATH" ]; then
+            echo "Could not find a publishable proxy JAR." >&2
+            echo "Contents of proxy/target:" >&2
+            ls -la proxy/target >&2 || true
+            exit 1
+          fi
 
-      echo "jar_path=$PROXY_JAR_PATH" >> $GITHUB_OUTPUT
+          echo "jar_path=$PROXY_JAR_PATH" >> "$GITHUB_OUTPUT"
 
-    - name: Attach JAR to release
-    uses: softprops/action-gh-release@v3
-    with:
-      tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
-      files: |
-      ${{ steps.artifact.outputs.jar_path }}
-      ${{ steps.proxy_artifact.outputs.jar_path }}
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
+      - name: Attach JAR to release
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+          files: |
+            ${{ steps.artifact.outputs.jar_path }}
+            ${{ steps.proxy_artifact.outputs.jar_path }}
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Extract version
-    id: version
-    run: |
-      VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}"
-      VERSION="${VERSION#v}"
-      echo "version=$VERSION" >> $GITHUB_OUTPUT
+      - name: Extract version
+        id: version
+        run: |
+          VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}"
+          VERSION="${VERSION#v}"
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
-    - name: Detect release channel
-    id: release_channel
-    env:
-      TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
-      IS_PRERELEASE: ${{ github.event_name == 'release' && github.event.release.prerelease || 'false' }}
-    run: |
-      TAG_LOWER="$(printf '%s' "$TAG_NAME" | tr '[:upper:]' '[:lower:]')"
-      VERSION_TYPE="release"
+      - name: Detect release channel
+        id: release_channel
+        env:
+          TAG_NAME: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+          IS_PRERELEASE: ${{ github.event_name == 'release' && github.event.release.prerelease || 'false' }}
+        run: |
+          TAG_LOWER="$(printf '%s' "$TAG_NAME" | tr '[:upper:]' '[:lower:]')"
+          VERSION_TYPE="release"
 
-      if [[ "$TAG_LOWER" == *"alpha"* ]]; then
-      VERSION_TYPE="alpha"
-      elif [[ "$TAG_LOWER" == *"beta"* ]]; then
-      VERSION_TYPE="beta"
-      elif [[ "$IS_PRERELEASE" == "true" ]]; then
-      VERSION_TYPE="beta"
-      fi
+          if [[ "$TAG_LOWER" == *"alpha"* ]]; then
+            VERSION_TYPE="alpha"
+          elif [[ "$TAG_LOWER" == *"beta"* ]]; then
+            VERSION_TYPE="beta"
+          elif [[ "$IS_PRERELEASE" == "true" ]]; then
+            VERSION_TYPE="beta"
+          fi
 
-      echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
+          echo "version_type=$VERSION_TYPE" >> "$GITHUB_OUTPUT"
 
-    - name: Get release notes
-    id: release_notes
-    env:
-      RELEASE_BODY: ${{ github.event.release.body }}
-      RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
-    run: |
-      RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE-NOTE.md"
-      DELIMITER="RELEASE_NOTES_$(date +%s%N)"
+      - name: Get release notes
+        id: release_notes
+        env:
+          RELEASE_BODY: ${{ github.event.release.body }}
+          RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+        run: |
+          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
+          DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
-      if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then
-      BODY="$(cat "$RELEASE_NOTE_FILE")"
-      elif [ -n "$RELEASE_BODY" ]; then
-      BODY="$RELEASE_BODY"
-      else
-      BODY="Release ${RELEASE_TAG}"
-      fi
+          if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then
+            BODY="$(cat "$RELEASE_NOTE_FILE")"
+          elif [ -n "$RELEASE_BODY" ]; then
+            BODY="$RELEASE_BODY"
+          else
+            BODY="Release ${RELEASE_TAG}"
+          fi
 
-      {
-      echo "body<<$DELIMITER"
-      printf '%s\n' "$BODY"
-      echo "$DELIMITER"
-      } >> "$GITHUB_OUTPUT"
+          {
+            echo "body<<$DELIMITER"
+            printf '%s\n' "$BODY"
+            echo "$DELIMITER"
+          } >> "$GITHUB_OUTPUT"
 
-    - name: Publish to GitHub Packages
-    run: mvn deploy -s ${{ github.workspace }}/settings.xml -DskipTests
-    env:
-      GITHUB_TOKEN: ${{ github.token }}
+      - name: Publish to GitHub Packages
+        run: mvn deploy -s ${{ github.workspace }}/settings.xml -DskipTests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
 
-    - name: Publish to Modrinth and CurseForge
-    uses: Kir-Antipov/mc-publish@v3.3
-    with:
-      modrinth-id: Fdj5mcgC
-      modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-      curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
-      curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-      files: ${{ steps.artifact.outputs.jar_path }}
-      name: 'Double Doors Server ${{ steps.version.outputs.version }}'
-      version: 'v${{ steps.version.outputs.version }}'
-      version-type: ${{ steps.release_channel.outputs.version_type }}
-      changelog: ${{ steps.release_notes.outputs.body }}
-      loaders: |
-      bukkit
-      paper
-      purpur
-      spigot
-      folia
-      game-versions: |
-      1.21
-      1.21.1
-      1.21.2
-      1.21.3
-      1.21.4
-      1.21.5
-      1.21.6
-      1.21.7
-      1.21.8
-      1.21.9
-      1.21.10
-      1.21.11
-      26.1
-      26.1.1
-      26.1.2
-      java: |
-      25
-      game-version-filter: none
-    - name: Publish Proxy To Modrinth
-    uses: Kir-Antipov/mc-publish@v3.3
-    with:
-      modrinth-id: Fdj5mcgC
-      modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-      files: ${{ steps.proxy_artifact.outputs.jar_path }}
-      name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
-      version: 'v${{ steps.version.outputs.version }}'
-      version-type: ${{ steps.release_channel.outputs.version_type }}
-      changelog: "Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below"
-      loaders: | 
-      velocity
-      game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
-      1.21
-      1.21.1
-      1.21.2
-      1.21.3
-      1.21.4
-      1.21.5
-      1.21.6
-      1.21.7
-      1.21.8
-      1.21.9
-      1.21.10
-      1.21.11
-      26.1
-      26.1.1
-      26.1.2
-      java: |
-      25
-      game-version-filter: none
+      - name: Publish to Modrinth and CurseForge
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Fdj5mcgC
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: ${{ steps.artifact.outputs.jar_path }}
+          name: 'Double Doors Server ${{ steps.version.outputs.version }}'
+          version: 'v${{ steps.version.outputs.version }}'
+          version-type: ${{ steps.release_channel.outputs.version_type }}
+          changelog: ${{ steps.release_notes.outputs.body }}
+          loaders: |
+            bukkit
+            paper
+            purpur
+            spigot
+            folia
+          game-versions: |
+            1.21
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+            26.1
+            26.1.1
+            26.1.2
+          java: |
+            25
+          game-version-filter: none
+
+      - name: Publish Proxy To Modrinth
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          modrinth-id: Fdj5mcgC
+          modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
+          files: ${{ steps.proxy_artifact.outputs.jar_path }}
+          name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
+          version: 'v${{ steps.version.outputs.version }}'
+          version-type: ${{ steps.release_channel.outputs.version_type }}
+          changelog: 'Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
+          loaders: |
+            velocity
+          game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
+            1.21
+            1.21.1
+            1.21.2
+            1.21.3
+            1.21.4
+            1.21.5
+            1.21.6
+            1.21.7
+            1.21.8
+            1.21.9
+            1.21.10
+            1.21.11
+            26.1
+            26.1.1
+            26.1.2
+          java: |
+            25
+          game-version-filter: none

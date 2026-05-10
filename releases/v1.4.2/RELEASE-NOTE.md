@@ -5,8 +5,8 @@ Release date: 2026-05-09
 
 ## Fixed
 
-- Proxy logging
-- Iron door sounds
+- Fixed missing or incorrect proxy connection logs when using Velocity, ensuring successful connections and errors are logged.
+- Fixed iron doors not emitting open/close sound effects when operated via the double-door mechanism, restoring expected audio feedback.
 
 ## Artifacts
 

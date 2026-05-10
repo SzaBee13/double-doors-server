@@ -16,25 +16,47 @@ public final class SchedulerBridge {
   private SchedulerBridge() {
   }
 
+  /**
+   * Schedules a task to run on the next server tick.
+   *
+   * @param plugin the plugin instance
+   * @param task the task to run
+   */
   public static void runNextTick(Plugin plugin, Runnable task) {
-  if (runFoliaGlobal(plugin, task, 1L)) {
-    return;
-  }
-  plugin.getServer().getScheduler().runTask(plugin, task);
+    if (runFoliaGlobal(plugin, task, 1L)) {
+      return;
+    }
+    plugin.getServer().getScheduler().runTask(plugin, task);
   }
 
+  /**
+   * Schedules a delayed task at a specific location.
+   *
+   * @param plugin the plugin instance
+   * @param location the location where the task should run
+   * @param delayTicks delay in ticks before execution
+   * @param task the task to run
+   */
   public static void runLaterAtLocation(Plugin plugin, Location location, long delayTicks, Runnable task) {
-  if (runFoliaRegion(plugin, location, delayTicks, task)) {
-    return;
-  }
-  plugin.getServer().getScheduler().runTaskLater(plugin, task, delayTicks);
+    if (runFoliaRegion(plugin, location, delayTicks, task)) {
+      return;
+    }
+    plugin.getServer().getScheduler().runTaskLater(plugin, task, delayTicks);
   }
 
+  /**
+   * Schedules a task asynchronously.
+   *
+   * <p>The task runs off the main thread.</p>
+   *
+   * @param plugin the plugin instance
+   * @param task the task to run
+   */
   public static void runAsync(Plugin plugin, Runnable task) {
-  if (runFoliaAsync(plugin, task)) {
-    return;
-  }
-  plugin.getServer().getScheduler().runTaskAsynchronously(plugin, task);
+    if (runFoliaAsync(plugin, task)) {
+      return;
+    }
+    plugin.getServer().getScheduler().runTaskAsynchronously(plugin, task);
   }
 
   /**

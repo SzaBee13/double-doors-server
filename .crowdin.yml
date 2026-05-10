@@ -6,4 +6,4 @@
 
 files:
   - source: "/bukkit/src/main/resources/lang/english/en_US.json"
-  translation: "/.crowdin/%locale_with_underscore%.json"
+    translation: "/.crowdin/%locale_with_underscore%.json"
