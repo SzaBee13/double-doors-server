@@ -2,24 +2,24 @@ name: Crowdin Translation Sync
 
 on:
   push:
-  branches:
-    - main
-  paths:
-    - bukkit/src/main/resources/lang/english/en_US.json
-    - .crowdin.yml
+    branches:
+      - main
+    paths:
+      - bukkit/src/main/resources/lang/english/en_US.json
+      - .crowdin.yml
   workflow_dispatch:
-  inputs:
-    mode:
-    description: "Choose which Crowdin action to run"
-    required: true
-    default: both
-    type: choice
-    options:
-      - upload
-      - download
-      - both
+    inputs:
+      mode:
+      description: "Choose which Crowdin action to run"
+      required: true
+      default: both
+      type: choice
+      options:
+        - upload
+        - download
+        - both
   schedule:
-  - cron: '0 4 * * 1'
+  - cron: '0 4 * * 1' # Run every Monday at 4 AM
 
 permissions:
   contents: write

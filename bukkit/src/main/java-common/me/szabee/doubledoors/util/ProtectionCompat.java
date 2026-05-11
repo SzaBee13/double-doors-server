@@ -67,14 +67,14 @@ public final class ProtectionCompat {
     if (dataStore != null) {
       Object claim = findClaimAt(dataStore, linkedBlock);
       if (claim != null) {
-      Boolean allowBuildResult = tryAllowBuild(claim, player, linkedBlock.getType());
-      if (allowBuildResult != null && !allowBuildResult) {
-        return "griefprevention_build_denied";
-      }
-
       Boolean checkPermissionResult = tryCheckPermission(claim, player, "Build", "Access", "Inventory");
       if (checkPermissionResult != null && !checkPermissionResult) {
         return "griefprevention_permission_denied";
+      }
+
+      Boolean allowBuildResult = tryAllowBuild(claim, player, linkedBlock.getType());
+      if (allowBuildResult != null && !allowBuildResult) {
+        return "griefprevention_build_denied";
       }
       }
     }

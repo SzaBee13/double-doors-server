@@ -7,7 +7,7 @@ Release date: 2026-05-11
 
 - Fixed missing or incorrect proxy connection logs when using Velocity, ensuring successful connections and errors are logged.
 - Fixed iron doors not emitting open/close sound effects when operated via the double-door mechanism, restoring expected audio feedback.
-- Fixed Door opening/closing on someone else's land with access/container trust with GriefPrevention.
+- Fixed a GriefPrevention issue where players without access/container trust could open/close doors on land they do not own; after this fix, only players with access/container trust can open/close doors on others' land.
 
 ## Artifacts
 
