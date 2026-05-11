@@ -72,7 +72,7 @@ public final class ProtectionCompat {
         return "griefprevention_build_denied";
       }
 
-      Boolean checkPermissionResult = tryCheckPermission(claim, player);
+      Boolean checkPermissionResult = tryCheckPermission(claim, player, "Build", "Access", "Inventory");
       if (checkPermissionResult != null && !checkPermissionResult) {
         return "griefprevention_permission_denied";
       }
@@ -179,15 +179,14 @@ public final class ProtectionCompat {
   }
 
   @SuppressWarnings({"rawtypes", "unchecked"})
-  private static Boolean tryCheckPermission(Object claim, Player player) throws ReflectiveOperationException {
+  private static Boolean tryCheckPermission(Object claim, Player player, String... permissionNames)
+    throws ReflectiveOperationException {
   Class<?> claimPermissionClass;
   try {
     claimPermissionClass = Class.forName("me.ryanhamshire.GriefPrevention.ClaimPermission");
   } catch (ClassNotFoundException ex) {
     return null;
   }
-
-  Object buildPermission = Enum.valueOf((Class<Enum>) claimPermissionClass, "Build");
 
   for (Method method : claim.getClass().getMethods()) {
     if (!method.getName().equals("checkPermission")) {
@@ -206,29 +205,51 @@ public final class ProtectionCompat {
     continue;
     }
 
+    boolean attemptedPermission = false;
+    for (String permissionName : permissionNames) {
+    Object permission;
+    try {
+      permission = Enum.valueOf((Class<Enum>) claimPermissionClass, permissionName);
+    } catch (IllegalArgumentException ignored) {
+      continue;
+    }
+    attemptedPermission = true;
+
     Object[] args = new Object[parameterTypes.length];
     args[0] = player;
-    args[1] = buildPermission;
+    args[1] = permission;
     for (int i = 2; i < parameterTypes.length; i++) {
-    args[i] = null;
+      args[i] = null;
     }
 
     Object result = method.invoke(claim, args);
     if (result == null) {
-    return true;
+      return true;
     }
     if (result instanceof Boolean boolResult) {
-    return boolResult;
+      if (boolResult) {
+      return true;
+      }
+      continue;
     }
     if (result instanceof String message) {
-    return message.isEmpty();
+      if (message.isEmpty()) {
+      return true;
+      }
+      continue;
     }
     if (result instanceof Supplier<?> supplier) {
-    Object supplied = supplier.get();
-    return supplied == null || supplied.toString().isEmpty();
+      Object supplied = supplier.get();
+      if (supplied == null || supplied.toString().isEmpty()) {
+      return true;
+      }
+      continue;
+    }
     }
 
+    if (attemptedPermission) {
     return false;
+    }
   }
 
   return null;
@@ -294,7 +315,7 @@ public final class ProtectionCompat {
     if (allowBuild != null) {
     return allowBuild;
     }
-    Boolean checkPerm = tryCheckPermission(claim, player);
+    Boolean checkPerm = tryCheckPermission(claim, player, "Build");
     if (checkPerm != null) {
     return checkPerm;
     }
