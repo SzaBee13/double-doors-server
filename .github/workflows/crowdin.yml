@@ -89,43 +89,41 @@ jobs:
         if: always()
         run: rm -rf .crowdin
   
-    download-translations:
-      if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'download' || github.event.inputs.mode == 'both'))
-      runs-on: ubuntu-latest
-      steps:
-        - name: Checkout
-          uses: actions/checkout@v6
+  download-translations:
+    if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'download' || github.event.inputs.mode == 'both'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
     
-        - name: Download translated files from Crowdin
-          uses: crowdin/github-action@v2
-          with:
-            config: .crowdin.yml
-            upload_sources: false
-            upload_translations: false
-            download_translations: true
-            skip_untranslated_strings: true
-          env:
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-            CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
-            CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
-    
-        - name: Normalize translation file locations
-          shell: bash
-          run: |
-            set -euo pipefail
-      
-            shopt -s nullglob
-            files=(.crowdin/*.json)
-      
-            if [ ${#files[@]} -eq 0 ]; then
-            echo "No translated files were downloaded."
-            exit 0
-            fi
-      
-            for file in "${files[@]}"; do
-            locale="$(basename "${file}" .json)"
-      
-            case "${locale}" in
+      - name: Download translated files from Crowdin
+        uses: crowdin/github-action@v2
+        with:
+          config: .crowdin.yml
+          upload_sources: false
+          upload_translations: false
+          download_translations: true
+          skip_untranslated_strings: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CROWDIN_PROJECT_ID: ${{ secrets.CROWDIN_PROJECT_ID }}
+      - name: Normalize translation file locations
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          shopt -s nullglob
+          files=(.crowdin/*.json)
+
+          if [ ${#files[@]} -eq 0 ]; then
+          echo "No translated files were downloaded."
+          exit 0
+          fi
+
+          for file in "${files[@]}"; do
+          locale="$(basename "${file}" .json)"
+
+          case "${locale}" in
               en_*) target="bukkit/src/main/resources/lang/english/${locale}.json" ;;
               fr_*) target="bukkit/src/main/resources/lang/french/${locale}.json" ;;
               de_*) target="bukkit/src/main/resources/lang/german/${locale}.json" ;;
@@ -135,18 +133,18 @@ jobs:
               hu_HU) target="bukkit/src/main/resources/lang/hu_HU.json" ;;
               *) target="bukkit/src/main/resources/lang/${locale}.json" ;;
             esac
-      
-            mkdir -p "$(dirname "${target}")"
-            cp "${file}" "${target}"
-            echo "Mapped ${file} -> ${target}"
-            done
-      
-            if [ -d ".crowdin" ]; then
-            echo "Warning: .crowdin directory still exists"
-            rm -rf .crowdin
-            fi
-    
-        - name: Create pull request for translation updates
+
+          mkdir -p "$(dirname "${target}")"
+          cp "${file}" "${target}"
+          echo "Mapped ${file} -> ${target}"
+          done
+
+          if [ -d ".crowdin" ]; then
+          echo "Warning: .crowdin directory still exists"
+          rm -rf .crowdin
+          fi
+
+      - name: Create pull request for translation updates
           uses: peter-evans/create-pull-request@v8
           with:
             branch: chore/crowdin-sync
