@@ -52,47 +52,47 @@ public final class ProxySqlClient {
   }
 
   private static String detectDriverClassName(String jdbcUrl) {
-  if (jdbcUrl == null) {
-    return null;
-  }
-  if (jdbcUrl.startsWith("jdbc:mysql:")) {
-    return MYSQL_DRIVER;
-  }
-  if (jdbcUrl.startsWith("jdbc:mariadb:")) {
-    return MYSQL_DRIVER;
-  }
-  if (jdbcUrl.startsWith("jdbc:sqlite:")) {
-    return SQLITE_DRIVER;
-  }
-  return null;
+    if (jdbcUrl == null || !jdbcUrl.startsWith("jdbc:")) {
+      return null;
+    }
+    int databaseTypeEnd = jdbcUrl.indexOf(':', 5);
+    if (databaseTypeEnd < 0) {
+      return null;
+    }
+    String databaseType = jdbcUrl.substring(5, databaseTypeEnd);
+    return switch (databaseType) {
+      case "mysql", "mariadb" -> MYSQL_DRIVER;
+      case "sqlite" -> SQLITE_DRIVER;
+      default -> null;
+    };
   }
 
   private static void ensureDriverLoaded(String driverClassName) {
-  if (driverClassName == null) {
-    return;
-  }
-  // JDBC 4+ drivers are typically auto-registered via ServiceLoader;
-  // this explicit load is kept as a fast-fail diagnostic for environments where that is not true.
-  try {
-    Class.forName(driverClassName);
-  } catch (ClassNotFoundException exception) {
-    throw new IllegalStateException("JDBC driver class not found: " + driverClassName, exception);
-  }
+    if (driverClassName == null) {
+      return;
+    }
+    // JDBC 4+ drivers are typically auto-registered via ServiceLoader;
+    // this explicit load is kept as a fast-fail diagnostic for environments where that is not true.
+    try {
+      Class.forName(driverClassName);
+    } catch (ClassNotFoundException exception) {
+      throw new IllegalStateException("JDBC driver class not found: " + driverClassName, exception);
+    }
   }
 
   /**
    * Ensures heartbeat table exists.
    */
   public void initializeSchema() throws SQLException {
-  String sql = "CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
-    + "proxy_id VARCHAR(128) PRIMARY KEY,"
-    + "platform VARCHAR(32) NOT NULL,"
-    + "last_seen_epoch_ms BIGINT NOT NULL"
-    + ")";
-  try (Connection connection = dataSource.getConnection();
-     Statement statement = connection.createStatement()) {
-    statement.executeUpdate(sql);
-  }
+    String sql = "CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
+      + "proxy_id VARCHAR(128) PRIMARY KEY,"
+      + "platform VARCHAR(32) NOT NULL,"
+      + "last_seen_epoch_ms BIGINT NOT NULL"
+      + ")";
+    try (Connection connection = dataSource.getConnection();
+      Statement statement = connection.createStatement()) {
+      statement.executeUpdate(sql);
+    }
   }
 
   /**
@@ -116,8 +116,8 @@ public final class ProxySqlClient {
    * Closes the connection pool. Call this on proxy shutdown.
    */
   public void close() {
-  if (dataSource != null && !dataSource.isClosed()) {
-    dataSource.close();
-  }
+    if (dataSource != null && !dataSource.isClosed()) {
+      dataSource.close();
+    }
   }
 }
