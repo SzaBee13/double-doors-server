@@ -44,7 +44,7 @@
   <dependency>
     <groupId>org.xerial</groupId>
     <artifactId>sqlite-jdbc</artifactId>
-    <version>3.53.0.0</version>
+    <version>3.53.1.0</version>
   </dependency>
   <dependency>
     <groupId>com.mysql</groupId>
@@ -79,7 +79,7 @@
     <plugin>
     <groupId>org.codehaus.mojo</groupId>
     <artifactId>build-helper-maven-plugin</artifactId>
-    <version>3.5.0</version>
+    <version>3.6.1</version>
     <executions>
       <execution>
       <id>add-filtered-sources</id>
@@ -98,7 +98,7 @@
     <plugin>
     <groupId>org.apache.maven.plugins</groupId>
     <artifactId>maven-resources-plugin</artifactId>
-    <version>3.4.0</version>
+    <version>3.5.0</version>
     <executions>
       <execution>
       <id>filter-java-sources</id>
