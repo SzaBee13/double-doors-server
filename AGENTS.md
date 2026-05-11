@@ -29,6 +29,7 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 - All public methods require Javadoc.
 - `final` on classes/fields unless mutability is necessary.
 - No wildcard imports.
+- Use **2 spaces** for indentation throughout the repository.
 - Block data must only be read **after** a scheduled delay — never inline in an event handler (see delay constants in `RedstoneListener`).
 
 ## Config / data files

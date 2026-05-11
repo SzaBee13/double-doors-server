@@ -50,36 +50,36 @@ public final class TranslationManager {
    * @param pluginConfig the configuration wrapper
    */
   public TranslationManager(DoubleDoors plugin, PluginConfig pluginConfig) {
-    this.plugin = plugin;
-    this.pluginConfig = pluginConfig;
+  this.plugin = plugin;
+  this.pluginConfig = pluginConfig;
   }
 
   /**
    * Reloads translations from bundled and custom language files.
    */
   public void reload() {
-    loadDefaultsMetadata();
-    ensureLangFolder();
+  loadDefaultsMetadata();
+  ensureLangFolder();
 
-    defaultTranslations.clear();
-    activeTranslations.clear();
+  defaultTranslations.clear();
+  activeTranslations.clear();
 
-    defaultTranslations.putAll(loadBundledLanguage(DEFAULT_LANGUAGE));
-    activeTranslations.putAll(defaultTranslations);
+  defaultTranslations.putAll(loadBundledLanguage(DEFAULT_LANGUAGE));
+  activeTranslations.putAll(defaultTranslations);
 
-    String requestedLanguage = resolveLanguageCode(sanitizeLanguageCode(pluginConfig.getLanguage()));
-    Map<String, String> requestedTranslations = loadRequestedLanguage(requestedLanguage);
-    if (!requestedTranslations.isEmpty()) {
-      activeTranslations.putAll(requestedTranslations);
-      activeLanguage = requestedLanguage;
-      return;
-    }
+  String requestedLanguage = resolveLanguageCode(sanitizeLanguageCode(pluginConfig.getLanguage()));
+  Map<String, String> requestedTranslations = loadRequestedLanguage(requestedLanguage);
+  if (!requestedTranslations.isEmpty()) {
+    activeTranslations.putAll(requestedTranslations);
+    activeLanguage = requestedLanguage;
+    return;
+  }
 
-    if (!DEFAULT_LANGUAGE.equals(requestedLanguage)) {
-      plugin.getLogger().warning(
-          "Language '" + requestedLanguage + "' was not found. Falling back to " + DEFAULT_LANGUAGE + ".");
-    }
-    activeLanguage = DEFAULT_LANGUAGE;
+  if (!DEFAULT_LANGUAGE.equals(requestedLanguage)) {
+    plugin.getLogger().warning(
+      "Language '" + requestedLanguage + "' was not found. Falling back to " + DEFAULT_LANGUAGE + ".");
+  }
+  activeLanguage = DEFAULT_LANGUAGE;
   }
 
   /**
@@ -90,15 +90,15 @@ public final class TranslationManager {
    * @return resolved message or the key itself if missing
    */
   public String tr(String key, Object... args) {
-    String raw = activeTranslations.getOrDefault(key, defaultTranslations.getOrDefault(key, key));
-    if (args.length == 0) {
-      return raw;
-    }
-    try {
-      return String.format(raw, args);
-    } catch (IllegalFormatException ignored) {
-      return raw;
-    }
+  String raw = activeTranslations.getOrDefault(key, defaultTranslations.getOrDefault(key, key));
+  if (args.length == 0) {
+    return raw;
+  }
+  try {
+    return String.format(raw, args);
+  } catch (IllegalFormatException ignored) {
+    return raw;
+  }
   }
 
   /**
@@ -107,218 +107,218 @@ public final class TranslationManager {
    * @return active language code
    */
   public String getActiveLanguage() {
-    return activeLanguage;
+  return activeLanguage;
   }
 
   private void ensureLangFolder() {
-    File dataFolder = plugin.getDataFolder();
-    if (!dataFolder.exists() && !dataFolder.mkdirs()) {
-      plugin.getLogger().warning("Could not create plugin data folder: " + dataFolder.getAbsolutePath());
-      return;
-    }
+  File dataFolder = plugin.getDataFolder();
+  if (!dataFolder.exists() && !dataFolder.mkdirs()) {
+    plugin.getLogger().warning("Could not create plugin data folder: " + dataFolder.getAbsolutePath());
+    return;
+  }
 
-    File langFolder = new File(dataFolder, "lang");
-    if (!langFolder.exists() && !langFolder.mkdirs()) {
-      plugin.getLogger().warning("Could not create language folder: " + langFolder.getAbsolutePath());
-      return;
-    }
+  File langFolder = new File(dataFolder, "lang");
+  if (!langFolder.exists() && !langFolder.mkdirs()) {
+    plugin.getLogger().warning("Could not create language folder: " + langFolder.getAbsolutePath());
+    return;
+  }
 
-    String defaultRelativePath = bundledLanguagePaths.getOrDefault(DEFAULT_LANGUAGE, DEFAULT_LANGUAGE + ".json");
-    String normalizedPath = defaultRelativePath.replace('\\', '/');
-    if (normalizedPath.startsWith("lang/")) {
-      normalizedPath = normalizedPath.substring("lang/".length());
-    }
-    File defaultFile = new File(langFolder, normalizedPath);
-    if (!defaultFile.exists()) {
-      plugin.saveResource("lang/" + normalizedPath, false);
-    }
+  String defaultRelativePath = bundledLanguagePaths.getOrDefault(DEFAULT_LANGUAGE, DEFAULT_LANGUAGE + ".json");
+  String normalizedPath = defaultRelativePath.replace('\\', '/');
+  if (normalizedPath.startsWith("lang/")) {
+    normalizedPath = normalizedPath.substring("lang/".length());
+  }
+  File defaultFile = new File(langFolder, normalizedPath);
+  if (!defaultFile.exists()) {
+    plugin.saveResource("lang/" + normalizedPath, false);
+  }
   }
 
   private String sanitizeLanguageCode(String configured) {
-    if (configured == null || configured.isBlank()) {
-      return DEFAULT_LANGUAGE;
-    }
-    String trimmed = configured.trim();
-    if (!LANGUAGE_PATTERN.matcher(trimmed).matches()) {
-      return DEFAULT_LANGUAGE;
-    }
-    return trimmed;
+  if (configured == null || configured.isBlank()) {
+    return DEFAULT_LANGUAGE;
+  }
+  String trimmed = configured.trim();
+  if (!LANGUAGE_PATTERN.matcher(trimmed).matches()) {
+    return DEFAULT_LANGUAGE;
+  }
+  return trimmed;
   }
 
   private String resolveLanguageCode(String requestedLanguage) {
-    String normalized = normalizeLanguageCode(requestedLanguage);
-    String aliasMatch = languageAliases.get(normalized);
-    if (aliasMatch != null && !aliasMatch.isBlank()) {
-      return aliasMatch;
-    }
-    return requestedLanguage;
+  String normalized = normalizeLanguageCode(requestedLanguage);
+  String aliasMatch = languageAliases.get(normalized);
+  if (aliasMatch != null && !aliasMatch.isBlank()) {
+    return aliasMatch;
+  }
+  return requestedLanguage;
   }
 
   private String normalizeLanguageCode(String languageCode) {
-    return languageCode.toLowerCase().replace('-', '_');
+  return languageCode.toLowerCase().replace('-', '_');
   }
 
   private Map<String, String> loadRequestedLanguage(String languageCode) {
-    File customFile = resolveCustomLanguageFile(languageCode);
-    if (customFile.exists()) {
-      Map<String, String> customTranslations = loadFromFile(customFile);
-      if (!customTranslations.isEmpty()) {
-        return customTranslations;
-      }
-      plugin.getLogger().warning("Language file exists but is empty/invalid: " + customFile.getAbsolutePath());
+  File customFile = resolveCustomLanguageFile(languageCode);
+  if (customFile.exists()) {
+    Map<String, String> customTranslations = loadFromFile(customFile);
+    if (!customTranslations.isEmpty()) {
+    return customTranslations;
     }
+    plugin.getLogger().warning("Language file exists but is empty/invalid: " + customFile.getAbsolutePath());
+  }
 
-    return loadBundledLanguage(languageCode);
+  return loadBundledLanguage(languageCode);
   }
 
   private Map<String, String> loadBundledLanguage(String languageCode) {
-    for (String resourcePath : getBundledResourceCandidates(languageCode)) {
-      try (InputStream stream = plugin.getResource(resourcePath)) {
-        if (stream == null) {
-          continue;
-        }
-        return parseJson(new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)), resourcePath);
-      } catch (IOException e) {
-        plugin.getLogger().warning("Failed to read bundled language file " + resourcePath + ": " + e.getMessage());
-        return Map.of();
-      }
+  for (String resourcePath : getBundledResourceCandidates(languageCode)) {
+    try (InputStream stream = plugin.getResource(resourcePath)) {
+    if (stream == null) {
+      continue;
     }
+    return parseJson(new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8)), resourcePath);
+    } catch (IOException e) {
+    plugin.getLogger().warning("Failed to read bundled language file " + resourcePath + ": " + e.getMessage());
     return Map.of();
+    }
+  }
+  return Map.of();
   }
 
   private Map<String, String> loadFromFile(File file) {
-    try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
-      return parseJson(reader, file.getAbsolutePath());
-    } catch (IOException e) {
-      plugin.getLogger().warning("Failed to read language file " + file.getAbsolutePath() + ": " + e.getMessage());
-      return Map.of();
-    }
+  try (BufferedReader reader = Files.newBufferedReader(file.toPath(), StandardCharsets.UTF_8)) {
+    return parseJson(reader, file.getAbsolutePath());
+  } catch (IOException e) {
+    plugin.getLogger().warning("Failed to read language file " + file.getAbsolutePath() + ": " + e.getMessage());
+    return Map.of();
+  }
   }
 
   private File resolveCustomLanguageFile(String languageCode) {
-    File langFolder = new File(plugin.getDataFolder(), "lang");
-    List<File> candidates = new ArrayList<>();
-    candidates.add(new File(langFolder, languageCode + ".json"));
+  File langFolder = new File(plugin.getDataFolder(), "lang");
+  List<File> candidates = new ArrayList<>();
+  candidates.add(new File(langFolder, languageCode + ".json"));
 
-    String relativeBundledPath = bundledLanguagePaths.get(languageCode);
-    if (relativeBundledPath != null && !relativeBundledPath.isBlank()) {
-      candidates.add(new File(langFolder, relativeBundledPath));
+  String relativeBundledPath = bundledLanguagePaths.get(languageCode);
+  if (relativeBundledPath != null && !relativeBundledPath.isBlank()) {
+    candidates.add(new File(langFolder, relativeBundledPath));
+  }
+
+  for (File candidate : candidates) {
+    if (candidate.exists() && candidate.isFile()) {
+    return candidate;
+    }
+  }
+
+  try {
+    Path langPath = langFolder.toPath();
+    if (!Files.exists(langPath)) {
+    return candidates.getFirst();
     }
 
-    for (File candidate : candidates) {
-      if (candidate.exists() && candidate.isFile()) {
-        return candidate;
-      }
+    try (var paths = Files.walk(langPath)) {
+    return paths
+      .filter(Files::isRegularFile)
+      .filter(path -> path.getFileName().toString().equalsIgnoreCase(languageCode + ".json"))
+      .map(Path::toFile)
+      .findFirst()
+      .orElse(candidates.getFirst());
     }
-
-    try {
-      Path langPath = langFolder.toPath();
-      if (!Files.exists(langPath)) {
-        return candidates.getFirst();
-      }
-
-      try (var paths = Files.walk(langPath)) {
-        return paths
-            .filter(Files::isRegularFile)
-            .filter(path -> path.getFileName().toString().equalsIgnoreCase(languageCode + ".json"))
-            .map(Path::toFile)
-            .findFirst()
-            .orElse(candidates.getFirst());
-      }
-    } catch (IOException ex) {
-      plugin.getLogger().warning("Failed to scan language folder: " + ex.getMessage());
-      return candidates.getFirst();
-    }
+  } catch (IOException ex) {
+    plugin.getLogger().warning("Failed to scan language folder: " + ex.getMessage());
+    return candidates.getFirst();
+  }
   }
 
   private List<String> getBundledResourceCandidates(String languageCode) {
-    List<String> candidates = new ArrayList<>();
-    candidates.add("lang/" + languageCode + ".json");
+  List<String> candidates = new ArrayList<>();
+  candidates.add("lang/" + languageCode + ".json");
 
-    String relativeBundledPath = bundledLanguagePaths.get(languageCode);
-    if (relativeBundledPath != null && !relativeBundledPath.isBlank()) {
-      String normalizedPath = relativeBundledPath.replace('\\', '/');
-      if (!normalizedPath.startsWith("lang/")) {
-        normalizedPath = "lang/" + normalizedPath;
-      }
-      candidates.add(normalizedPath);
+  String relativeBundledPath = bundledLanguagePaths.get(languageCode);
+  if (relativeBundledPath != null && !relativeBundledPath.isBlank()) {
+    String normalizedPath = relativeBundledPath.replace('\\', '/');
+    if (!normalizedPath.startsWith("lang/")) {
+    normalizedPath = "lang/" + normalizedPath;
     }
+    candidates.add(normalizedPath);
+  }
 
-    return candidates;
+  return candidates;
   }
 
   private void loadDefaultsMetadata() {
-    languageAliases.clear();
-    bundledLanguagePaths.clear();
+  languageAliases.clear();
+  bundledLanguagePaths.clear();
 
-    // Keep critical aliases available even if defaults.json is missing.
-    languageAliases.put("en", DEFAULT_LANGUAGE);
+  // Keep critical aliases available even if defaults.json is missing.
+  languageAliases.put("en", DEFAULT_LANGUAGE);
 
-    try (InputStream stream = plugin.getResource(DEFAULTS_RESOURCE_PATH)) {
-      if (stream == null) {
-        return;
-      }
-
-      try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
-        JsonElement rootElement = JsonParser.parseReader(reader);
-        if (!rootElement.isJsonObject()) {
-          return;
-        }
-
-        JsonObject root = rootElement.getAsJsonObject();
-        loadStringMap(root, "languageAliases", languageAliases, true);
-        loadStringMap(root, "bundledLanguagePaths", bundledLanguagePaths, false);
-      }
-    } catch (IOException | JsonParseException | IllegalStateException ex) {
-      plugin.getLogger().warning("Failed to load language defaults metadata: " + ex.getMessage());
+  try (InputStream stream = plugin.getResource(DEFAULTS_RESOURCE_PATH)) {
+    if (stream == null) {
+    return;
     }
-  }
 
-  private void loadStringMap(
-      JsonObject root,
-      String propertyName,
-      Map<String, String> target,
-      boolean normalizeKeys
-  ) {
-    JsonElement section = root.get(propertyName);
-    if (section == null || !section.isJsonObject()) {
+    try (BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8))) {
+    JsonElement rootElement = JsonParser.parseReader(reader);
+    if (!rootElement.isJsonObject()) {
       return;
     }
 
-    for (Map.Entry<String, JsonElement> entry : section.getAsJsonObject().entrySet()) {
-      JsonElement value = entry.getValue();
-      if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
-        continue;
-      }
-
-      String key = normalizeKeys ? normalizeLanguageCode(entry.getKey()) : entry.getKey();
-      String mapValue = value.getAsString();
-      if (!mapValue.isBlank()) {
-        target.put(key, mapValue);
-      }
+    JsonObject root = rootElement.getAsJsonObject();
+    loadStringMap(root, "languageAliases", languageAliases, true);
+    loadStringMap(root, "bundledLanguagePaths", bundledLanguagePaths, false);
     }
+  } catch (IOException | JsonParseException | IllegalStateException ex) {
+    plugin.getLogger().warning("Failed to load language defaults metadata: " + ex.getMessage());
+  }
+  }
+
+  private void loadStringMap(
+    JsonObject root,
+    String propertyName,
+    Map<String, String> target,
+    boolean normalizeKeys
+  ) {
+  JsonElement section = root.get(propertyName);
+  if (section == null || !section.isJsonObject()) {
+    return;
+  }
+
+  for (Map.Entry<String, JsonElement> entry : section.getAsJsonObject().entrySet()) {
+    JsonElement value = entry.getValue();
+    if (value == null || !value.isJsonPrimitive() || !value.getAsJsonPrimitive().isString()) {
+    continue;
+    }
+
+    String key = normalizeKeys ? normalizeLanguageCode(entry.getKey()) : entry.getKey();
+    String mapValue = value.getAsString();
+    if (!mapValue.isBlank()) {
+    target.put(key, mapValue);
+    }
+  }
   }
 
   private Map<String, String> parseJson(BufferedReader reader, String sourceName) {
-    try {
-      JsonElement rootElement = JsonParser.parseReader(reader);
-      if (!rootElement.isJsonObject()) {
-        plugin.getLogger().warning("Language source " + sourceName + " does not contain a JSON object root.");
-        return Map.of();
-      }
-
-      JsonObject object = rootElement.getAsJsonObject();
-      Map<String, String> result = new HashMap<>();
-      for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
-        JsonElement value = entry.getValue();
-        if (value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
-          result.put(entry.getKey(), value.getAsString());
-        }
-      }
-      return result;
-    } catch (JsonParseException | IllegalStateException ex) {
-      plugin.getLogger().warning("Invalid JSON in language source " + sourceName + ": " + ex.getMessage());
-      return Map.of();
+  try {
+    JsonElement rootElement = JsonParser.parseReader(reader);
+    if (!rootElement.isJsonObject()) {
+    plugin.getLogger().warning("Language source " + sourceName + " does not contain a JSON object root.");
+    return Map.of();
     }
+
+    JsonObject object = rootElement.getAsJsonObject();
+    Map<String, String> result = new HashMap<>();
+    for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+    JsonElement value = entry.getValue();
+    if (value != null && value.isJsonPrimitive() && value.getAsJsonPrimitive().isString()) {
+      result.put(entry.getKey(), value.getAsString());
+    }
+    }
+    return result;
+  } catch (JsonParseException | IllegalStateException ex) {
+    plugin.getLogger().warning("Invalid JSON in language source " + sourceName + ": " + ex.getMessage());
+    return Map.of();
+  }
   }
 }

@@ -1,6 +1,6 @@
 {
   "credits": [
-    "SzaBee13"
+  "SzaBee13"
   ],
   "log.luckperms_detected": "LuckPerms detecte : les permissions sont gerees via les noeuds doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detecte : les ouvertures de portes liees respecteront les verifications de construction des claims.",

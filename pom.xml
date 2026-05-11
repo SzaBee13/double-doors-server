@@ -5,55 +5,55 @@
 
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.1</version>
+  <version>1.4.2</version>
   <name>DoubleDoors Parent</name>
   <packaging>pom</packaging>
 
   <modules>
-    <module>bukkit</module>
-    <module>proxy</module>
+  <module>bukkit</module>
+  <module>proxy</module>
   </modules>
 
   <properties>
-    <maven.compiler.release>25</maven.compiler.release>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <pluginupdater.api.version>2.0.0</pluginupdater.api.version>
-    <minecraft.version.id>v26_1_x</minecraft.version.id>
-    <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
+  <maven.compiler.release>25</maven.compiler.release>
+  <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  <pluginupdater.api.version>2.0.0</pluginupdater.api.version>
+  <minecraft.version.id>v26_1_x</minecraft.version.id>
+  <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
   </properties>
 
   <dependencyManagement>
-    <dependencies>
-      <dependency>
-        <groupId>org.junit.jupiter</groupId>
-        <artifactId>junit-jupiter</artifactId>
-        <version>6.0.3</version>
-        <scope>test</scope>
-      </dependency>
-      <dependency>
-        <groupId>org.lushplugins.pluginupdater</groupId>
-        <artifactId>PluginUpdater-API</artifactId>
-        <version>${pluginupdater.api.version}</version>
-      </dependency>
-    </dependencies>
+  <dependencies>
+    <dependency>
+    <groupId>org.junit.jupiter</groupId>
+    <artifactId>junit-jupiter</artifactId>
+    <version>6.0.3</version>
+    <scope>test</scope>
+    </dependency>
+    <dependency>
+    <groupId>org.lushplugins.pluginupdater</groupId>
+    <artifactId>PluginUpdater-API</artifactId>
+    <version>${pluginupdater.api.version}</version>
+    </dependency>
+  </dependencies>
   </dependencyManagement>
 
   <distributionManagement>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/SzaBee13/double-doors-server</url>
-    </repository>
+  <repository>
+    <id>github</id>
+    <url>https://maven.pkg.github.com/SzaBee13/double-doors-server</url>
+  </repository>
   </distributionManagement>
 
   <build>
-    <pluginManagement>
-      <plugins>
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-surefire-plugin</artifactId>
-          <version>3.5.5</version>
-        </plugin>
-      </plugins>
-    </pluginManagement>
+  <pluginManagement>
+    <plugins>
+    <plugin>
+      <groupId>org.apache.maven.plugins</groupId>
+      <artifactId>maven-surefire-plugin</artifactId>
+      <version>3.5.5</version>
+    </plugin>
+    </plugins>
+  </pluginManagement>
   </build>
 </project>

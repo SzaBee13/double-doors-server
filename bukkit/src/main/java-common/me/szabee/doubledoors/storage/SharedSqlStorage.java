@@ -32,49 +32,49 @@ public final class SharedSqlStorage {
    * @param config the plugin config
    */
   public SharedSqlStorage(DoubleDoors plugin, PluginConfig config) {
-    this.plugin = plugin;
-    this.jdbcUrl = config.getSqlJdbcUrl();
-    this.username = config.getSqlUsername();
-    this.password = config.getSqlPassword();
+  this.plugin = plugin;
+  this.jdbcUrl = config.getSqlJdbcUrl();
+  this.username = config.getSqlUsername();
+  this.password = config.getSqlPassword();
   }
 
   /**
    * Creates required tables if they do not already exist.
    */
   public void initializeSchema() {
-    try {
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
-        + "player_uuid VARCHAR(36) PRIMARY KEY,"
-        + "enabled BOOLEAN NOT NULL,"
-        + "enable_doors BOOLEAN NOT NULL,"
-        + "enable_fence_gates BOOLEAN NOT NULL,"
-        + "enable_trapdoors BOOLEAN NOT NULL,"
-        + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "knock_volume DOUBLE NOT NULL DEFAULT 1.0"
-        + ")");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
+  try {
+    executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
+    + "player_uuid VARCHAR(36) PRIMARY KEY,"
+    + "enabled BOOLEAN NOT NULL,"
+    + "enable_doors BOOLEAN NOT NULL,"
+    + "enable_fence_gates BOOLEAN NOT NULL,"
+    + "enable_trapdoors BOOLEAN NOT NULL,"
+    + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
+    + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
+    + "knock_volume DOUBLE NOT NULL DEFAULT 1.0"
+    + ")");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
 
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
-        + "claim_id BIGINT PRIMARY KEY,"
-        + "villagers_blocked BOOLEAN NOT NULL"
-        + ")");
+    executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
+    + "claim_id BIGINT PRIMARY KEY,"
+    + "villagers_blocked BOOLEAN NOT NULL"
+    + ")");
 
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
-        + "proxy_id VARCHAR(128) PRIMARY KEY,"
-        + "platform VARCHAR(32) NOT NULL,"
-        + "last_seen_epoch_ms BIGINT NOT NULL"
-        + ")");
+    executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
+    + "proxy_id VARCHAR(128) PRIMARY KEY,"
+    + "platform VARCHAR(32) NOT NULL,"
+    + "last_seen_epoch_ms BIGINT NOT NULL"
+    + ")");
 
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_meta ("
-        + "meta_key VARCHAR(128) PRIMARY KEY,"
-        + "meta_value VARCHAR(255) NOT NULL"
-        + ")");
-    } catch (SQLException e) {
-      throw new IllegalStateException("Could not initialize SQL schema", e);
-    }
+    executeStatement("CREATE TABLE IF NOT EXISTS dd_meta ("
+    + "meta_key VARCHAR(128) PRIMARY KEY,"
+    + "meta_value VARCHAR(255) NOT NULL"
+    + ")");
+  } catch (SQLException e) {
+    throw new IllegalStateException("Could not initialize SQL schema", e);
+  }
   }
 
   /**
@@ -83,32 +83,32 @@ public final class SharedSqlStorage {
    * @return map keyed by player UUID
    */
   public Map<UUID, SqlPlayerPref> loadAllPlayerPreferences() {
-    Map<UUID, SqlPlayerPref> result = new HashMap<>();
-    String sql = "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, "
-        + "enable_auto_close, enable_knock_sound, knock_volume FROM dd_player_preferences";
-    try (Connection connection = openConnection();
-         Statement statement = connection.createStatement();
-         ResultSet rs = statement.executeQuery(sql)) {
-      while (rs.next()) {
-        String rawUuid = rs.getString("player_uuid");
-        try {
-          UUID uuid = UUID.fromString(rawUuid);
-          result.put(uuid, new SqlPlayerPref(
-              rs.getBoolean("enabled"),
-              rs.getBoolean("enable_doors"),
-              rs.getBoolean("enable_fence_gates"),
-              rs.getBoolean("enable_trapdoors"),
-              rs.getBoolean("enable_auto_close"),
-              rs.getBoolean("enable_knock_sound"),
-              rs.getDouble("knock_volume")));
-        } catch (IllegalArgumentException ignored) {
-          // Ignore malformed UUID rows so startup keeps working.
-        }
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
+  Map<UUID, SqlPlayerPref> result = new HashMap<>();
+  String sql = "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, "
+    + "enable_auto_close, enable_knock_sound, knock_volume FROM dd_player_preferences";
+  try (Connection connection = openConnection();
+     Statement statement = connection.createStatement();
+     ResultSet rs = statement.executeQuery(sql)) {
+    while (rs.next()) {
+    String rawUuid = rs.getString("player_uuid");
+    try {
+      UUID uuid = UUID.fromString(rawUuid);
+      result.put(uuid, new SqlPlayerPref(
+        rs.getBoolean("enabled"),
+        rs.getBoolean("enable_doors"),
+        rs.getBoolean("enable_fence_gates"),
+        rs.getBoolean("enable_trapdoors"),
+        rs.getBoolean("enable_auto_close"),
+        rs.getBoolean("enable_knock_sound"),
+        rs.getDouble("knock_volume")));
+    } catch (IllegalArgumentException ignored) {
+      // Ignore malformed UUID rows so startup keeps working.
     }
-    return result;
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
+  }
+  return result;
   }
 
   /**
@@ -118,40 +118,40 @@ public final class SharedSqlStorage {
    * @param pref the preference values
    */
   public boolean savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
-    String updateSql = "UPDATE dd_player_preferences SET enabled=?, enable_doors=?, enable_fence_gates=?, "
-        + "enable_trapdoors=?, enable_auto_close=?, enable_knock_sound=?, knock_volume=? WHERE player_uuid=?";
-    try (Connection connection = openConnection();
-         PreparedStatement update = connection.prepareStatement(updateSql)) {
-      update.setBoolean(1, pref.enabled());
-      update.setBoolean(2, pref.enableDoors());
-      update.setBoolean(3, pref.enableFenceGates());
-      update.setBoolean(4, pref.enableTrapdoors());
-      update.setBoolean(5, pref.enableAutoClose());
-      update.setBoolean(6, pref.enableKnockSound());
-      update.setDouble(7, pref.knockVolume());
-      update.setString(8, uuid.toString());
-      int changed = update.executeUpdate();
-      if (changed == 0) {
-        String insertSql = "INSERT INTO dd_player_preferences (player_uuid, enabled, enable_doors, "
-            + "enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume) "
-            + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-        try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
-          insert.setString(1, uuid.toString());
-          insert.setBoolean(2, pref.enabled());
-          insert.setBoolean(3, pref.enableDoors());
-          insert.setBoolean(4, pref.enableFenceGates());
-          insert.setBoolean(5, pref.enableTrapdoors());
-          insert.setBoolean(6, pref.enableAutoClose());
-          insert.setBoolean(7, pref.enableKnockSound());
-          insert.setDouble(8, pref.knockVolume());
-          insert.executeUpdate();
-        }
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
-      return false;
+  String updateSql = "UPDATE dd_player_preferences SET enabled=?, enable_doors=?, enable_fence_gates=?, "
+    + "enable_trapdoors=?, enable_auto_close=?, enable_knock_sound=?, knock_volume=? WHERE player_uuid=?";
+  try (Connection connection = openConnection();
+     PreparedStatement update = connection.prepareStatement(updateSql)) {
+    update.setBoolean(1, pref.enabled());
+    update.setBoolean(2, pref.enableDoors());
+    update.setBoolean(3, pref.enableFenceGates());
+    update.setBoolean(4, pref.enableTrapdoors());
+    update.setBoolean(5, pref.enableAutoClose());
+    update.setBoolean(6, pref.enableKnockSound());
+    update.setDouble(7, pref.knockVolume());
+    update.setString(8, uuid.toString());
+    int changed = update.executeUpdate();
+    if (changed == 0) {
+    String insertSql = "INSERT INTO dd_player_preferences (player_uuid, enabled, enable_doors, "
+      + "enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume) "
+      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+    try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
+      insert.setString(1, uuid.toString());
+      insert.setBoolean(2, pref.enabled());
+      insert.setBoolean(3, pref.enableDoors());
+      insert.setBoolean(4, pref.enableFenceGates());
+      insert.setBoolean(5, pref.enableTrapdoors());
+      insert.setBoolean(6, pref.enableAutoClose());
+      insert.setBoolean(7, pref.enableKnockSound());
+      insert.setDouble(8, pref.knockVolume());
+      insert.executeUpdate();
     }
-    return true;
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
+    return false;
+  }
+  return true;
   }
 
   /**
@@ -160,20 +160,20 @@ public final class SharedSqlStorage {
    * @return blocked claim IDs
    */
   public Set<Long> loadVillagersBlockedClaims() {
-    Set<Long> blocked = new HashSet<>();
-    String sql = "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=?";
-    try (Connection connection = openConnection();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-      statement.setBoolean(1, true);
-      try (ResultSet rs = statement.executeQuery()) {
-        while (rs.next()) {
-          blocked.add(rs.getLong("claim_id"));
-        }
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
+  Set<Long> blocked = new HashSet<>();
+  String sql = "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=?";
+  try (Connection connection = openConnection();
+     PreparedStatement statement = connection.prepareStatement(sql)) {
+    statement.setBoolean(1, true);
+    try (ResultSet rs = statement.executeQuery()) {
+    while (rs.next()) {
+      blocked.add(rs.getLong("claim_id"));
     }
-    return blocked;
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
+  }
+  return blocked;
   }
 
   /**
@@ -183,25 +183,25 @@ public final class SharedSqlStorage {
    * @param blocked true to block villagers in this claim
    */
   public boolean setVillagersBlocked(long claimId, boolean blocked) {
-    String updateSql = "UPDATE dd_claim_settings SET villagers_blocked=? WHERE claim_id=?";
-    try (Connection connection = openConnection();
-         PreparedStatement update = connection.prepareStatement(updateSql)) {
-      update.setBoolean(1, blocked);
-      update.setLong(2, claimId);
-      int changed = update.executeUpdate();
-      if (changed == 0) {
-        String insertSql = "INSERT INTO dd_claim_settings (claim_id, villagers_blocked) VALUES (?, ?)";
-        try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
-          insert.setLong(1, claimId);
-          insert.setBoolean(2, blocked);
-          insert.executeUpdate();
-        }
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
-      return false;
+  String updateSql = "UPDATE dd_claim_settings SET villagers_blocked=? WHERE claim_id=?";
+  try (Connection connection = openConnection();
+     PreparedStatement update = connection.prepareStatement(updateSql)) {
+    update.setBoolean(1, blocked);
+    update.setLong(2, claimId);
+    int changed = update.executeUpdate();
+    if (changed == 0) {
+    String insertSql = "INSERT INTO dd_claim_settings (claim_id, villagers_blocked) VALUES (?, ?)";
+    try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
+      insert.setLong(1, claimId);
+      insert.setBoolean(2, blocked);
+      insert.executeUpdate();
     }
-    return true;
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
+    return false;
+  }
+  return true;
   }
 
   /**
@@ -211,20 +211,20 @@ public final class SharedSqlStorage {
    * @return true if migration is already marked complete
    */
   public boolean isMigrationDone(String migrationKey) {
-    String sql = "SELECT meta_value FROM dd_meta WHERE meta_key=?";
-    try (Connection connection = openConnection();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-      statement.setString(1, migrationKey);
-      try (ResultSet rs = statement.executeQuery()) {
-        if (!rs.next()) {
-          return false;
-        }
-        return "done".equalsIgnoreCase(rs.getString("meta_value"));
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
+  String sql = "SELECT meta_value FROM dd_meta WHERE meta_key=?";
+  try (Connection connection = openConnection();
+     PreparedStatement statement = connection.prepareStatement(sql)) {
+    statement.setString(1, migrationKey);
+    try (ResultSet rs = statement.executeQuery()) {
+    if (!rs.next()) {
       return false;
     }
+    return "done".equalsIgnoreCase(rs.getString("meta_value"));
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
+    return false;
+  }
   }
 
   /**
@@ -233,21 +233,21 @@ public final class SharedSqlStorage {
    * @param migrationKey migration identifier
    */
   public void markMigrationDone(String migrationKey) {
-    String updateSql = "UPDATE dd_meta SET meta_value='done' WHERE meta_key=?";
-    try (Connection connection = openConnection();
-         PreparedStatement update = connection.prepareStatement(updateSql)) {
-      update.setString(1, migrationKey);
-      int changed = update.executeUpdate();
-      if (changed == 0) {
-        String insertSql = "INSERT INTO dd_meta (meta_key, meta_value) VALUES (?, 'done')";
-        try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
-          insert.setString(1, migrationKey);
-          insert.executeUpdate();
-        }
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
+  String updateSql = "UPDATE dd_meta SET meta_value='done' WHERE meta_key=?";
+  try (Connection connection = openConnection();
+     PreparedStatement update = connection.prepareStatement(updateSql)) {
+    update.setString(1, migrationKey);
+    int changed = update.executeUpdate();
+    if (changed == 0) {
+    String insertSql = "INSERT INTO dd_meta (meta_key, meta_value) VALUES (?, 'done')";
+    try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
+      insert.setString(1, migrationKey);
+      insert.executeUpdate();
     }
+    }
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
+  }
   }
 
   /**
@@ -257,46 +257,46 @@ public final class SharedSqlStorage {
    * @return true when a recent proxy heartbeat exists
    */
   public boolean hasRecentProxyHeartbeat(long maxAgeMillis) {
-    long threshold = System.currentTimeMillis() - maxAgeMillis;
-    String sql = "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? LIMIT 1";
-    try (Connection connection = openConnection();
-         PreparedStatement statement = connection.prepareStatement(sql)) {
-      statement.setLong(1, threshold);
-      try (ResultSet rs = statement.executeQuery()) {
-        return rs.next();
-      }
-    } catch (SQLException e) {
-      plugin.getLogger().warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
+  long threshold = System.currentTimeMillis() - maxAgeMillis;
+  String sql = "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? LIMIT 1";
+  try (Connection connection = openConnection();
+     PreparedStatement statement = connection.prepareStatement(sql)) {
+    statement.setLong(1, threshold);
+    try (ResultSet rs = statement.executeQuery()) {
+    return rs.next();
     }
-    return false;
+  } catch (SQLException e) {
+    plugin.getLogger().warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
+  }
+  return false;
   }
 
   private Connection openConnection() throws SQLException {
-    if (username.isBlank()) {
-      return DriverManager.getConnection(jdbcUrl);
-    }
-    return DriverManager.getConnection(jdbcUrl, username, password);
+  if (username.isBlank()) {
+    return DriverManager.getConnection(jdbcUrl);
+  }
+  return DriverManager.getConnection(jdbcUrl, username, password);
   }
 
   private void executeStatement(String sql) throws SQLException {
-    try (Connection connection = openConnection();
-         Statement statement = connection.createStatement()) {
-      statement.executeUpdate(sql);
-    }
+  try (Connection connection = openConnection();
+     Statement statement = connection.createStatement()) {
+    statement.executeUpdate(sql);
+  }
   }
 
   private void executeAlterAddColumnIfAbsent(String sql) throws SQLException {
-    try {
-      executeStatement(sql);
-    } catch (SQLException e) {
-      // MySQL 1060: Duplicate column name
-      String message = e.getMessage();
-      String normalizedMessage = message == null ? "" : message.toLowerCase();
-      if (e.getErrorCode() == 1060 || normalizedMessage.contains("duplicate column") || normalizedMessage.contains("already exists")) {
-        return;
-      }
-      throw e;
+  try {
+    executeStatement(sql);
+  } catch (SQLException e) {
+    // MySQL 1060: Duplicate column name
+    String message = e.getMessage();
+    String normalizedMessage = message == null ? "" : message.toLowerCase();
+    if (e.getErrorCode() == 1060 || normalizedMessage.contains("duplicate column") || normalizedMessage.contains("already exists")) {
+    return;
     }
+    throw e;
+  }
   }
 
   /**
@@ -311,13 +311,13 @@ public final class SharedSqlStorage {
    * @param knockVolume knock sound volume
    */
   public record SqlPlayerPref(
-      boolean enabled,
-      boolean enableDoors,
-      boolean enableFenceGates,
-      boolean enableTrapdoors,
-      boolean enableAutoClose,
-      boolean enableKnockSound,
-      double knockVolume
+    boolean enabled,
+    boolean enableDoors,
+    boolean enableFenceGates,
+    boolean enableTrapdoors,
+    boolean enableAutoClose,
+    boolean enableKnockSound,
+    double knockVolume
   ) {
   }
 }

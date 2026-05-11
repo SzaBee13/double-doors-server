@@ -39,7 +39,7 @@ body:
     id: server_version
     attributes:
       label: Server software and version
-      description: Example: Paper 1.21.1 build 125
+      description: "Example: Paper 1.21.1 build 125"
     validations:
       required: true
   - type: textarea

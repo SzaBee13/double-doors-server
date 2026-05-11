@@ -28,212 +28,212 @@ public final class PluginConfig {
    * @param plugin the plugin instance
    */
   public PluginConfig(DoubleDoors plugin) {
-    this.plugin = plugin;
-    reload();
+  this.plugin = plugin;
+  reload();
   }
 
   /**
    * Reloads config values from config.yml.
    */
   public void reload() {
-    boolean enableRecursiveOpening = plugin.getConfig().getBoolean("enableRecursiveOpening", true);
-    int recursiveOpeningMaxBlocksDistance = plugin.getConfig().getInt("recursiveOpeningMaxBlocksDistance", 10);
-    if (recursiveOpeningMaxBlocksDistance < 1) {
-      recursiveOpeningMaxBlocksDistance = 1;
-    }
-    if (recursiveOpeningMaxBlocksDistance > 32) {
-      recursiveOpeningMaxBlocksDistance = 32;
-    }
+  boolean enableRecursiveOpening = plugin.getConfig().getBoolean("enableRecursiveOpening", true);
+  int recursiveOpeningMaxBlocksDistance = plugin.getConfig().getInt("recursiveOpeningMaxBlocksDistance", 10);
+  if (recursiveOpeningMaxBlocksDistance < 1) {
+    recursiveOpeningMaxBlocksDistance = 1;
+  }
+  if (recursiveOpeningMaxBlocksDistance > 32) {
+    recursiveOpeningMaxBlocksDistance = 32;
+  }
 
-    boolean enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
-    boolean enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
-    boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
-    boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
-    boolean enableAutoClose = plugin.getConfig().getBoolean("enableAutoClose", false);
-    int autoCloseDelaySeconds = plugin.getConfig().getInt("autoCloseDelaySeconds", 5);
-    if (autoCloseDelaySeconds < 1) {
-      autoCloseDelaySeconds = 1;
-    }
-    if (autoCloseDelaySeconds > 300) {
-      autoCloseDelaySeconds = 300;
-    }
-    boolean enableKnockFeature = plugin.getConfig().getBoolean("enableKnockFeature", true);
-    int knockDistanceBlocks = plugin.getConfig().getInt("knockDistanceBlocks", 12);
-    if (knockDistanceBlocks < 1) {
-      knockDistanceBlocks = 1;
-    }
-    if (knockDistanceBlocks > 64) {
-      knockDistanceBlocks = 64;
-    }
-    boolean serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
-    boolean playPartnerSound = plugin.getConfig().getBoolean("playPartnerSound", true);
-    boolean enablePartnerParticles = plugin.getConfig().getBoolean("enablePartnerParticles", false);
+  boolean enableDoors = plugin.getConfig().getBoolean("enableDoors", true);
+  boolean enableFenceGates = plugin.getConfig().getBoolean("enableFenceGates", true);
+  boolean enableTrapdoors = plugin.getConfig().getBoolean("enableTrapdoors", true);
+  boolean enableVillagerLinkedDoors = plugin.getConfig().getBoolean("enableVillagerLinkedDoors", true);
+  boolean enableAutoClose = plugin.getConfig().getBoolean("enableAutoClose", false);
+  int autoCloseDelaySeconds = plugin.getConfig().getInt("autoCloseDelaySeconds", 5);
+  if (autoCloseDelaySeconds < 1) {
+    autoCloseDelaySeconds = 1;
+  }
+  if (autoCloseDelaySeconds > 300) {
+    autoCloseDelaySeconds = 300;
+  }
+  boolean enableKnockFeature = plugin.getConfig().getBoolean("enableKnockFeature", true);
+  int knockDistanceBlocks = plugin.getConfig().getInt("knockDistanceBlocks", 12);
+  if (knockDistanceBlocks < 1) {
+    knockDistanceBlocks = 1;
+  }
+  if (knockDistanceBlocks > 64) {
+    knockDistanceBlocks = 64;
+  }
+  boolean serverWideEnabled = plugin.getConfig().getBoolean("serverWideEnabled", true);
+  boolean playPartnerSound = plugin.getConfig().getBoolean("playPartnerSound", true);
+  boolean enablePartnerParticles = plugin.getConfig().getBoolean("enablePartnerParticles", false);
 
-    String genericSoundRaw = plugin.getConfig().getString("partnerSound", "");
-    Sound genericPartnerSound = parseSound(genericSoundRaw);
-    Sound doorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.doors", ""));
-    Sound gatePartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.fenceGates", ""));
-    Sound trapdoorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.trapdoors", ""));
+  String genericSoundRaw = plugin.getConfig().getString("partnerSound", "");
+  Sound genericPartnerSound = parseSound(genericSoundRaw);
+  Sound doorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.doors", ""));
+  Sound gatePartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.fenceGates", ""));
+  Sound trapdoorPartnerSound = parseSound(plugin.getConfig().getString("partnerSoundOverrides.trapdoors", ""));
 
-    String particleName = plugin.getConfig().getString("partnerParticle", "END_ROD");
-    Particle partnerParticle = parseParticle(particleName, Particle.END_ROD);
-    int partnerParticleCount = plugin.getConfig().getInt("partnerParticleCount", 6);
-    if (partnerParticleCount < 1) {
-      partnerParticleCount = 1;
-    }
-    if (partnerParticleCount > 64) {
-      partnerParticleCount = 64;
-    }
+  String particleName = plugin.getConfig().getString("partnerParticle", "END_ROD");
+  Particle partnerParticle = parseParticle(particleName, Particle.END_ROD);
+  int partnerParticleCount = plugin.getConfig().getInt("partnerParticleCount", 6);
+  if (partnerParticleCount < 1) {
+    partnerParticleCount = 1;
+  }
+  if (partnerParticleCount > 64) {
+    partnerParticleCount = 64;
+  }
 
-    String previewParticleName = plugin.getConfig().getString("previewParticle", "WAX_OFF");
-    Particle previewParticle = parseParticle(previewParticleName, Particle.WAX_OFF);
-    int previewParticleCount = plugin.getConfig().getInt("previewParticleCount", 18);
-    if (previewParticleCount < 1) {
-      previewParticleCount = 1;
-    }
-    if (previewParticleCount > 128) {
-      previewParticleCount = 128;
-    }
-    int previewDurationTicks = plugin.getConfig().getInt("previewDurationTicks", 60);
-    if (previewDurationTicks < 20) {
-      previewDurationTicks = 20;
-    }
-    if (previewDurationTicks > 200) {
-      previewDurationTicks = 200;
-    }
+  String previewParticleName = plugin.getConfig().getString("previewParticle", "WAX_OFF");
+  Particle previewParticle = parseParticle(previewParticleName, Particle.WAX_OFF);
+  int previewParticleCount = plugin.getConfig().getInt("previewParticleCount", 18);
+  if (previewParticleCount < 1) {
+    previewParticleCount = 1;
+  }
+  if (previewParticleCount > 128) {
+    previewParticleCount = 128;
+  }
+  int previewDurationTicks = plugin.getConfig().getInt("previewDurationTicks", 60);
+  if (previewDurationTicks < 20) {
+    previewDurationTicks = 20;
+  }
+  if (previewDurationTicks > 200) {
+    previewDurationTicks = 200;
+  }
 
-    int extraAnimationDelayTicks = plugin.getConfig().getInt("animationSyncExtraDelayTicks", 0);
-    if (extraAnimationDelayTicks < 0) {
-      extraAnimationDelayTicks = 0;
-    }
-    if (extraAnimationDelayTicks > 4) {
-      extraAnimationDelayTicks = 4;
-    }
+  int extraAnimationDelayTicks = plugin.getConfig().getInt("animationSyncExtraDelayTicks", 0);
+  if (extraAnimationDelayTicks < 0) {
+    extraAnimationDelayTicks = 0;
+  }
+  if (extraAnimationDelayTicks > 4) {
+    extraAnimationDelayTicks = 4;
+  }
 
-    int lookupCacheTtlMillis = plugin.getConfig().getInt("lookupCacheTtlMillis", 1200);
-    if (lookupCacheTtlMillis < 200) {
-      lookupCacheTtlMillis = 200;
-    }
-    if (lookupCacheTtlMillis > 10_000) {
-      lookupCacheTtlMillis = 10_000;
-    }
-    int interactionCooldownMillis = plugin.getConfig().getInt("interactionCooldownMillis", 250);
-    if (interactionCooldownMillis < 0) {
-      interactionCooldownMillis = 0;
-    }
-    if (interactionCooldownMillis > 5000) {
-      interactionCooldownMillis = 5000;
-    }
+  int lookupCacheTtlMillis = plugin.getConfig().getInt("lookupCacheTtlMillis", 1200);
+  if (lookupCacheTtlMillis < 200) {
+    lookupCacheTtlMillis = 200;
+  }
+  if (lookupCacheTtlMillis > 10_000) {
+    lookupCacheTtlMillis = 10_000;
+  }
+  int interactionCooldownMillis = plugin.getConfig().getInt("interactionCooldownMillis", 250);
+  if (interactionCooldownMillis < 0) {
+    interactionCooldownMillis = 0;
+  }
+  if (interactionCooldownMillis > 5000) {
+    interactionCooldownMillis = 5000;
+  }
 
-    LocationMode locationMode = parseLocationMode(plugin.getConfig().getString("locationFilter.mode", "DISABLED"));
-    Set<String> configuredLocations = normalizeLocationEntries(plugin.getConfig().getStringList("locationFilter.locations"));
+  LocationMode locationMode = parseLocationMode(plugin.getConfig().getString("locationFilter.mode", "DISABLED"));
+  Set<String> configuredLocations = normalizeLocationEntries(plugin.getConfig().getStringList("locationFilter.locations"));
 
-    RegionMode regionMode = parseRegionMode(plugin.getConfig().getString("worldGuardRegionFilter.mode", "DISABLED"));
-    Set<String> configuredRegions = normalizeRegionEntries(plugin.getConfig().getStringList("worldGuardRegionFilter.regions"));
-    String worldGuardCustomFlag = normalizeLower(plugin.getConfig().getString("worldGuardCustomFlag", "double-doors-allow"));
-    boolean worldGuardRespectBuildPermission = plugin.getConfig().getBoolean("worldGuardRespectBuildPermission", true);
-    boolean worldGuardRespectUseFlag = plugin.getConfig().getBoolean("worldGuardRespectUseFlag", true);
+  RegionMode regionMode = parseRegionMode(plugin.getConfig().getString("worldGuardRegionFilter.mode", "DISABLED"));
+  Set<String> configuredRegions = normalizeRegionEntries(plugin.getConfig().getStringList("worldGuardRegionFilter.regions"));
+  String worldGuardCustomFlag = normalizeLower(plugin.getConfig().getString("worldGuardCustomFlag", "double-doors-allow"));
+  boolean worldGuardRespectBuildPermission = plugin.getConfig().getBoolean("worldGuardRespectBuildPermission", true);
+  boolean worldGuardRespectUseFlag = plugin.getConfig().getBoolean("worldGuardRespectUseFlag", true);
 
-    boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
-    boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
+  boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
+  boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
 
-    List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
-    List<String> trackingCountries = new ArrayList<>();
-    for (String country : configuredCountries) {
-      if (country != null && !country.isBlank()) {
-        trackingCountries.add(country.trim());
-      }
+  List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
+  List<String> trackingCountries = new ArrayList<>();
+  for (String country : configuredCountries) {
+    if (country != null && !country.isBlank()) {
+    trackingCountries.add(country.trim());
     }
+  }
 
-    String trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
-    if (trackingServerLocation == null) {
-      trackingServerLocation = "";
-    }
-    trackingServerLocation = trackingServerLocation.trim();
+  String trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
+  if (trackingServerLocation == null) {
+    trackingServerLocation = "";
+  }
+  trackingServerLocation = trackingServerLocation.trim();
 
-    boolean sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
-    String sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
-    if (sqlJdbcUrl == null || sqlJdbcUrl.isBlank()) {
-      sqlJdbcUrl = "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db";
-    }
-    String sqlUsername = plugin.getConfig().getString("sql.username", "");
-    if (sqlUsername == null) {
-      sqlUsername = "";
-    }
-    String sqlPassword = plugin.getConfig().getString("sql.password", "");
-    if (sqlPassword == null) {
-      sqlPassword = "";
-    }
-    boolean migrateYamlToSql = plugin.getConfig().getBoolean("sql.migrateFromYaml", true);
-    long heartbeatSeconds = plugin.getConfig().getLong("sql.proxyHeartbeatMaxAgeSeconds", 180L);
-    if (heartbeatSeconds < 15L) {
-      heartbeatSeconds = 15L;
-    }
-    long proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
+  boolean sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
+  String sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
+  if (sqlJdbcUrl == null || sqlJdbcUrl.isBlank()) {
+    sqlJdbcUrl = "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db";
+  }
+  String sqlUsername = plugin.getConfig().getString("sql.username", "");
+  if (sqlUsername == null) {
+    sqlUsername = "";
+  }
+  String sqlPassword = plugin.getConfig().getString("sql.password", "");
+  if (sqlPassword == null) {
+    sqlPassword = "";
+  }
+  boolean migrateYamlToSql = plugin.getConfig().getBoolean("sql.migrateFromYaml", true);
+  long heartbeatSeconds = plugin.getConfig().getLong("sql.proxyHeartbeatMaxAgeSeconds", 180L);
+  if (heartbeatSeconds < 15L) {
+    heartbeatSeconds = 15L;
+  }
+  long proxyHeartbeatMaxAgeMillis = heartbeatSeconds * 1000L;
 
-    boolean updateCheckerEnabled = plugin.getConfig().getBoolean("updateChecker.enabled", true);
-    int updateCheckerScheduleSeconds = plugin.getConfig().getInt("updateChecker.checkScheduleSeconds", 3600);
-    if (updateCheckerScheduleSeconds < 300) {
-      updateCheckerScheduleSeconds = 300;
-    }
-    if (updateCheckerScheduleSeconds > 86_400) {
-      updateCheckerScheduleSeconds = 86_400;
-    }
-    boolean updateCheckerNotify = plugin.getConfig().getBoolean("updateChecker.notify", true);
+  boolean updateCheckerEnabled = plugin.getConfig().getBoolean("updateChecker.enabled", true);
+  int updateCheckerScheduleSeconds = plugin.getConfig().getInt("updateChecker.checkScheduleSeconds", 3600);
+  if (updateCheckerScheduleSeconds < 300) {
+    updateCheckerScheduleSeconds = 300;
+  }
+  if (updateCheckerScheduleSeconds > 86_400) {
+    updateCheckerScheduleSeconds = 86_400;
+  }
+  boolean updateCheckerNotify = plugin.getConfig().getBoolean("updateChecker.notify", true);
 
-    String configuredLanguage = plugin.getConfig().getString("language", "en_US");
-    if (configuredLanguage == null || configuredLanguage.isBlank()) {
-      configuredLanguage = "en_US";
-    }
-    String language = configuredLanguage.trim();
+  String configuredLanguage = plugin.getConfig().getString("language", "en_US");
+  if (configuredLanguage == null || configuredLanguage.isBlank()) {
+    configuredLanguage = "en_US";
+  }
+  String language = configuredLanguage.trim();
 
-    snapshot = new ConfigSnapshot(
-        enableRecursiveOpening,
-        recursiveOpeningMaxBlocksDistance,
-        enableDoors,
-        enableFenceGates,
-        enableTrapdoors,
-        enableVillagerLinkedDoors,
-        enableAutoClose,
-        autoCloseDelaySeconds,
-        enableKnockFeature,
-        knockDistanceBlocks,
-        serverWideEnabled,
-        playPartnerSound,
-        genericPartnerSound,
-        doorPartnerSound,
-        gatePartnerSound,
-        trapdoorPartnerSound,
-        enablePartnerParticles,
-        partnerParticle,
-        partnerParticleCount,
-        previewParticle,
-        previewParticleCount,
-        previewDurationTicks,
-        extraAnimationDelayTicks,
-        lookupCacheTtlMillis,
-        interactionCooldownMillis,
-        locationMode,
-        Set.copyOf(configuredLocations),
-        regionMode,
-        Set.copyOf(configuredRegions),
-        worldGuardCustomFlag,
-        worldGuardRespectBuildPermission,
-        worldGuardRespectUseFlag,
-        enableAnonymousTracking,
-        enableExtendedAnonymousTracking,
-        List.copyOf(trackingCountries),
-        trackingServerLocation,
-        language,
-        sqlEnabled,
-        sqlJdbcUrl,
-        sqlUsername,
-        sqlPassword,
-        migrateYamlToSql,
-        proxyHeartbeatMaxAgeMillis,
-        updateCheckerEnabled,
-        updateCheckerScheduleSeconds,
-        updateCheckerNotify);
+  snapshot = new ConfigSnapshot(
+    enableRecursiveOpening,
+    recursiveOpeningMaxBlocksDistance,
+    enableDoors,
+    enableFenceGates,
+    enableTrapdoors,
+    enableVillagerLinkedDoors,
+    enableAutoClose,
+    autoCloseDelaySeconds,
+    enableKnockFeature,
+    knockDistanceBlocks,
+    serverWideEnabled,
+    playPartnerSound,
+    genericPartnerSound,
+    doorPartnerSound,
+    gatePartnerSound,
+    trapdoorPartnerSound,
+    enablePartnerParticles,
+    partnerParticle,
+    partnerParticleCount,
+    previewParticle,
+    previewParticleCount,
+    previewDurationTicks,
+    extraAnimationDelayTicks,
+    lookupCacheTtlMillis,
+    interactionCooldownMillis,
+    locationMode,
+    Set.copyOf(configuredLocations),
+    regionMode,
+    Set.copyOf(configuredRegions),
+    worldGuardCustomFlag,
+    worldGuardRespectBuildPermission,
+    worldGuardRespectUseFlag,
+    enableAnonymousTracking,
+    enableExtendedAnonymousTracking,
+    List.copyOf(trackingCountries),
+    trackingServerLocation,
+    language,
+    sqlEnabled,
+    sqlJdbcUrl,
+    sqlUsername,
+    sqlPassword,
+    migrateYamlToSql,
+    proxyHeartbeatMaxAgeMillis,
+    updateCheckerEnabled,
+    updateCheckerScheduleSeconds,
+    updateCheckerNotify);
   }
 
   /**
@@ -242,7 +242,7 @@ public final class PluginConfig {
    * @return true when recursive opening is enabled
    */
   public boolean isEnableRecursiveOpening() {
-    return snapshot.enableRecursiveOpening();
+  return snapshot.enableRecursiveOpening();
   }
 
   /**
@@ -251,7 +251,7 @@ public final class PluginConfig {
    * @return max recursive distance between 1 and 32
    */
   public int getRecursiveOpeningMaxBlocksDistance() {
-    return snapshot.recursiveOpeningMaxBlocksDistance();
+  return snapshot.recursiveOpeningMaxBlocksDistance();
   }
 
   /**
@@ -260,7 +260,7 @@ public final class PluginConfig {
    * @return true when door support is enabled
    */
   public boolean isEnableDoors() {
-    return snapshot.enableDoors();
+  return snapshot.enableDoors();
   }
 
   /**
@@ -269,7 +269,7 @@ public final class PluginConfig {
    * @return true when fence gate support is enabled
    */
   public boolean isEnableFenceGates() {
-    return snapshot.enableFenceGates();
+  return snapshot.enableFenceGates();
   }
 
   /**
@@ -278,7 +278,7 @@ public final class PluginConfig {
    * @return true when trapdoor support is enabled
    */
   public boolean isEnableTrapdoors() {
-    return snapshot.enableTrapdoors();
+  return snapshot.enableTrapdoors();
   }
 
   /**
@@ -287,7 +287,7 @@ public final class PluginConfig {
    * @return true when villager linked-door behavior is enabled
    */
   public boolean isEnableVillagerLinkedDoors() {
-    return snapshot.enableVillagerLinkedDoors();
+  return snapshot.enableVillagerLinkedDoors();
   }
 
   /**
@@ -296,7 +296,7 @@ public final class PluginConfig {
    * @return true when auto-close is enabled
    */
   public boolean isEnableAutoClose() {
-    return snapshot.enableAutoClose();
+  return snapshot.enableAutoClose();
   }
 
   /**
@@ -305,7 +305,7 @@ public final class PluginConfig {
    * @return auto-close delay in seconds
    */
   public int getAutoCloseDelaySeconds() {
-    return snapshot.autoCloseDelaySeconds();
+  return snapshot.autoCloseDelaySeconds();
   }
 
   /**
@@ -314,7 +314,7 @@ public final class PluginConfig {
    * @return true when knock behavior is enabled
    */
   public boolean isEnableKnockFeature() {
-    return snapshot.enableKnockFeature();
+  return snapshot.enableKnockFeature();
   }
 
   /**
@@ -323,7 +323,7 @@ public final class PluginConfig {
    * @return knock hearing distance in blocks
    */
   public int getKnockDistanceBlocks() {
-    return snapshot.knockDistanceBlocks();
+  return snapshot.knockDistanceBlocks();
   }
 
   /**
@@ -332,7 +332,7 @@ public final class PluginConfig {
    * @return true when server-wide behavior is enabled
    */
   public boolean isServerWideEnabled() {
-    return snapshot.serverWideEnabled();
+  return snapshot.serverWideEnabled();
   }
 
   /**
@@ -341,7 +341,7 @@ public final class PluginConfig {
    * @return true when partner sounds are enabled
    */
   public boolean isPlayPartnerSound() {
-    return snapshot.playPartnerSound();
+  return snapshot.playPartnerSound();
   }
 
   /**
@@ -351,12 +351,12 @@ public final class PluginConfig {
    * @return configured sound or null to use vanilla/no explicit sound
    */
   public Sound getPartnerSound(OpenableType type) {
-    return switch (type) {
-      case DOOR -> snapshot.doorPartnerSound() != null ? snapshot.doorPartnerSound() : snapshot.genericPartnerSound();
-      case FENCE_GATE -> snapshot.gatePartnerSound() != null ? snapshot.gatePartnerSound() : snapshot.genericPartnerSound();
-      case TRAPDOOR -> snapshot.trapdoorPartnerSound() != null ? snapshot.trapdoorPartnerSound() : snapshot.genericPartnerSound();
-      case CUSTOM -> snapshot.genericPartnerSound();
-    };
+  return switch (type) {
+    case DOOR -> snapshot.doorPartnerSound() != null ? snapshot.doorPartnerSound() : snapshot.genericPartnerSound();
+    case FENCE_GATE -> snapshot.gatePartnerSound() != null ? snapshot.gatePartnerSound() : snapshot.genericPartnerSound();
+    case TRAPDOOR -> snapshot.trapdoorPartnerSound() != null ? snapshot.trapdoorPartnerSound() : snapshot.genericPartnerSound();
+    case CUSTOM -> snapshot.genericPartnerSound();
+  };
   }
 
   /**
@@ -365,7 +365,7 @@ public final class PluginConfig {
    * @return true when partner particles should be emitted
    */
   public boolean isEnablePartnerParticles() {
-    return snapshot.enablePartnerParticles();
+  return snapshot.enablePartnerParticles();
   }
 
   /**
@@ -374,7 +374,7 @@ public final class PluginConfig {
    * @return partner effect particle type
    */
   public Particle getPartnerParticle() {
-    return snapshot.partnerParticle();
+  return snapshot.partnerParticle();
   }
 
   /**
@@ -383,7 +383,7 @@ public final class PluginConfig {
    * @return partner particle count
    */
   public int getPartnerParticleCount() {
-    return snapshot.partnerParticleCount();
+  return snapshot.partnerParticleCount();
   }
 
   /**
@@ -392,7 +392,7 @@ public final class PluginConfig {
    * @return preview particle type
    */
   public Particle getPreviewParticle() {
-    return snapshot.previewParticle();
+  return snapshot.previewParticle();
   }
 
   /**
@@ -401,7 +401,7 @@ public final class PluginConfig {
    * @return preview particle count
    */
   public int getPreviewParticleCount() {
-    return snapshot.previewParticleCount();
+  return snapshot.previewParticleCount();
   }
 
   /**
@@ -410,7 +410,7 @@ public final class PluginConfig {
    * @return preview duration in ticks
    */
   public int getPreviewDurationTicks() {
-    return snapshot.previewDurationTicks();
+  return snapshot.previewDurationTicks();
   }
 
   /**
@@ -419,7 +419,7 @@ public final class PluginConfig {
    * @return extra ticks between 0 and 4
    */
   public int getAnimationSyncExtraDelayTicks() {
-    return snapshot.extraAnimationDelayTicks();
+  return snapshot.extraAnimationDelayTicks();
   }
 
   /**
@@ -428,7 +428,7 @@ public final class PluginConfig {
    * @return lookup cache TTL in milliseconds
    */
   public int getLookupCacheTtlMillis() {
-    return snapshot.lookupCacheTtlMillis();
+  return snapshot.lookupCacheTtlMillis();
   }
 
   /**
@@ -437,7 +437,7 @@ public final class PluginConfig {
    * @return interaction cooldown in milliseconds (0 disables)
    */
   public int getInteractionCooldownMillis() {
-    return snapshot.interactionCooldownMillis();
+  return snapshot.interactionCooldownMillis();
   }
 
   /**
@@ -446,7 +446,7 @@ public final class PluginConfig {
    * @return location mode
    */
   public LocationMode getLocationMode() {
-    return snapshot.locationMode();
+  return snapshot.locationMode();
   }
 
   /**
@@ -455,7 +455,7 @@ public final class PluginConfig {
    * @return immutable set of normalized entries
    */
   public Set<String> getLocationEntries() {
-    return snapshot.locationEntries();
+  return snapshot.locationEntries();
   }
 
   /**
@@ -464,7 +464,7 @@ public final class PluginConfig {
    * @return WorldGuard region mode
    */
   public RegionMode getWorldGuardRegionMode() {
-    return snapshot.regionMode();
+  return snapshot.regionMode();
   }
 
   /**
@@ -473,7 +473,7 @@ public final class PluginConfig {
    * @return immutable set of region IDs
    */
   public Set<String> getWorldGuardRegionIds() {
-    return snapshot.regionIds();
+  return snapshot.regionIds();
   }
 
   /**
@@ -482,7 +482,7 @@ public final class PluginConfig {
    * @return normalized custom flag name, or empty string
    */
   public String getWorldGuardCustomFlag() {
-    return snapshot.worldGuardCustomFlag();
+  return snapshot.worldGuardCustomFlag();
   }
 
   /**
@@ -491,7 +491,7 @@ public final class PluginConfig {
    * @return true when build checks should run
    */
   public boolean isWorldGuardRespectBuildPermission() {
-    return snapshot.worldGuardRespectBuildPermission();
+  return snapshot.worldGuardRespectBuildPermission();
   }
 
   /**
@@ -500,7 +500,7 @@ public final class PluginConfig {
    * @return true when use-flag checks should run
    */
   public boolean isWorldGuardRespectUseFlag() {
-    return snapshot.worldGuardRespectUseFlag();
+  return snapshot.worldGuardRespectUseFlag();
   }
 
   /**
@@ -509,7 +509,7 @@ public final class PluginConfig {
    * @return true when FastStats tracking is enabled
    */
   public boolean isEnableAnonymousTracking() {
-    return snapshot.enableAnonymousTracking();
+  return snapshot.enableAnonymousTracking();
   }
 
   /**
@@ -518,7 +518,7 @@ public final class PluginConfig {
    * @return true when extra telemetry should be sent
    */
   public boolean isEnableExtendedAnonymousTracking() {
-    return snapshot.enableExtendedAnonymousTracking();
+  return snapshot.enableExtendedAnonymousTracking();
   }
 
   /**
@@ -527,7 +527,7 @@ public final class PluginConfig {
    * @return immutable list of configured country codes
    */
   public List<String> getTrackingCountries() {
-    return snapshot.trackingCountries();
+  return snapshot.trackingCountries();
   }
 
   /**
@@ -536,7 +536,7 @@ public final class PluginConfig {
    * @return trimmed location label, or empty string
    */
   public String getTrackingServerLocation() {
-    return snapshot.trackingServerLocation();
+  return snapshot.trackingServerLocation();
   }
 
   /**
@@ -545,7 +545,7 @@ public final class PluginConfig {
    * @return language code such as {@code en_US}
    */
   public String getLanguage() {
-    return snapshot.language();
+  return snapshot.language();
   }
 
   /**
@@ -554,7 +554,7 @@ public final class PluginConfig {
    * @return true when SQL storage should be used
    */
   public boolean isSqlEnabled() {
-    return snapshot.sqlEnabled();
+  return snapshot.sqlEnabled();
   }
 
   /**
@@ -563,7 +563,7 @@ public final class PluginConfig {
    * @return JDBC URL
    */
   public String getSqlJdbcUrl() {
-    return snapshot.sqlJdbcUrl();
+  return snapshot.sqlJdbcUrl();
   }
 
   /**
@@ -572,7 +572,7 @@ public final class PluginConfig {
    * @return SQL username, or empty string
    */
   public String getSqlUsername() {
-    return snapshot.sqlUsername();
+  return snapshot.sqlUsername();
   }
 
   /**
@@ -581,7 +581,7 @@ public final class PluginConfig {
    * @return SQL password, or empty string
    */
   public String getSqlPassword() {
-    return snapshot.sqlPassword();
+  return snapshot.sqlPassword();
   }
 
   /**
@@ -590,7 +590,7 @@ public final class PluginConfig {
    * @return true when one-time migration should run if needed
    */
   public boolean isMigrateYamlToSql() {
-    return snapshot.migrateYamlToSql();
+  return snapshot.migrateYamlToSql();
   }
 
   /**
@@ -599,7 +599,7 @@ public final class PluginConfig {
    * @return heartbeat max age in milliseconds
    */
   public long getProxyHeartbeatMaxAgeMillis() {
-    return snapshot.proxyHeartbeatMaxAgeMillis();
+  return snapshot.proxyHeartbeatMaxAgeMillis();
   }
 
   /**
@@ -608,7 +608,7 @@ public final class PluginConfig {
    * @return true when the built-in updater is enabled
    */
   public boolean isUpdateCheckerEnabled() {
-    return snapshot.updateCheckerEnabled();
+  return snapshot.updateCheckerEnabled();
   }
 
   /**
@@ -617,7 +617,7 @@ public final class PluginConfig {
    * @return check schedule in seconds
    */
   public int getUpdateCheckerScheduleSeconds() {
-    return snapshot.updateCheckerScheduleSeconds();
+  return snapshot.updateCheckerScheduleSeconds();
   }
 
   /**
@@ -626,7 +626,7 @@ public final class PluginConfig {
    * @return true when player notifications are enabled
    */
   public boolean isUpdateCheckerNotify() {
-    return snapshot.updateCheckerNotify();
+  return snapshot.updateCheckerNotify();
   }
 
   /**
@@ -635,263 +635,263 @@ public final class PluginConfig {
    * @param enabled true to enable globally, false to disable globally
    */
   public void setServerWideEnabled(boolean enabled) {
-    snapshot = snapshot.withServerWideEnabled(enabled);
-    plugin.getConfig().set("serverWideEnabled", enabled);
-    SchedulerBridge.runAsync(plugin, plugin::saveConfig);
+  snapshot = snapshot.withServerWideEnabled(enabled);
+  plugin.getConfig().set("serverWideEnabled", enabled);
+  SchedulerBridge.runAsync(plugin, plugin::saveConfig);
   }
 
   private record ConfigSnapshot(
-      boolean enableRecursiveOpening,
-      int recursiveOpeningMaxBlocksDistance,
-      boolean enableDoors,
-      boolean enableFenceGates,
-      boolean enableTrapdoors,
-      boolean enableVillagerLinkedDoors,
-      boolean enableAutoClose,
-      int autoCloseDelaySeconds,
-      boolean enableKnockFeature,
-      int knockDistanceBlocks,
-      boolean serverWideEnabled,
-      boolean playPartnerSound,
-      Sound genericPartnerSound,
-      Sound doorPartnerSound,
-      Sound gatePartnerSound,
-      Sound trapdoorPartnerSound,
-      boolean enablePartnerParticles,
-      Particle partnerParticle,
-      int partnerParticleCount,
-      Particle previewParticle,
-      int previewParticleCount,
-      int previewDurationTicks,
-      int extraAnimationDelayTicks,
-      int lookupCacheTtlMillis,
-      int interactionCooldownMillis,
-      LocationMode locationMode,
-      Set<String> locationEntries,
-      RegionMode regionMode,
-      Set<String> regionIds,
-      String worldGuardCustomFlag,
-      boolean worldGuardRespectBuildPermission,
-      boolean worldGuardRespectUseFlag,
-      boolean enableAnonymousTracking,
-      boolean enableExtendedAnonymousTracking,
-      List<String> trackingCountries,
-      String trackingServerLocation,
-      String language,
-      boolean sqlEnabled,
-      String sqlJdbcUrl,
-      String sqlUsername,
-      String sqlPassword,
-      boolean migrateYamlToSql,
-      long proxyHeartbeatMaxAgeMillis,
-      boolean updateCheckerEnabled,
-      int updateCheckerScheduleSeconds,
-      boolean updateCheckerNotify
+    boolean enableRecursiveOpening,
+    int recursiveOpeningMaxBlocksDistance,
+    boolean enableDoors,
+    boolean enableFenceGates,
+    boolean enableTrapdoors,
+    boolean enableVillagerLinkedDoors,
+    boolean enableAutoClose,
+    int autoCloseDelaySeconds,
+    boolean enableKnockFeature,
+    int knockDistanceBlocks,
+    boolean serverWideEnabled,
+    boolean playPartnerSound,
+    Sound genericPartnerSound,
+    Sound doorPartnerSound,
+    Sound gatePartnerSound,
+    Sound trapdoorPartnerSound,
+    boolean enablePartnerParticles,
+    Particle partnerParticle,
+    int partnerParticleCount,
+    Particle previewParticle,
+    int previewParticleCount,
+    int previewDurationTicks,
+    int extraAnimationDelayTicks,
+    int lookupCacheTtlMillis,
+    int interactionCooldownMillis,
+    LocationMode locationMode,
+    Set<String> locationEntries,
+    RegionMode regionMode,
+    Set<String> regionIds,
+    String worldGuardCustomFlag,
+    boolean worldGuardRespectBuildPermission,
+    boolean worldGuardRespectUseFlag,
+    boolean enableAnonymousTracking,
+    boolean enableExtendedAnonymousTracking,
+    List<String> trackingCountries,
+    String trackingServerLocation,
+    String language,
+    boolean sqlEnabled,
+    String sqlJdbcUrl,
+    String sqlUsername,
+    String sqlPassword,
+    boolean migrateYamlToSql,
+    long proxyHeartbeatMaxAgeMillis,
+    boolean updateCheckerEnabled,
+    int updateCheckerScheduleSeconds,
+    boolean updateCheckerNotify
   ) {
-    private static ConfigSnapshot defaults() {
-      return new ConfigSnapshot(
-          true,
-          10,
-          true,
-          true,
-          true,
-          true,
-          false,
-          5,
-          true,
-          12,
-          true,
-          true,
-          null,
-          null,
-          null,
-          null,
-          false,
-          Particle.END_ROD,
-          6,
-          Particle.WAX_OFF,
-          18,
-          60,
-          0,
-          1200,
-          250,
-          LocationMode.DISABLED,
-          Set.of(),
-          RegionMode.DISABLED,
-          Set.of(),
-          "double-doors-allow",
-          true,
-          true,
-          true,
-          false,
-          List.of(),
-          "",
-          "en_US",
-          false,
-          "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db",
-          "",
-          "",
-          true,
-          180_000L,
-          true,
-          3600,
-          true);
-    }
+  private static ConfigSnapshot defaults() {
+    return new ConfigSnapshot(
+      true,
+      10,
+      true,
+      true,
+      true,
+      true,
+      false,
+      5,
+      true,
+      12,
+      true,
+      true,
+      null,
+      null,
+      null,
+      null,
+      false,
+      Particle.END_ROD,
+      6,
+      Particle.WAX_OFF,
+      18,
+      60,
+      0,
+      1200,
+      250,
+      LocationMode.DISABLED,
+      Set.of(),
+      RegionMode.DISABLED,
+      Set.of(),
+      "double-doors-allow",
+      true,
+      true,
+      true,
+      false,
+      List.of(),
+      "",
+      "en_US",
+      false,
+      "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db",
+      "",
+      "",
+      true,
+      180_000L,
+      true,
+      3600,
+      true);
+  }
 
-    private ConfigSnapshot withServerWideEnabled(boolean enabled) {
-      return new ConfigSnapshot(
-          enableRecursiveOpening,
-          recursiveOpeningMaxBlocksDistance,
-          enableDoors,
-          enableFenceGates,
-          enableTrapdoors,
-          enableVillagerLinkedDoors,
-          enableAutoClose,
-          autoCloseDelaySeconds,
-          enableKnockFeature,
-          knockDistanceBlocks,
-          enabled,
-          playPartnerSound,
-          genericPartnerSound,
-          doorPartnerSound,
-          gatePartnerSound,
-          trapdoorPartnerSound,
-          enablePartnerParticles,
-          partnerParticle,
-          partnerParticleCount,
-          previewParticle,
-          previewParticleCount,
-          previewDurationTicks,
-          extraAnimationDelayTicks,
-          lookupCacheTtlMillis,
-          interactionCooldownMillis,
-          locationMode,
-          locationEntries,
-          regionMode,
-          regionIds,
-          worldGuardCustomFlag,
-          worldGuardRespectBuildPermission,
-          worldGuardRespectUseFlag,
-          enableAnonymousTracking,
-          enableExtendedAnonymousTracking,
-          trackingCountries,
-          trackingServerLocation,
-          language,
-          sqlEnabled,
-          sqlJdbcUrl,
-          sqlUsername,
-          sqlPassword,
-          migrateYamlToSql,
-          proxyHeartbeatMaxAgeMillis,
-          updateCheckerEnabled,
-          updateCheckerScheduleSeconds,
-          updateCheckerNotify);
-    }
+  private ConfigSnapshot withServerWideEnabled(boolean enabled) {
+    return new ConfigSnapshot(
+      enableRecursiveOpening,
+      recursiveOpeningMaxBlocksDistance,
+      enableDoors,
+      enableFenceGates,
+      enableTrapdoors,
+      enableVillagerLinkedDoors,
+      enableAutoClose,
+      autoCloseDelaySeconds,
+      enableKnockFeature,
+      knockDistanceBlocks,
+      enabled,
+      playPartnerSound,
+      genericPartnerSound,
+      doorPartnerSound,
+      gatePartnerSound,
+      trapdoorPartnerSound,
+      enablePartnerParticles,
+      partnerParticle,
+      partnerParticleCount,
+      previewParticle,
+      previewParticleCount,
+      previewDurationTicks,
+      extraAnimationDelayTicks,
+      lookupCacheTtlMillis,
+      interactionCooldownMillis,
+      locationMode,
+      locationEntries,
+      regionMode,
+      regionIds,
+      worldGuardCustomFlag,
+      worldGuardRespectBuildPermission,
+      worldGuardRespectUseFlag,
+      enableAnonymousTracking,
+      enableExtendedAnonymousTracking,
+      trackingCountries,
+      trackingServerLocation,
+      language,
+      sqlEnabled,
+      sqlJdbcUrl,
+      sqlUsername,
+      sqlPassword,
+      migrateYamlToSql,
+      proxyHeartbeatMaxAgeMillis,
+      updateCheckerEnabled,
+      updateCheckerScheduleSeconds,
+      updateCheckerNotify);
+  }
   }
 
   /**
    * Location filter mode for exact world coordinates.
    */
   public enum LocationMode {
-    DISABLED,
-    BLACKLIST,
-    WHITELIST
+  DISABLED,
+  BLACKLIST,
+  WHITELIST
   }
 
   /**
    * WorldGuard region filter mode.
    */
   public enum RegionMode {
-    DISABLED,
-    BLACKLIST,
-    WHITELIST
+  DISABLED,
+  BLACKLIST,
+  WHITELIST
   }
 
   private static Sound parseSound(String raw) {
-    if (raw == null || raw.isBlank()) {
-      return null;
-    }
-    try {
-      NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
-      return key == null ? null : Registry.SOUNDS.get(key);
-    } catch (IllegalArgumentException ex) {
-      return null;
-    }
+  if (raw == null || raw.isBlank()) {
+    return null;
+  }
+  try {
+    NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
+    return key == null ? null : Registry.SOUNDS.get(key);
+  } catch (IllegalArgumentException ex) {
+    return null;
+  }
   }
 
   private static Particle parseParticle(String raw, Particle fallback) {
-    if (raw == null || raw.isBlank()) {
-      return fallback;
-    }
-    try {
-      NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
-      Particle resolved = key == null ? null : Registry.PARTICLE_TYPE.get(key);
-      return resolved == null ? fallback : resolved;
-    } catch (IllegalArgumentException ex) {
-      return fallback;
-    }
+  if (raw == null || raw.isBlank()) {
+    return fallback;
+  }
+  try {
+    NamespacedKey key = NamespacedKey.fromString(raw.trim().toLowerCase(Locale.ROOT));
+    Particle resolved = key == null ? null : Registry.PARTICLE_TYPE.get(key);
+    return resolved == null ? fallback : resolved;
+  } catch (IllegalArgumentException ex) {
+    return fallback;
+  }
   }
 
   private static LocationMode parseLocationMode(String raw) {
-    if (raw == null) {
-      return LocationMode.DISABLED;
-    }
-    try {
-      return LocationMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException ex) {
-      return LocationMode.DISABLED;
-    }
+  if (raw == null) {
+    return LocationMode.DISABLED;
+  }
+  try {
+    return LocationMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+  } catch (IllegalArgumentException ex) {
+    return LocationMode.DISABLED;
+  }
   }
 
   private static RegionMode parseRegionMode(String raw) {
-    if (raw == null) {
-      return RegionMode.DISABLED;
-    }
-    try {
-      return RegionMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
-    } catch (IllegalArgumentException ex) {
-      return RegionMode.DISABLED;
-    }
+  if (raw == null) {
+    return RegionMode.DISABLED;
+  }
+  try {
+    return RegionMode.valueOf(raw.trim().toUpperCase(Locale.ROOT));
+  } catch (IllegalArgumentException ex) {
+    return RegionMode.DISABLED;
+  }
   }
 
   private static Set<String> normalizeLocationEntries(List<String> rawEntries) {
-    Set<String> normalized = new HashSet<>();
-    for (String raw : rawEntries) {
-      if (raw == null || raw.isBlank()) {
-        continue;
-      }
-      String cleaned = raw.trim().toLowerCase(Locale.ROOT);
-      String[] parts = cleaned.split(":");
-      if (parts.length != 4) {
-        continue;
-      }
-      try {
-        int x = Integer.parseInt(parts[1]);
-        int y = Integer.parseInt(parts[2]);
-        int z = Integer.parseInt(parts[3]);
-        normalized.add(parts[0] + ":" + x + ":" + y + ":" + z);
-      } catch (NumberFormatException ignored) {
-        // Keep filtering robust for malformed entries.
-      }
+  Set<String> normalized = new HashSet<>();
+  for (String raw : rawEntries) {
+    if (raw == null || raw.isBlank()) {
+    continue;
     }
-    return normalized;
+    String cleaned = raw.trim().toLowerCase(Locale.ROOT);
+    String[] parts = cleaned.split(":");
+    if (parts.length != 4) {
+    continue;
+    }
+    try {
+    int x = Integer.parseInt(parts[1]);
+    int y = Integer.parseInt(parts[2]);
+    int z = Integer.parseInt(parts[3]);
+    normalized.add(parts[0] + ":" + x + ":" + y + ":" + z);
+    } catch (NumberFormatException ignored) {
+    // Keep filtering robust for malformed entries.
+    }
+  }
+  return normalized;
   }
 
   private static Set<String> normalizeRegionEntries(List<String> rawEntries) {
-    Set<String> normalized = new HashSet<>();
-    for (String raw : rawEntries) {
-      if (raw == null || raw.isBlank()) {
-        continue;
-      }
-      normalized.add(raw.trim().toLowerCase(Locale.ROOT));
+  Set<String> normalized = new HashSet<>();
+  for (String raw : rawEntries) {
+    if (raw == null || raw.isBlank()) {
+    continue;
     }
-    return normalized;
+    normalized.add(raw.trim().toLowerCase(Locale.ROOT));
+  }
+  return normalized;
   }
 
   private static String normalizeLower(String raw) {
-    if (raw == null || raw.isBlank()) {
-      return "";
-    }
-    return raw.trim().toLowerCase(Locale.ROOT);
+  if (raw == null || raw.isBlank()) {
+    return "";
+  }
+  return raw.trim().toLowerCase(Locale.ROOT);
   }
 }

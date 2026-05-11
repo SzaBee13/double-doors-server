@@ -1,7 +1,7 @@
 {
   "credits": [
-    "SzaBee13",
-    "Google Translate"
+  "SzaBee13",
+  "Google Translate"
   ],
   "log.luckperms_detected": "LuckPerms erkannt: Berechtigungen werden ueber doubledoors.* Knoten verwaltet.",
   "log.griefprevention_detected": "GriefPrevention erkannt: Verknuepfte Tueroeffnungen beachten Baupruefungen in Claims.",

@@ -55,7 +55,7 @@ jobs:
             exit 1
           fi
 
-          echo "jar_path=$JAR_PATH" >> $GITHUB_OUTPUT
+          echo "jar_path=$JAR_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Get proxy JAR path
         id: proxy_artifact
@@ -69,7 +69,7 @@ jobs:
             exit 1
           fi
 
-          echo "jar_path=$PROXY_JAR_PATH" >> $GITHUB_OUTPUT
+          echo "jar_path=$PROXY_JAR_PATH" >> "$GITHUB_OUTPUT"
 
       - name: Attach JAR to release
         uses: softprops/action-gh-release@v3
@@ -86,7 +86,7 @@ jobs:
         run: |
           VERSION="${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}"
           VERSION="${VERSION#v}"
-          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
 
       - name: Detect release channel
         id: release_channel
@@ -113,7 +113,7 @@ jobs:
           RELEASE_BODY: ${{ github.event.release.body }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
         run: |
-          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE-NOTE.md"
+          RELEASE_NOTE_FILE="releases/v${{ steps.version.outputs.version }}/RELEASE_NOTE.md"
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
           if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then
@@ -124,7 +124,7 @@ jobs:
             BODY="Release ${RELEASE_TAG}"
           fi
 
-            {
+          {
             echo "body<<$DELIMITER"
             printf '%s\n' "$BODY"
             echo "$DELIMITER"
@@ -172,6 +172,7 @@ jobs:
           java: |
             25
           game-version-filter: none
+
       - name: Publish Proxy To Modrinth
         uses: Kir-Antipov/mc-publish@v3.3
         with:
@@ -181,8 +182,8 @@ jobs:
           name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
-          changelog: "Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below"
-          loaders: | 
+          changelog: 'Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
+          loaders: |
             velocity
           game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
             1.21

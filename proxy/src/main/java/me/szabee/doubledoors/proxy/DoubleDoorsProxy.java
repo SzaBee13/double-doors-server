@@ -28,11 +28,11 @@ import dev.faststats.velocity.VelocityMetrics;
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
  */
 @Plugin(
-    id = "doubledoors-proxy",
-    name = "DoubleDoorsProxy",
-    version = "${project.version}",
-    description = "Proxy companion plugin for DoubleDoors shared SQL detection",
-    authors = {"SzaBee13"}
+  id = "doubledoors-proxy",
+  name = "DoubleDoorsProxy",
+  version = "${project.version}",
+  description = "Proxy companion plugin for DoubleDoors shared SQL detection",
+  authors = {"SzaBee13"}
 )
 public final class DoubleDoorsProxy {
   private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
@@ -58,11 +58,11 @@ public final class DoubleDoorsProxy {
    */
   @Inject
   public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory,
-      VelocityMetrics.Factory metricsFactory) {
-    this.proxyServer = proxyServer;
-    this.logger = logger;
-    this.dataDirectory = dataDirectory;
-    this.metricsFactory = metricsFactory;
+    VelocityMetrics.Factory metricsFactory) {
+  this.proxyServer = proxyServer;
+  this.logger = logger;
+  this.dataDirectory = dataDirectory;
+  this.metricsFactory = metricsFactory;
   }
 
   /**
@@ -72,85 +72,85 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
-    Properties config = loadConfig();
-    boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
-    if (anonymousTrackingEnabled) {
-      String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
-      if (token == null) {
-        metrics = null;
-        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
-            + " metrics are disabled.");
-      }
-
-      VelocityMetrics.Factory factory = metricsFactory;
-      if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
-        factory = factory
-            .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
-            .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
-            .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
-            .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
-      }
-
-      if (token != null) {
-        try {
-          metrics = factory.token(token).create(this);
-        } catch (RuntimeException e) {
-          metrics = null;
-          logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
-        }
-      }
-    } else {
-      metrics = null;
-      logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
+  Properties config = loadConfig();
+  boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
+  if (anonymousTrackingEnabled) {
+    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+    if (token == null) {
+    metrics = null;
+    logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
+      + " metrics are disabled.");
     }
 
-    boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
-    if (!sqlEnabled) {
-      logger.info("DoubleDoorsProxy SQL heartbeat is disabled by config.");
-      return;
+    VelocityMetrics.Factory factory = metricsFactory;
+    if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
+    factory = factory
+      .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
+      .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
+      .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+      .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
     }
 
-    boolean geyserPresent = isPluginPresent("geyser", "geyser-velocity");
-    boolean floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
-    if (!geyserPresent && !floodgatePresent) {
-      logger.info("DoubleDoorsProxy did not detect Geyser/Floodgate on this proxy.");
-      return;
-    }
-
-    String jdbcUrl = config.getProperty("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db").trim();
-    String username = config.getProperty("sql.username", "").trim();
-    String password = config.getProperty("sql.password", "");
-    proxyId = config.getProperty("sql.proxyId", "velocity-main").trim();
-    if (proxyId.isEmpty()) {
-      proxyId = "velocity-main";
-    }
-
-    long heartbeatSeconds;
+    if (token != null) {
     try {
-      heartbeatSeconds = Long.parseLong(config.getProperty("sql.heartbeatSeconds", "30"));
-    } catch (NumberFormatException ignored) {
-      heartbeatSeconds = 30L;
+      metrics = factory.token(token).create(this);
+    } catch (RuntimeException e) {
+      metrics = null;
+      logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
     }
-    if (heartbeatSeconds < 5L) {
-      heartbeatSeconds = 5L;
     }
+  } else {
+    metrics = null;
+    logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
+  }
 
-    sqlClient = new ProxySqlClient(jdbcUrl, username, password);
-    long repeatSeconds = heartbeatSeconds;
-    proxyServer.getScheduler().buildTask(this, () -> {
-      try {
-        sqlClient.initializeSchema();
-        writeHeartbeat();
-        heartbeatEnabled = true;
-        proxyServer.getScheduler()
-            .buildTask(this, this::writeHeartbeat)
-            .repeat(repeatSeconds, TimeUnit.SECONDS)
-            .schedule();
-        logger.info("DoubleDoorsProxy heartbeat enabled for proxyId='{}' every {}s.", proxyId, repeatSeconds);
-      } catch (SQLException e) {
-        logger.warn("DoubleDoorsProxy could not initialize SQL heartbeat: {}", e.getMessage());
-      }
-    }).schedule();
+  boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
+  if (!sqlEnabled) {
+    logger.info("DoubleDoorsProxy SQL heartbeat is disabled by config.");
+    return;
+  }
+
+  boolean geyserPresent = isPluginPresent("geyser", "geyser-velocity");
+  boolean floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
+  if (!geyserPresent && !floodgatePresent) {
+    logger.info("DoubleDoorsProxy did not detect Geyser/Floodgate on this proxy.");
+    return;
+  }
+
+  String jdbcUrl = config.getProperty("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db").trim();
+  String username = config.getProperty("sql.username", "").trim();
+  String password = config.getProperty("sql.password", "");
+  proxyId = config.getProperty("sql.proxyId", "velocity-main").trim();
+  if (proxyId.isEmpty()) {
+    proxyId = "velocity-main";
+  }
+
+  long heartbeatSeconds;
+  try {
+    heartbeatSeconds = Long.parseLong(config.getProperty("sql.heartbeatSeconds", "30"));
+  } catch (NumberFormatException ignored) {
+    heartbeatSeconds = 30L;
+  }
+  if (heartbeatSeconds < 5L) {
+    heartbeatSeconds = 5L;
+  }
+
+  sqlClient = new ProxySqlClient(jdbcUrl, username, password);
+  long repeatSeconds = heartbeatSeconds;
+  proxyServer.getScheduler().buildTask(this, () -> {
+    try {
+    sqlClient.initializeSchema();
+    writeHeartbeat();
+    heartbeatEnabled = true;
+    proxyServer.getScheduler()
+      .buildTask(this, this::writeHeartbeat)
+      .repeat(repeatSeconds, TimeUnit.SECONDS)
+      .schedule();
+    logger.info("DoubleDoorsProxy heartbeat enabled for proxyId='{}' every {}s.", proxyId, repeatSeconds);
+    } catch (SQLException e) {
+    logger.warn("DoubleDoorsProxy could not initialize SQL heartbeat: {}", e.getMessage());
+    }
+  }).schedule();
   }
 
   /**
@@ -160,105 +160,105 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyShutdown(ProxyShutdownEvent event) {
-    if (heartbeatEnabled && sqlClient != null) {
-      try {
-        writeHeartbeat();
-      } finally {
-        sqlClient.close();
-      }
+  if (heartbeatEnabled && sqlClient != null) {
+    try {
+    writeHeartbeat();
+    } finally {
+    sqlClient.close();
     }
+  }
 
-    if (metrics != null) {
-      metrics.shutdown();
-      metrics = null;
-    }
+  if (metrics != null) {
+    metrics.shutdown();
+    metrics = null;
+  }
   }
 
   private boolean isPluginPresent(String... ids) {
-    for (String id : ids) {
-      Optional<?> plugin = proxyServer.getPluginManager().getPlugin(id);
-      if (plugin.isPresent()) {
-        return true;
-      }
+  for (String id : ids) {
+    Optional<?> plugin = proxyServer.getPluginManager().getPlugin(id);
+    if (plugin.isPresent()) {
+    return true;
     }
-    return false;
+  }
+  return false;
   }
 
   private void writeHeartbeat() {
-    if (sqlClient == null) {
-      return;
-    }
-    try {
-      sqlClient.upsertHeartbeat(proxyId, "velocity", System.currentTimeMillis());
-    } catch (SQLException e) {
-      logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
-    }
+  if (sqlClient == null) {
+    return;
+  }
+  try {
+    sqlClient.upsertHeartbeat(proxyId, "velocity", System.currentTimeMillis());
+  } catch (SQLException e) {
+    logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
+  }
   }
 
   private String[] getCountries(Properties config) {
-    String rawCountries = config.getProperty("trackingCountries", "").trim();
-    if (rawCountries.isEmpty()) {
-      return new String[0];
-    }
+  String rawCountries = config.getProperty("trackingCountries", "").trim();
+  if (rawCountries.isEmpty()) {
+    return new String[0];
+  }
 
-    return java.util.Arrays.stream(rawCountries.split(","))
-        .map(String::trim)
-        .filter(country -> !country.isEmpty())
-        .toArray(String[]::new);
+  return java.util.Arrays.stream(rawCountries.split(","))
+    .map(String::trim)
+    .filter(country -> !country.isEmpty())
+    .toArray(String[]::new);
   }
 
   private String getConfigValue(Properties config, String key) {
-    String value = config.getProperty(key, "");
-    return value == null ? "" : value.trim();
+  String value = config.getProperty(key, "");
+  return value == null ? "" : value.trim();
   }
 
   private String[] getSystemStatistics() {
-    Runtime runtime = Runtime.getRuntime();
-    return new String[] {
-        "os=" + System.getProperty("os.name", "unknown"),
-        "os_version=" + System.getProperty("os.version", "unknown"),
-        "arch=" + System.getProperty("os.arch", "unknown"),
-        "java_version=" + System.getProperty("java.version", "unknown"),
-        "cores=" + runtime.availableProcessors(),
-        "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
-    };
+  Runtime runtime = Runtime.getRuntime();
+  return new String[] {
+    "os=" + System.getProperty("os.name", "unknown"),
+    "os_version=" + System.getProperty("os.version", "unknown"),
+    "arch=" + System.getProperty("os.arch", "unknown"),
+    "java_version=" + System.getProperty("java.version", "unknown"),
+    "cores=" + runtime.availableProcessors(),
+    "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
+  };
   }
 
   private String normalizeFastStatsToken(String rawToken) {
-    if (rawToken == null || rawToken.isBlank()) {
-      return null;
-    }
+  if (rawToken == null || rawToken.isBlank()) {
+    return null;
+  }
 
-    String normalized = rawToken.trim().toLowerCase().replace("-", "");
-    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
-      return null;
-    }
-    return normalized;
+  String normalized = rawToken.trim().toLowerCase().replace("-", "");
+  if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
+    return null;
+  }
+  return normalized;
   }
 
   private Properties loadConfig() {
-    Properties properties = new Properties();
-    try {
-      Files.createDirectories(dataDirectory);
-      Path configFile = dataDirectory.resolve("config.properties");
-      if (Files.notExists(configFile)) {
-        try (InputStream in = getClass().getClassLoader().getResourceAsStream("proxy-config.properties")) {
-          if (in != null) {
-            try (OutputStream out = Files.newOutputStream(configFile)) {
-              in.transferTo(out);
-            }
-          }
-        }
+  Properties properties = new Properties();
+  try {
+    Files.createDirectories(dataDirectory);
+    Path configFile = dataDirectory.resolve("config.properties");
+    if (Files.notExists(configFile)) {
+    try (InputStream in = getClass().getClassLoader().getResourceAsStream("proxy-config.properties")) {
+      if (in != null) {
+      try (OutputStream out = Files.newOutputStream(configFile)) {
+        in.transferTo(out);
       }
-
-      if (Files.exists(configFile)) {
-        try (InputStream in = Files.newInputStream(configFile)) {
-          properties.load(in);
-        }
       }
-    } catch (IOException e) {
-      logger.warn("DoubleDoorsProxy could not read config.properties: {}", e.getMessage());
     }
-    return properties;
+    }
+
+    if (Files.exists(configFile)) {
+    try (InputStream in = Files.newInputStream(configFile)) {
+      properties.load(in);
+    }
+    }
+  } catch (IOException e) {
+    logger.warn("DoubleDoorsProxy could not read config.properties: {}", e.getMessage());
+  }
+  return properties;
   }
 }
