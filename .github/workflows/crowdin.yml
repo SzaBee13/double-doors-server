@@ -145,15 +145,15 @@ jobs:
           fi
 
       - name: Create pull request for translation updates
-          uses: peter-evans/create-pull-request@v8
-          with:
-            branch: chore/crowdin-sync
-            delete-branch: true
-            commit-message: "chore(i18n): sync translations from Crowdin"
-            title: "chore(i18n): sync translations from Crowdin"
-            body: |
+        uses: peter-evans/create-pull-request@v8
+        with:
+          branch: chore/crowdin-sync
+          delete-branch: true
+          commit-message: "chore(i18n): sync translations from Crowdin"
+          title: "chore(i18n): sync translations from Crowdin"
+          body: |
             Automated translation sync from Crowdin.
       
             This PR was created by the Crowdin workflow.
-            labels: |
+          labels: |
             translation
