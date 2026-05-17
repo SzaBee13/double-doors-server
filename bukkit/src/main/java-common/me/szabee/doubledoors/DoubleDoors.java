@@ -66,8 +66,12 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile BukkitMetrics metrics;
   private volatile Updater updater;
   private volatile TaskToken updaterCheckTask;
+  private volatile TaskToken proxyBridgePollTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
+  private volatile boolean localGeyserBridgeAvailable;
+  private volatile boolean geyserBridgeAvailable;
+  private volatile boolean geyserBridgeLogged;
   private volatile VersionBridge versionBridge;
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
   @Override
@@ -220,6 +224,15 @@ public final class DoubleDoors extends JavaPlugin {
    */
   public SharedSqlStorage getSqlStorage() {
   return sqlStorage;
+  }
+
+  /**
+   * Returns whether Geyser or Floodgate is available locally or through a shared SQL proxy heartbeat.
+   *
+   * @return true when Bedrock bridge support is currently detected
+   */
+  public boolean isGeyserBridgeAvailable() {
+  return geyserBridgeAvailable;
   }
 
   /**
@@ -414,16 +427,12 @@ public final class DoubleDoors extends JavaPlugin {
   if (pluginManager.isPluginEnabled("WorldGuard")) {
     getLogger().info(t("log.worldguard_detected"));
   }
-  boolean hasLocalGeyserBridge = hasAnyPluginEnabled(pluginManager,
+  localGeyserBridgeAvailable = hasAnyPluginEnabled(pluginManager,
     "Geyser-Spigot",
     "Geyser",
     "floodgate",
     "floodgate-bukkit");
-  boolean hasProxyHeartbeat = sqlStorage != null
-    && sqlStorage.hasRecentProxyHeartbeat(pluginConfig.getProxyHeartbeatMaxAgeMillis());
-  if (hasLocalGeyserBridge || hasProxyHeartbeat) {
-    getLogger().info(t("log.geyser_detected"));
-  }
+  setGeyserBridgeAvailable(localGeyserBridgeAvailable);
 
   getLogger().info(t("log.enabled"));
   if (versionBridge != null) {
@@ -444,6 +453,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
     }
   } finally {
+    stopProxyBridgePolling();
     disableUpdater();
     versionBridge = null;
     closePlayerPreferences();
@@ -508,11 +518,14 @@ public final class DoubleDoors extends JavaPlugin {
     if (pluginConfig.isMigrateYamlToSql()) {
       YamlToSqlMigrator.migrateIfNeeded(this, storage);
     }
+    boolean proxyGeyserBridgeAvailable = storage.hasRecentProxyGeyserBridge(pluginConfig.getProxyHeartbeatMaxAgeMillis());
     SchedulerBridge.runNextTick(this, () -> {
       closePlayerPreferences();
       sqlStorage = storage;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);
+      setGeyserBridgeAvailable(localGeyserBridgeAvailable || proxyGeyserBridgeAvailable);
+      restartProxyBridgePolling();
     });
     } catch (RuntimeException e) {
     getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
@@ -521,9 +534,45 @@ public final class DoubleDoors extends JavaPlugin {
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
       claimSettings = new ClaimSettings(this);
+      setGeyserBridgeAvailable(localGeyserBridgeAvailable);
+      stopProxyBridgePolling();
     });
     }
   });
+  }
+
+  private void restartProxyBridgePolling() {
+  stopProxyBridgePolling();
+  SharedSqlStorage storage = sqlStorage;
+  if (storage == null) {
+    return;
+  }
+
+  proxyBridgePollTask = SchedulerBridge.runTimerAsync(this, 20L, 600L, () -> {
+    SharedSqlStorage currentStorage = sqlStorage;
+    if (currentStorage == null) {
+    setGeyserBridgeAvailable(localGeyserBridgeAvailable);
+    return;
+    }
+    boolean proxyBridgeAvailable = currentStorage.hasRecentProxyGeyserBridge(pluginConfig.getProxyHeartbeatMaxAgeMillis());
+    setGeyserBridgeAvailable(localGeyserBridgeAvailable || proxyBridgeAvailable);
+  });
+  }
+
+  private void stopProxyBridgePolling() {
+  TaskToken localTask = proxyBridgePollTask;
+  proxyBridgePollTask = null;
+  if (localTask != null) {
+    localTask.cancel();
+  }
+  }
+
+  private void setGeyserBridgeAvailable(boolean available) {
+  geyserBridgeAvailable = available;
+  if (available && !geyserBridgeLogged) {
+    geyserBridgeLogged = true;
+    getLogger().info(t("log.geyser_detected"));
+  }
   }
 
   private void initializeFastStats() {
@@ -723,7 +772,14 @@ public final class DoubleDoors extends JavaPlugin {
     DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
     restartFastStats();
     initializeUpdater();
+    stopProxyBridgePolling();
     sqlStorage = null;
+    localGeyserBridgeAvailable = hasAnyPluginEnabled(getServer().getPluginManager(),
+      "Geyser-Spigot",
+      "Geyser",
+      "floodgate",
+      "floodgate-bukkit");
+    setGeyserBridgeAvailable(localGeyserBridgeAvailable);
     playerPreferences = new PlayerPreferences(this);
     claimSettings = new ClaimSettings(this);
     initializeSqlIfEnabledAsync();

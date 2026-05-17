@@ -69,5 +69,5 @@ If you have a friend that can co-auth/verify the language it would be good.
 
 ## Need help?
 
-If you are unsure about wording or placeholders, open a draft Pull Request and request review.  
+If you are unsure about wording or placeholders, open a draft Pull Request and request review.
 Community translators are welcome and appreciated.

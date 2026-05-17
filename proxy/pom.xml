@@ -59,6 +59,7 @@
   </dependencies>
 
   <build>
+  <sourceDirectory>${project.build.directory}/generated-sources/filtered-java</sourceDirectory>
   <resources>
     <resource>
     <directory>src/main/resources</directory>
@@ -126,9 +127,6 @@
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.15.0</version>
     <configuration>
-      <compileSourceRoots>
-      <compileSourceRoot>${project.build.directory}/generated-sources/filtered-java</compileSourceRoot>
-      </compileSourceRoots>
       <annotationProcessorPaths>
       <path>
         <groupId>com.velocitypowered</groupId>
