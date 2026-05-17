@@ -6,7 +6,7 @@
   <parent>
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.2</version>
+  <version>1.4.3</version>
   </parent>
 
   <artifactId>doubledoors-proxy</artifactId>
@@ -59,6 +59,7 @@
   </dependencies>
 
   <build>
+  <sourceDirectory>${project.build.directory}/generated-sources/filtered-java</sourceDirectory>
   <resources>
     <resource>
     <directory>src/main/resources</directory>
@@ -126,9 +127,6 @@
     <artifactId>maven-compiler-plugin</artifactId>
     <version>3.15.0</version>
     <configuration>
-      <compileSourceRoots>
-      <compileSourceRoot>${project.build.directory}/generated-sources/filtered-java</compileSourceRoot>
-      </compileSourceRoots>
       <annotationProcessorPaths>
       <path>
         <groupId>com.velocitypowered</groupId>
@@ -174,10 +172,6 @@
         <relocation>
           <pattern>com.zaxxer.hikari</pattern>
           <shadedPattern>me.szabee.doubledoors.lib.hikari</shadedPattern>
-        </relocation>
-        <relocation>
-          <pattern>org.slf4j</pattern>
-          <shadedPattern>me.szabee.doubledoors.lib.slf4j</shadedPattern>
         </relocation>
         <relocation>
           <pattern>org.intellij.lang.annotations</pattern>

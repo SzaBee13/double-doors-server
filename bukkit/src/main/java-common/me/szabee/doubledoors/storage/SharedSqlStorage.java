@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Logger;
 
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PluginConfig;
@@ -20,7 +21,7 @@ import me.szabee.doubledoors.config.PluginConfig;
  */
 public final class SharedSqlStorage {
 
-  private final DoubleDoors plugin;
+  private final Logger logger;
   private final String jdbcUrl;
   private final String username;
   private final String password;
@@ -32,10 +33,14 @@ public final class SharedSqlStorage {
    * @param config the plugin config
    */
   public SharedSqlStorage(DoubleDoors plugin, PluginConfig config) {
-  this.plugin = plugin;
-  this.jdbcUrl = config.getSqlJdbcUrl();
-  this.username = config.getSqlUsername();
-  this.password = config.getSqlPassword();
+  this(plugin.getLogger(), config.getSqlJdbcUrl(), config.getSqlUsername(), config.getSqlPassword());
+  }
+
+  SharedSqlStorage(Logger logger, String jdbcUrl, String username, String password) {
+  this.logger = logger;
+  this.jdbcUrl = jdbcUrl;
+  this.username = username;
+  this.password = password;
   }
 
   /**
@@ -65,8 +70,12 @@ public final class SharedSqlStorage {
     executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
     + "proxy_id VARCHAR(128) PRIMARY KEY,"
     + "platform VARCHAR(32) NOT NULL,"
-    + "last_seen_epoch_ms BIGINT NOT NULL"
+    + "last_seen_epoch_ms BIGINT NOT NULL,"
+    + "has_geyser BOOLEAN NOT NULL DEFAULT FALSE,"
+    + "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
     + ")");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
 
     executeStatement("CREATE TABLE IF NOT EXISTS dd_meta ("
     + "meta_key VARCHAR(128) PRIMARY KEY,"
@@ -106,7 +115,7 @@ public final class SharedSqlStorage {
     }
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
+    logger.warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
   }
   return result;
   }
@@ -148,7 +157,7 @@ public final class SharedSqlStorage {
     }
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
+    logger.warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
     return false;
   }
   return true;
@@ -171,7 +180,7 @@ public final class SharedSqlStorage {
     }
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
+    logger.warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
   }
   return blocked;
   }
@@ -198,7 +207,7 @@ public final class SharedSqlStorage {
     }
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
+    logger.warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
     return false;
   }
   return true;
@@ -222,7 +231,7 @@ public final class SharedSqlStorage {
     return "done".equalsIgnoreCase(rs.getString("meta_value"));
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
+    logger.warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
     return false;
   }
   }
@@ -246,7 +255,7 @@ public final class SharedSqlStorage {
     }
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
+    logger.warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
   }
   }
 
@@ -266,7 +275,31 @@ public final class SharedSqlStorage {
     return rs.next();
     }
   } catch (SQLException e) {
-    plugin.getLogger().warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
+    logger.warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
+  }
+  return false;
+  }
+
+  /**
+   * Returns whether a proxy heartbeat recently reported Geyser or Floodgate support.
+   *
+   * @param maxAgeMillis max accepted age in milliseconds
+   * @return true when a recent proxy heartbeat reports Geyser or Floodgate
+   */
+  public boolean hasRecentProxyGeyserBridge(long maxAgeMillis) {
+  long threshold = System.currentTimeMillis() - maxAgeMillis;
+  String sql = "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? "
+    + "AND (has_geyser = ? OR has_floodgate = ?) LIMIT 1";
+  try (Connection connection = openConnection();
+     PreparedStatement statement = connection.prepareStatement(sql)) {
+    statement.setLong(1, threshold);
+    statement.setBoolean(2, true);
+    statement.setBoolean(3, true);
+    try (ResultSet rs = statement.executeQuery()) {
+    return rs.next();
+    }
+  } catch (SQLException e) {
+    logger.warning(String.format("Could not read proxy Geyser/Floodgate heartbeat from SQL: %s", e.getMessage()));
   }
   return false;
   }

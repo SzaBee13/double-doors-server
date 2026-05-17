@@ -123,7 +123,7 @@ sql:
   # Run a one-time import from existing YAML files into SQL.
   migrateFromYaml: true
 
-  # Bukkit considers proxy heartbeats newer than this as "proxy online".
+  # Bukkit considers proxy heartbeats newer than this when detecting proxy-side Geyser/Floodgate.
   proxyHeartbeatMaxAgeSeconds: 180
 
 # Built-in updater configuration (PluginUpdater shadeable API).

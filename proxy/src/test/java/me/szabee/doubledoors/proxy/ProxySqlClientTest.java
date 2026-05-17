@@ -23,18 +23,21 @@ final class ProxySqlClientTest {
       client.initializeSchema();
       
       long now = System.currentTimeMillis();
-      client.upsertHeartbeat("proxy1", "velocity", now);
-      client.upsertHeartbeat("proxy1", "velocity", now + 1000);
+      client.upsertHeartbeat("proxy1", "velocity", now, true, false);
+      client.upsertHeartbeat("proxy1", "velocity", now + 1000, true, true);
 
       try (Connection connection = DriverManager.getConnection(jdbcUrl);
         PreparedStatement statement = connection.prepareStatement(
-          "SELECT proxy_id, platform, last_seen_epoch_ms, COUNT(*) OVER() AS row_count FROM dd_proxy_presence WHERE proxy_id = ?")) {
+          "SELECT proxy_id, platform, last_seen_epoch_ms, has_geyser, has_floodgate, COUNT(*) OVER() AS row_count "
+            + "FROM dd_proxy_presence WHERE proxy_id = ?")) {
         statement.setString(1, "proxy1");
         try (ResultSet resultSet = statement.executeQuery()) {
           assertTrue(resultSet.next());
           assertEquals("proxy1", resultSet.getString("proxy_id"));
           assertEquals("velocity", resultSet.getString("platform"));
           assertEquals(now + 1000, resultSet.getLong("last_seen_epoch_ms"));
+          assertTrue(resultSet.getBoolean("has_geyser"));
+          assertTrue(resultSet.getBoolean("has_floodgate"));
           assertEquals(1, resultSet.getInt("row_count"));
         }
       }

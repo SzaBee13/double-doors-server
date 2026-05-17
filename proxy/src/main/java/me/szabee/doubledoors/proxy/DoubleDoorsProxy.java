@@ -45,6 +45,8 @@ public final class DoubleDoorsProxy {
 
   private ProxySqlClient sqlClient;
   private String proxyId;
+  private boolean geyserPresent;
+  private boolean floodgatePresent;
   private boolean heartbeatEnabled;
   private Metrics metrics;
 
@@ -110,8 +112,8 @@ public final class DoubleDoorsProxy {
     return;
   }
 
-  boolean geyserPresent = isPluginPresent("geyser", "geyser-velocity");
-  boolean floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
+  geyserPresent = isPluginPresent("geyser", "geyser-velocity");
+  floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
   if (!geyserPresent && !floodgatePresent) {
     logger.info("DoubleDoorsProxy did not detect Geyser/Floodgate on this proxy.");
     return;
@@ -189,7 +191,7 @@ public final class DoubleDoorsProxy {
     return;
   }
   try {
-    sqlClient.upsertHeartbeat(proxyId, "velocity", System.currentTimeMillis());
+    sqlClient.upsertHeartbeat(proxyId, "velocity", System.currentTimeMillis(), geyserPresent, floodgatePresent);
   } catch (SQLException e) {
     logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
   }
