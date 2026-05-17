@@ -1,7 +1,7 @@
 # DoubleDoors v1.4.2 Release Notes
 
 Patch release
-Release date: 2026-05-11
+Release date: 2026-05-17
 
 ## Fixed
 

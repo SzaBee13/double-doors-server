@@ -6,7 +6,7 @@
   <parent>
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.2</version>
+  <version>1.4.3</version>
   </parent>
 
   <artifactId>doubledoors-proxy</artifactId>
@@ -174,10 +174,6 @@
         <relocation>
           <pattern>com.zaxxer.hikari</pattern>
           <shadedPattern>me.szabee.doubledoors.lib.hikari</shadedPattern>
-        </relocation>
-        <relocation>
-          <pattern>org.slf4j</pattern>
-          <shadedPattern>me.szabee.doubledoors.lib.slf4j</shadedPattern>
         </relocation>
         <relocation>
           <pattern>org.intellij.lang.annotations</pattern>
