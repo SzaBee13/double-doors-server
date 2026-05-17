@@ -73,6 +73,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile boolean geyserBridgeAvailable;
   private volatile boolean geyserBridgeLogged;
   private volatile VersionBridge versionBridge;
+  private volatile int initGeneration = 0;
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
   @Override
   public boolean isDoubleBehaviorEnabled(Player player) {
@@ -442,6 +443,7 @@ public final class DoubleDoors extends JavaPlugin {
 
   @Override
   public void onDisable() {
+  initGeneration++;
   try {
     if (metrics != null) {
     try {
@@ -494,15 +496,18 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private static boolean hasAnyPluginEnabled(PluginManager pluginManager, String... pluginNames) {
-  for (Plugin plugin : pluginManager.getPlugins()) {
-    String installedName = plugin.getName();
-    for (String candidate : pluginNames) {
-    if (installedName.equalsIgnoreCase(candidate)) {
-      return true;
+    for (Plugin plugin : pluginManager.getPlugins()) {
+      if (!plugin.isEnabled()) {
+        continue;
+      }
+      String installedName = plugin.getName();
+      for (String candidate : pluginNames) {
+        if (installedName.equalsIgnoreCase(candidate)) {
+          return true;
+        }
+      }
     }
-    }
-  }
-  return false;
+    return false;
   }
 
   private void initializeSqlIfEnabledAsync() {
@@ -512,6 +517,7 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   SharedSqlStorage storage = new SharedSqlStorage(this, pluginConfig);
+  final int capturedGeneration = ++initGeneration;
   SchedulerBridge.runAsync(this, () -> {
     try {
     storage.initializeSchema();
@@ -520,6 +526,9 @@ public final class DoubleDoors extends JavaPlugin {
     }
     boolean proxyGeyserBridgeAvailable = storage.hasRecentProxyGeyserBridge(pluginConfig.getProxyHeartbeatMaxAgeMillis());
     SchedulerBridge.runNextTick(this, () -> {
+      if (capturedGeneration != initGeneration || !isEnabled()) {
+        return;
+      }
       closePlayerPreferences();
       sqlStorage = storage;
       playerPreferences = new PlayerPreferences(this);
@@ -530,6 +539,9 @@ public final class DoubleDoors extends JavaPlugin {
     } catch (RuntimeException e) {
     getLogger().log(Level.SEVERE, "Could not initialize SQL storage; continuing with YAML persistence.", e);
     SchedulerBridge.runNextTick(this, () -> {
+      if (capturedGeneration != initGeneration || !isEnabled()) {
+        return;
+      }
       closePlayerPreferences();
       sqlStorage = null;
       playerPreferences = new PlayerPreferences(this);
@@ -548,12 +560,14 @@ public final class DoubleDoors extends JavaPlugin {
     return;
   }
 
-  proxyBridgePollTask = SchedulerBridge.runTimerAsync(this, 20L, 600L, () -> {
+  long pollPeriodTicks = Math.max(1L, pluginConfig.getProxyHeartbeatMaxAgeMillis() / 50L);
+  proxyBridgePollTask = SchedulerBridge.runTimerAsync(this, 20L, pollPeriodTicks, () -> {
     SharedSqlStorage currentStorage = sqlStorage;
     if (currentStorage == null) {
     setGeyserBridgeAvailable(localGeyserBridgeAvailable);
     return;
     }
+    
     boolean proxyBridgeAvailable = currentStorage.hasRecentProxyGeyserBridge(pluginConfig.getProxyHeartbeatMaxAgeMillis());
     setGeyserBridgeAvailable(localGeyserBridgeAvailable || proxyBridgeAvailable);
   });
