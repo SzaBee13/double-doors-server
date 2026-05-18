@@ -138,9 +138,9 @@ jobs:
       - name: Publish to Modrinth and CurseForge
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: Fdj5mcgC
+          modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
-          curseforge-id: 1489404 # CurseForge doesn't support the latest version of minecraft.
+          curseforge-id: ${{ vars.CURSEFORGE_ID }} # CurseForge doesn't support the latest version of minecraft.
           curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
           files: ${{ steps.artifact.outputs.jar_path }}
           name: 'Double Doors Server ${{ steps.version.outputs.version }}'
@@ -176,7 +176,7 @@ jobs:
       - name: Publish Proxy To Modrinth
         uses: Kir-Antipov/mc-publish@v3.3
         with:
-          modrinth-id: Fdj5mcgC
+          modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.proxy_artifact.outputs.jar_path }}
           name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
@@ -204,3 +204,53 @@ jobs:
           java: |
             25
           game-version-filter: none
+      - name: Publish to PaperMC Hangar
+        uses: milkdrinkers/Hangar-Publish@v2.2
+        with:
+          api-token: ${{ secrets.PAPERMC_API_TOKEN }}
+          slug: ${{ vars.PAPERMC_SLUG }}
+          version: ${{ steps.version.outputs.version }}
+          channel: ${{ steps.release_channel.outputs.channel }}
+          files: |
+            [
+              {
+                "path": "${{ steps.server_artifact.outputs.jar_path }}",
+                "platform": ["PAPER"]
+              },
+              {
+                "path": "${{ steps.proxy_artifact.outputs.jar_path }}",
+                "platform": ["VELOCITY"]
+              }
+            ]
+          description: ${{ steps.release_notes.outputs.body }}
+          plugin_dependencies: |
+            {
+              "PAPER": [
+                {
+                  "name": "Geyser",
+                  "required": false
+                },
+                {
+                  "name": "Floodgate",
+                  "required": false
+                },
+                {
+                  "name": "GriefPrevention",
+                  "required": false
+                }
+              ],
+              "VELOCITY": [
+                {
+                  "name": "Geyser",
+                  "required": false
+                },
+                {
+                  "name": "Floodgate",
+                  "required": false
+                }
+              ]
+            }
+          platform_dependencies: |
+            {
+              "PAPER": ["1.21.x", "26.1.x"]
+            }
