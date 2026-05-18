@@ -72,9 +72,11 @@ public final class ProtectionCompat {
         return "griefprevention_permission_denied";
       }
 
-      Boolean allowBuildResult = tryAllowBuild(claim, player, linkedBlock.getType());
-      if (allowBuildResult != null && !allowBuildResult) {
-        return "griefprevention_build_denied";
+      if (plugin.getPluginConfig().isGriefPreventionRequireBuildForLinkedDoors()) {
+        Boolean allowBuildResult = tryAllowBuild(claim, player, linkedBlock.getType());
+        if (allowBuildResult != null && !allowBuildResult) {
+          return "griefprevention_build_denied";
+        }
       }
       }
     }

@@ -134,6 +134,8 @@ public final class PluginConfig {
   boolean worldGuardRespectBuildPermission = plugin.getConfig().getBoolean("worldGuardRespectBuildPermission", true);
   boolean worldGuardRespectUseFlag = plugin.getConfig().getBoolean("worldGuardRespectUseFlag", true);
 
+  boolean griefPreventionRequireBuildForLinkedDoors = plugin.getConfig().getBoolean("griefprevention.requireBuildForLinkedDoors", false);
+
   boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
   boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
 
@@ -220,6 +222,7 @@ public final class PluginConfig {
     worldGuardCustomFlag,
     worldGuardRespectBuildPermission,
     worldGuardRespectUseFlag,
+    griefPreventionRequireBuildForLinkedDoors,
     enableAnonymousTracking,
     enableExtendedAnonymousTracking,
     List.copyOf(trackingCountries),
@@ -504,6 +507,15 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets whether GriefPrevention requires Build trust for linked doors.
+   *
+   * @return true if Build trust is required, false if Access trust is sufficient
+   */
+  public boolean isGriefPreventionRequireBuildForLinkedDoors() {
+  return snapshot.griefPreventionRequireBuildForLinkedDoors();
+  }
+
+  /**
    * Gets whether anonymous tracking is enabled.
    *
    * @return true when FastStats tracking is enabled
@@ -673,6 +685,7 @@ public final class PluginConfig {
     String worldGuardCustomFlag,
     boolean worldGuardRespectBuildPermission,
     boolean worldGuardRespectUseFlag,
+    boolean griefPreventionRequireBuildForLinkedDoors,
     boolean enableAnonymousTracking,
     boolean enableExtendedAnonymousTracking,
     List<String> trackingCountries,
@@ -722,6 +735,7 @@ public final class PluginConfig {
       "double-doors-allow",
       true,
       true,
+      false,
       true,
       false,
       List.of(),
@@ -772,6 +786,7 @@ public final class PluginConfig {
       worldGuardCustomFlag,
       worldGuardRespectBuildPermission,
       worldGuardRespectUseFlag,
+      griefPreventionRequireBuildForLinkedDoors,
       enableAnonymousTracking,
       enableExtendedAnonymousTracking,
       trackingCountries,
