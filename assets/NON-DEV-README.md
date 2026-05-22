@@ -26,10 +26,16 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - Duplicate interaction debounce (helps packet duplication patterns seen with some Bedrock/Geyser flows)
 - Translation support via JSON language files (built-in + custom)
 
+## Official sources
+
+- [GitHub *www.github.com/SzaBee13/double-doors-server*](https://github.com/SzaBee13/double-doors-server)
+- [Modrinth *www.modrinth.com/plugin/double-doors-server*](https://modrinth.com/plugin/double-doors-server)
+- [Hangar *hangar.papermc.io/SzaBee13/double-doors-server*](https://hangar.papermc.io/SzaBee13/double-doors-server)
+- [CurseForge *www.curseforge.com/minecraft/bukkit-plugins/double-doors-server*](https://www.curseforge.com/minecraft/bukkit-plugins/double-doors-server)
+
 ## Compatibility
 
 - Supports Minecraft Java Edition `1.21.X` `26.1.X`.
-
 ### Geyser / Floodgate
 
 - Plugin declares soft-depends on `Geyser-Spigot` and `floodgate`.
@@ -65,7 +71,9 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 
 ### Proxy Configuration
 
-Edit `plugins/DoubleDoors/proxy-config.properties`:
+Edit `plugins/DoubleDoors/proxy-config.properties`
+
+For more, visit the [wiki](https://github.com/SzaBee13/double-doors-server/wiki/Proxy-Setup)
 
 ## Commands
 
