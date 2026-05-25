@@ -210,11 +210,11 @@ jobs:
           api-token: ${{ secrets.PAPERMC_API_TOKEN }}
           slug: ${{ vars.PAPERMC_SLUG }}
           version: ${{ steps.version.outputs.version }}
-          channel: ${{ steps.release_channel.outputs.channel }}
+          channel: ${{ steps.release_channel.outputs.version_type }}
           files: |
             [
               {
-                "path": "${{ steps.server_artifact.outputs.jar_path }}",
+                "path": "${{ steps.artifact.outputs.jar_path }}",
                 "platform": ["PAPER"]
               },
               {
