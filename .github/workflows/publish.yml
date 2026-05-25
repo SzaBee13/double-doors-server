@@ -207,7 +207,7 @@ jobs:
       - name: Publish to PaperMC Hangar
         uses: milkdrinkers/Hangar-Publish@v2.2.0
         with:
-          api-token: ${{ secrets.PAPERMC_API_TOKEN }}
+          api_token: ${{ secrets.PAPERMC_API_TOKEN }}
           slug: ${{ vars.PAPERMC_SLUG }}
           version: ${{ steps.version.outputs.version }}
           channel: ${{ steps.release_channel.outputs.version_type }}
