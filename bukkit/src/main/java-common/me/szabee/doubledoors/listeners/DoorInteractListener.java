@@ -140,12 +140,19 @@ public final class DoorInteractListener implements Listener {
 
   double maxDistance = config.getKnockDistanceBlocks();
   double maxDistanceSquared = maxDistance * maxDistance;
-  var soundLocation = clicked.getLocation().add(0.5, 0.5, 0.5);
+  // Compute the sound origin once using primitives to avoid allocating a Location
+  double sx = clicked.getX() + 0.5;
+  double sy = clicked.getY() + 0.5;
+  double sz = clicked.getZ() + 0.5;
   for (Player nearby : clicked.getWorld().getPlayers()) {
-    if (nearby.getLocation().distanceSquared(soundLocation) > maxDistanceSquared) {
+    // Avoid creating Location objects for distance checks; use primitive math.
+    double dx = nearby.getLocation().getX() - sx;
+    double dy = nearby.getLocation().getY() - sy;
+    double dz = nearby.getLocation().getZ() - sz;
+    if ((dx * dx + dy * dy + dz * dz) > maxDistanceSquared) {
     continue;
     }
-    nearby.playSound(soundLocation, hitSound, SoundCategory.BLOCKS, volume, 1.0f);
+    nearby.playSound(clicked.getLocation().add(0.5, 0.5, 0.5), hitSound, SoundCategory.BLOCKS, volume, 1.0f);
   }
   }
 

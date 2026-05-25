@@ -11,6 +11,11 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 | Build | Maven (`mvn package`) |
 | Output | `target/doubledoors-<version>.jar` (shaded) |
 
+## Source Control (Git)
+
+- Every change should be committed with a clear, descriptive commit message.
+- Use branches for feature development and pull requests for code review.
+
 ## Key source files
 
 | File | Role |
@@ -44,7 +49,7 @@ When releasing a new version:
 
 1. Update `<version>` in `pom.xml`.
 2. Update `version:` in `src/main/resources/plugin.yml`.
-3. Create `releases/v<version>/RELEASE_NOTE.md` using `releases/RELEASE_NOTE_EXAMPLE.md` as a template.
+3. Create `releases/v<version>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template.
 4. If `maven.compiler.release` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 
 ## Dangerous areas
@@ -59,3 +64,8 @@ When releasing a new version:
 - When adding/modifying message keys, update `src/main/resources/lang/defaults.json` and `src/main/resources/lang/english/en_US.json` first.  
 - If localization for other languages is requested, propagate changes to all regional variants (en_GB, fr_FR, de_DE, etc.) to maintain consistency.
 - See `TRANSLATING.md` and skill translation for details on contributing translations via Crowdin.
+
+## Documentation
+
+EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<version>/RELEASE-NOTE.md`.
+If necessary, update the GitHub Wiki at `wiki/`.

@@ -80,6 +80,10 @@ worldGuardRespectBuildPermission: true
 # Also enforce WorldGuard's use flag for linked door actions.
 worldGuardRespectUseFlag: true
 
+# GriefPrevention compatibility options
+griefprevention:
+  requireBuildForLinkedDoors: false
+
 # Global on/off switch for all DoubleDoors behavior on this server
 serverWideEnabled: true
 
