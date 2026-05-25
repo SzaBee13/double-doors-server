@@ -170,7 +170,7 @@ Language files:
 
 Requirements:
 
-- Java 25
+- Java 25+
 - Maven
 
 Build command:

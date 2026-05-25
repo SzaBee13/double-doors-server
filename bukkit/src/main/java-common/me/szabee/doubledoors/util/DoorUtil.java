@@ -215,24 +215,28 @@ public final class DoorUtil {
     return;
   }
   lastMirrorCacheTrimMillis = now;
+
+  // First, remove any obviously stale entries (expiration-based).
   for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
     if (!isMirrorCacheEntryFresh(now, entry.getValue())) {
     MIRROR_CACHE.remove(entry.getKey(), entry.getValue());
     }
   }
-  while (MIRROR_CACHE.size() > MIRROR_CACHE_MAX_SIZE) {
-    MirrorCacheKey oldestKey = null;
-    long oldestTimestamp = Long.MAX_VALUE;
-    for (Map.Entry<MirrorCacheKey, MirrorCacheEntry> entry : MIRROR_CACHE.entrySet()) {
-    if (entry.getValue().timestampMillis() < oldestTimestamp) {
-      oldestTimestamp = entry.getValue().timestampMillis();
-      oldestKey = entry.getKey();
-    }
-    }
-    if (oldestKey == null) {
+
+  // If we're still over the configured maximum, evict a small number of entries
+  // in a single linear pass rather than performing repeated full-map scans which
+  // can become O(n^2) under heavy pressure. This removes arbitrary entries but
+  // keeps the trimming cost proportional to the map size.
+  int excess = MIRROR_CACHE.size() - MIRROR_CACHE_MAX_SIZE;
+  if (excess <= 0) {
     return;
+  }
+  for (MirrorCacheKey key : MIRROR_CACHE.keySet()) {
+    if (excess <= 0) {
+    break;
     }
-    MIRROR_CACHE.remove(oldestKey);
+    MIRROR_CACHE.remove(key);
+    excess--;
   }
   }
 
