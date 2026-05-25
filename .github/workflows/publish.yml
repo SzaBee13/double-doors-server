@@ -205,7 +205,7 @@ jobs:
             25
           game-version-filter: none
       - name: Publish to PaperMC Hangar
-        uses: milkdrinkers/Hangar-Publish@v2.2
+        uses: milkdrinkers/Hangar-Publish@v2.2.0
         with:
           api-token: ${{ secrets.PAPERMC_API_TOKEN }}
           slug: ${{ vars.PAPERMC_SLUG }}
