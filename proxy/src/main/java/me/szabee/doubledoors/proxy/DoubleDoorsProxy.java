@@ -20,9 +20,8 @@ import com.velocitypowered.api.plugin.Plugin;
 import com.velocitypowered.api.plugin.annotation.DataDirectory;
 import com.velocitypowered.api.proxy.ProxyServer;
 
-import dev.faststats.core.Metrics;
-import dev.faststats.core.data.Metric;
-import dev.faststats.velocity.VelocityMetrics;
+import dev.faststats.data.Metric;
+import dev.faststats.velocity.VelocityContext;
 
 /**
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
@@ -41,14 +40,13 @@ public final class DoubleDoorsProxy {
   private final ProxyServer proxyServer;
   private final Logger logger;
   private final Path dataDirectory;
-  private final VelocityMetrics.Factory metricsFactory;
 
   private ProxySqlClient sqlClient;
   private String proxyId;
   private boolean geyserPresent;
   private boolean floodgatePresent;
   private boolean heartbeatEnabled;
-  private Metrics metrics;
+  private VelocityContext metricsContext;
 
   /**
    * Creates the Velocity plugin instance.
@@ -56,15 +54,12 @@ public final class DoubleDoorsProxy {
    * @param proxyServer Velocity proxy server
    * @param logger plugin logger
    * @param dataDirectory plugin data directory
-   * @param metricsFactory FastStats metrics factory
    */
   @Inject
-  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory,
-    VelocityMetrics.Factory metricsFactory) {
-  this.proxyServer = proxyServer;
-  this.logger = logger;
-  this.dataDirectory = dataDirectory;
-  this.metricsFactory = metricsFactory;
+  public DoubleDoorsProxy(ProxyServer proxyServer, Logger logger, @DataDirectory Path dataDirectory) {
+    this.proxyServer = proxyServer;
+    this.logger = logger;
+    this.dataDirectory = dataDirectory;
   }
 
   /**
@@ -74,37 +69,45 @@ public final class DoubleDoorsProxy {
    */
   @Subscribe
   public void onProxyInitialize(ProxyInitializeEvent event) {
-  Properties config = loadConfig();
-  boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
-  if (anonymousTrackingEnabled) {
-    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
-    if (token == null) {
-    metrics = null;
-    logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
-      + " metrics are disabled.");
-    }
+    Properties config = loadConfig();
+    boolean anonymousTrackingEnabled = Boolean.parseBoolean(config.getProperty("enableAnonymousTracking", "true"));
+    if (anonymousTrackingEnabled) {
+      String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+      if (token == null) {
+        metricsContext = null;
+        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
+          + " metrics are disabled.");
+      }
 
-    VelocityMetrics.Factory factory = metricsFactory;
-    if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
-    factory = factory
-      .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
-      .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
-      .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
-      .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+      if (token != null) {
+        try {
+          var pluginContainer = proxyServer.getPluginManager().getPlugin("doubledoors-proxy")
+            .orElseThrow(() -> new RuntimeException("Could not find own plugin container"));
+          VelocityContext context = new VelocityContext.Factory(pluginContainer, proxyServer, dataDirectory)
+            .token(token)
+            .metrics(factory -> {
+              var customFactory = factory;
+              if (Boolean.parseBoolean(config.getProperty("enableExtendedAnonymousTracking", "false"))) {
+                customFactory = customFactory
+                  .addMetric(Metric.string("server_location", () -> getConfigValue(config, "trackingServerLocation")))
+                  .addMetric(Metric.stringArray("countries", () -> getCountries(config)))
+                  .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+                  .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+              }
+              return customFactory.create();
+            })
+            .create();
+          context.ready();
+          metricsContext = context;
+        } catch (RuntimeException e) {
+          metricsContext = null;
+          logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+        }
+      }
+    } else {
+      metricsContext = null;
+      logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
     }
-
-    if (token != null) {
-    try {
-      metrics = factory.token(token).create(this);
-    } catch (RuntimeException e) {
-      metrics = null;
-      logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
-    }
-    }
-  } else {
-    metrics = null;
-    logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
-  }
 
   boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
   if (!sqlEnabled) {
@@ -170,10 +173,10 @@ public final class DoubleDoorsProxy {
     }
   }
 
-  if (metrics != null) {
-    metrics.shutdown();
-    metrics = null;
-  }
+    if (metricsContext != null) {
+      metricsContext.shutdown();
+      metricsContext = null;
+    }
   }
 
   private boolean isPluginPresent(String... ids) {
