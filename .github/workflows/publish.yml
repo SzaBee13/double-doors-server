@@ -169,6 +169,7 @@ jobs:
             26.1
             26.1.1
             26.1.2
+            26.2
           java: |
             25
           game-version-filter: none
@@ -201,6 +202,7 @@ jobs:
             26.1
             26.1.1
             26.1.2
+            26.2
           java: |
             25
           game-version-filter: none
@@ -252,5 +254,5 @@ jobs:
             }
           platform_dependencies: |
             {
-              "PAPER": ["1.21.x", "26.1.x"]
+              "PAPER": ["1.21.x", "26.1.x", "26.2.x"]
             }

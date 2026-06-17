@@ -29,8 +29,9 @@ import me.szabee.doubledoors.util.TaskToken;
 import org.lushplugins.pluginupdater.api.updater.PluginData;
 import org.lushplugins.pluginupdater.api.updater.Updater;
 
+import dev.faststats.bukkit.BukkitContext;
 import dev.faststats.bukkit.BukkitMetrics;
-import dev.faststats.core.data.Metric;
+import dev.faststats.data.Metric;
 import me.szabee.doubledoors.api.DoubleDoorsAPI;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
@@ -63,7 +64,7 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile ClaimSettings claimSettings;
   private volatile TranslationManager translationManager;
   private volatile SharedSqlStorage sqlStorage;
-  private volatile BukkitMetrics metrics;
+  private volatile BukkitContext metricsContext;
   private volatile Updater updater;
   private volatile TaskToken updaterCheckTask;
   private volatile TaskToken proxyBridgePollTask;
@@ -445,14 +446,14 @@ public final class DoubleDoors extends JavaPlugin {
   public void onDisable() {
   initGeneration++;
   try {
-    if (metrics != null) {
-    try {
-      metrics.shutdown();
-    } catch (RuntimeException e) {
+    if (metricsContext != null) {
+      try {
+      metricsContext.shutdown();
+      } catch (RuntimeException e) {
       getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly.", e);
-    } finally {
-      metrics = null;
-    }
+      } finally {
+      metricsContext = null;
+      }
     }
   } finally {
     stopProxyBridgePolling();
@@ -590,37 +591,40 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void initializeFastStats() {
-  if (!pluginConfig.isEnableAnonymousTracking()) {
-    metrics = null;
-    getLogger().info("Anonymous tracking is disabled by config.");
-    return;
-  }
+    if (!pluginConfig.isEnableAnonymousTracking()) {
+      metricsContext = null;
+      getLogger().info("Anonymous tracking is disabled by config.");
+      return;
+    }
 
-  String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
-  if (token == null) {
-    metrics = null;
-    getLogger().warning("Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled.");
-    return;
-  }
+    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
+    if (token == null) {
+      metricsContext = null;
+      getLogger().warning("Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled.");
+      return;
+    }
 
-  BukkitMetrics.Factory factory = BukkitMetrics.factory();
-  if (pluginConfig.isEnableExtendedAnonymousTracking()) {
-    factory = factory
-      .addMetric(Metric.string("server_location", pluginConfig::getTrackingServerLocation))
-      .addMetric(Metric.stringArray("countries", () -> pluginConfig.getTrackingCountries().toArray(String[]::new)))
-      .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
-      .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
-  }
-
-  try {
-    BukkitMetrics localMetrics = factory.token(token).create(this);
-    localMetrics.ready();
-    metrics = localMetrics;
-  } catch (RuntimeException e) {
-    metrics = null;
-    getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
-  }
-  }
+    try {
+      BukkitContext context = new BukkitContext.Factory(this, token)
+        .metrics(factory -> {
+          BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
+          if (pluginConfig.isEnableExtendedAnonymousTracking()) {
+            bFactory = bFactory
+              .addMetric(Metric.string("server_location", pluginConfig::getTrackingServerLocation))
+              .addMetric(Metric.stringArray("countries", () -> pluginConfig.getTrackingCountries().toArray(String[]::new)))
+              .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
+              .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
+          }
+          return bFactory.create();
+        })
+        .create();
+      context.ready();
+      metricsContext = context;
+    } catch (RuntimeException e) {
+      metricsContext = null;
+      getLogger().log(Level.WARNING, "FastStats could not be initialized; continuing without metrics.", e);
+    }
+    }
 
   private void closePlayerPreferences() {
   PlayerPreferences preferences = playerPreferences;
@@ -631,17 +635,17 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void restartFastStats() {
-  if (metrics != null) {
-    try {
-    metrics.shutdown();
-    } catch (RuntimeException e) {
-    getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly during restart.", e);
-    } finally {
-    metrics = null;
+    if (metricsContext != null) {
+      try {
+      metricsContext.shutdown();
+      } catch (RuntimeException e) {
+      getLogger().log(Level.WARNING, "FastStats could not be shut down cleanly during restart.", e);
+      } finally {
+      metricsContext = null;
+      }
     }
-  }
-  initializeFastStats();
-  }
+    initializeFastStats();
+    }
 
   private void initializeUpdater() {
   disableUpdater();

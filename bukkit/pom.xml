@@ -6,7 +6,7 @@
   <parent>
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.4</version>
+  <version>1.4.5</version>
   </parent>
 
   <artifactId>doubledoors-bukkit</artifactId>
@@ -231,6 +231,13 @@
     <properties>
     <minecraft.version.id>v26_1_x</minecraft.version.id>
     <spigot.api.version>26.1-R0.1-SNAPSHOT</spigot.api.version>
+    </properties>
+  </profile>
+  <profile>
+    <id>mc-26.2.x</id>
+    <properties>
+    <minecraft.version.id>v26_2_x</minecraft.version.id>
+    <spigot.api.version>26.2-R0.1-SNAPSHOT</spigot.api.version>
     </properties>
   </profile>
   </profiles>
