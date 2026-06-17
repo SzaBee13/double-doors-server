@@ -442,6 +442,15 @@ public final class DoubleDoors extends JavaPlugin {
   }
   }
 
+  /**
+   * Shuts down the plugin when the server stops.
+   * <p>
+   * Increments the initialization counter, then attempts to cleanly shut down
+   * the FastStats metrics context if present. Any {@link RuntimeException}
+   * thrown during metrics shutdown is caught and logged. Finally stops the
+   * proxy bridge polling thread, disables the updater, nulls the version
+   * bridge, closes player preferences, and logs the disabled message.
+   */
   @Override
   public void onDisable() {
   initGeneration++;
