@@ -228,6 +228,7 @@ public final class PluginConfig {
     List.copyOf(trackingCountries),
     trackingServerLocation,
     language,
+    false,
     sqlEnabled,
     sqlJdbcUrl,
     sqlUsername,
@@ -561,6 +562,15 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets whether players can override the plugin language per account.
+   *
+   * @return true when per-player locale selection is enabled
+   */
+  public boolean isPerPlayerLocaleEnabled() {
+  return snapshot.perPlayerLocaleEnabled();
+  }
+
+  /**
    * Gets whether SQL-backed storage is enabled.
    *
    * @return true when SQL storage should be used
@@ -691,6 +701,7 @@ public final class PluginConfig {
     List<String> trackingCountries,
     String trackingServerLocation,
     String language,
+    boolean perPlayerLocaleEnabled,
     boolean sqlEnabled,
     String sqlJdbcUrl,
     String sqlUsername,
@@ -742,6 +753,7 @@ public final class PluginConfig {
       "",
       "en_US",
       false,
+      false,
       "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db",
       "",
       "",
@@ -792,6 +804,7 @@ public final class PluginConfig {
       trackingCountries,
       trackingServerLocation,
       language,
+      perPlayerLocaleEnabled,
       sqlEnabled,
       sqlJdbcUrl,
       sqlUsername,

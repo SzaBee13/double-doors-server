@@ -58,6 +58,7 @@ public final class DoubleDoors extends JavaPlugin {
   private static final String UPDATE_NOTIFY_PERMISSION = "doubledoors.update.notify";
   private static final String UPDATE_DELEGATED_LOG =
     "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
+  private static final String LOCALE_PERMISSION = "doubledoors.locale";
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -505,6 +506,13 @@ public final class DoubleDoors extends JavaPlugin {
   return translationManager.tr(key, args);
   }
 
+  private String t(Player player, String key, Object... args) {
+  if (translationManager == null) {
+    return key;
+  }
+  return translationManager.tr(player, key, args);
+  }
+
   private static boolean hasAnyPluginEnabled(PluginManager pluginManager, String... pluginNames) {
     for (Plugin plugin : pluginManager.getPlugins()) {
       if (!plugin.isEnabled()) {
@@ -872,7 +880,33 @@ public final class DoubleDoors extends JavaPlugin {
     return true;
   }
 
-  if (args[0].equalsIgnoreCase("knock-volume")) {
+    if (args[0].equalsIgnoreCase("locale")) {
+    if (!(sender instanceof Player player)) {
+      sender.sendMessage(t("cmd.only_players.locale", label));
+      return true;
+    }
+    if (!pluginConfig.isPerPlayerLocaleEnabled()) {
+      sender.sendMessage(t("cmd.locale.disabled"));
+      return true;
+    }
+    if (args.length == 1) {
+      String current = playerPreferences.getLocale(player.getUniqueId());
+      sender.sendMessage(current.isBlank()
+        ? t(player, "cmd.locale.current_default")
+        : t(player, "cmd.locale.current", current));
+      return true;
+    }
+    String requested = args[1];
+    String normalized = playerPreferences.setLocale(player.getUniqueId(), requested);
+    if (normalized.isBlank()) {
+      sender.sendMessage(t(player, "cmd.locale.cleared"));
+    } else {
+      sender.sendMessage(t(player, "cmd.locale.set", normalized));
+    }
+    return true;
+    }
+
+    if (args[0].equalsIgnoreCase("knock-volume")) {
     if (!(sender instanceof Player player)) {
     sender.sendMessage(t("cmd.only_players.knock_volume", label));
     return true;
@@ -1004,7 +1038,7 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   if (args.length == 1) {
-    for (String sub : List.of("reload", "toggle", "knock-volume", "server-toggle", "grief", "debug", "preview")) {
+    for (String sub : List.of("reload", "toggle", "knock-volume", "locale", "server-toggle", "grief", "debug", "preview")) {
     if (sub.startsWith(args[0].toLowerCase())) {
       completions.add(sub);
     }

@@ -17,7 +17,9 @@ import java.util.HashMap;
 import java.util.IllegalFormatException;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.regex.Pattern;
+import org.bukkit.entity.Player;
 import me.szabee.doubledoors.DoubleDoors;
 import me.szabee.doubledoors.config.PluginConfig;
 
@@ -102,6 +104,35 @@ public final class TranslationManager {
   }
 
   /**
+   * Resolves a translation key using a player's per-player locale override when present.
+   *
+   * @param player the player requesting the translation
+   * @param key the translation key
+   * @param args optional format arguments
+   * @return resolved message
+   */
+  public String tr(Player player, String key, Object... args) {
+  if (player == null) {
+    return tr(key, args);
+  }
+  String locale = plugin.getPlayerPreferences().getLocale(player.getUniqueId());
+  if (locale != null && !locale.isBlank()) {
+    String resolved = resolveLocalizedMessage(locale, key);
+    if (resolved != null) {
+    if (args.length == 0) {
+      return resolved;
+    }
+    try {
+      return String.format(resolved, args);
+    } catch (IllegalFormatException ignored) {
+      return resolved;
+    }
+    }
+  }
+  return tr(key, args);
+  }
+
+  /**
    * Gets the currently active language code.
    *
    * @return active language code
@@ -169,6 +200,19 @@ public final class TranslationManager {
   }
 
   return loadBundledLanguage(languageCode);
+  }
+
+  private String resolveLocalizedMessage(String languageCode, String key) {
+  String sanitized = sanitizeLanguageCode(languageCode);
+  if (sanitized.isBlank()) {
+    return null;
+  }
+  String resolvedLanguage = resolveLanguageCode(sanitized);
+  Map<String, String> translations = loadRequestedLanguage(resolvedLanguage);
+  if (translations.isEmpty()) {
+    return null;
+  }
+  return translations.get(key);
   }
 
   private Map<String, String> loadBundledLanguage(String languageCode) {

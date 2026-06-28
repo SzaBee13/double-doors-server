@@ -1,4 +1,4 @@
-# DoubleDoors v1.4.5 Release Notes
+# DoubleDoors v1.4.6 Release Notes
 
 Release date: 2026-06-17
 
@@ -12,10 +12,12 @@ Release date: 2026-06-17
 
 - New Maven profile `mc-26.2.x` — build with `-P mc-26.2.x` to target Spigot 26.2 API (`26.2-R0.1-SNAPSHOT`). Now the default build profile.
 - `src/main/java-v26_2_x` version bridge implementation for Minecraft 26.2.x.
+- Per-player locale overrides via `/dd locale <code>` when enabled in config; locale preference is persisted and shared through SQL.
 
 ## Changed
 
 - Default build target updated from 26.1 to 26.2.
+- Added `perPlayerLocaleEnabled` config toggle and locale-specific command help.
 
 ## Fixed
 

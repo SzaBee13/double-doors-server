@@ -110,6 +110,9 @@ trackingServerLocation: ""
 # Custom language files can be added to: plugins/DoubleDoors/lang/
 language: en_US
 
+# Allow players to override the plugin language per-account with /dd locale.
+perPlayerLocaleEnabled: false
+
 # Shared SQL storage configuration (Bukkit + proxy can use the same database).
 sql:
   # If false, YAML files (players.yml, claims.yml) remain the active storage.

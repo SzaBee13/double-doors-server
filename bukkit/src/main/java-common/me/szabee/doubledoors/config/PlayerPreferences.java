@@ -20,9 +20,6 @@ import me.szabee.doubledoors.storage.SharedSqlStorage;
 
 /**
  * Manages per-player preferences, persisted to {@code players.yml} inside the plugin data folder.
- *
- * <p>Each player can independently enable/disable linked-opening for the plugin overall,
- * or for specific block types (doors, fence gates, trapdoors).</p>
  */
 public final class PlayerPreferences {
   private static final double MIN_KNOCK_VOLUME = 0.0;
@@ -35,7 +32,6 @@ public final class PlayerPreferences {
   private final boolean useSql;
   private final Map<UUID, PlayerPref> cache = new ConcurrentHashMap<>();
   private final Map<UUID, PendingSave> pendingSaves = new ConcurrentHashMap<>();
-  private final Set<UUID> pendingYamlSaves = ConcurrentHashMap.newKeySet();
   private final AtomicBoolean writerScheduled = new AtomicBoolean(false);
   private final ExecutorService writerExecutor = Executors.newSingleThreadExecutor(new WriterThreadFactory());
 
@@ -52,12 +48,10 @@ public final class PlayerPreferences {
   load();
   }
 
-  /**
-   * Reloads all preferences from disk, clearing the in-memory cache.
-   */
+  /** Reloads all preferences from disk, clearing the in-memory cache. */
   public void load() {
+  cache.clear();
   if (useSql) {
-    cache.clear();
     for (Map.Entry<UUID, SharedSqlStorage.SqlPlayerPref> entry : sqlStorage.loadAllPlayerPreferences().entrySet()) {
     SharedSqlStorage.SqlPlayerPref pref = entry.getValue();
     cache.put(entry.getKey(), new PlayerPref(
@@ -67,15 +61,14 @@ public final class PlayerPreferences {
       pref.enableTrapdoors(),
       pref.enableAutoClose(),
       pref.enableKnockSound(),
-      normalizeKnockVolume(pref.knockVolume())));
+      normalizeKnockVolume(pref.knockVolume()),
+      normalizeLocale(pref.locale())));
     }
     return;
   }
 
   YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
-  cache.clear();
   for (String key : data.getKeys(false)) {
-    // Fast path: skip obviously-invalid UUID formats before attempting UUID.fromString.
     if (key.length() != 36
       || key.charAt(8) != '-'
       || key.charAt(13) != '-'
@@ -92,17 +85,14 @@ public final class PlayerPreferences {
     boolean autoClose = data.getBoolean(key + ".enableAutoClose", true);
     boolean knockSound = data.getBoolean(key + ".enableKnockSound", true);
     double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
-    cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume));
+    String locale = normalizeLocale(data.getString(key + ".locale", ""));
+    cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume, locale));
     } catch (IllegalArgumentException ignored) {
-    // Non-UUID top-level key — skip silently.
     }
   }
   }
 
-  /**
-   * Saves all in-memory preferences synchronously to {@code players.yml}.
-   * Performs blocking I/O.
-   */
+  /** Saves all in-memory preferences synchronously to {@code players.yml}. */
   public void save() {
   if (useSql) {
     flush();
@@ -128,46 +118,38 @@ public final class PlayerPreferences {
     data.set(key + ".enableAutoClose", pref.enableAutoClose());
     data.set(key + ".enableKnockSound", pref.enableKnockSound());
     data.set(key + ".knockVolume", pref.knockVolume());
+    data.set(key + ".locale", pref.locale());
   }
   data.save(dataFile);
   }
 
-  /**
-   * Saves asynchronously; safe to call from the main thread after every mutation.
-   * Should be used from the main thread to avoid disk-blocking.
-   */
+  /** Saves asynchronously; safe to call from the main thread after every mutation. */
   public void saveAsync(UUID changedUuid) {
-  if (useSql) {
-    if (changedUuid == null) {
+  if (changedUuid == null) {
     return;
-    }
+  }
+  if (useSql) {
     PlayerPref pref = cache.get(changedUuid);
     if (pref == null) {
     return;
     }
-    SharedSqlStorage.SqlPlayerPref snapshot = new SharedSqlStorage.SqlPlayerPref(
+    pendingSaves.put(changedUuid, new PendingSave(new SharedSqlStorage.SqlPlayerPref(
       pref.enabled(),
       pref.enableDoors(),
       pref.enableFenceGates(),
       pref.enableTrapdoors(),
       pref.enableAutoClose(),
       pref.enableKnockSound(),
-      pref.knockVolume());
-    pendingSaves.put(changedUuid, new PendingSave(snapshot));
+      pref.knockVolume(),
+      pref.locale())));
     scheduleWriter();
-    return;
-  }
-
-  if (changedUuid == null) {
     return;
   }
   pendingSaves.put(changedUuid, PendingSave.forYaml());
   scheduleWriter();
   }
 
-  /**
-   * Flushes all pending async writes and blocks until persistence has completed.
-   */
+  /** Flushes all pending async writes and blocks until persistence has completed. */
   public void flush() {
   if (writerExecutor.isShutdown()) {
     return;
@@ -182,16 +164,13 @@ public final class PlayerPreferences {
   }
   }
 
-  /**
-   * Flushes pending writes and terminates the player-preference writer thread.
-   */
+  /** Flushes pending writes and terminates the player-preference writer thread. */
   public void close() {
   flush();
   writerExecutor.shutdown();
   try {
     if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
     writerExecutor.shutdownNow();
-    // Wait a bit more for shutdownNow to complete
     if (!writerExecutor.awaitTermination(5, TimeUnit.SECONDS)) {
       plugin.getLogger().warning("Player preference writer did not terminate gracefully.");
     }
@@ -214,10 +193,8 @@ public final class PlayerPreferences {
   }
 
   private void drainPendingWrites() {
-  boolean reschedule = true;
   try {
     while (true) {
-    // Create a copy of the keys to iterate over without removing upfront
     Set<UUID> keysToProcess = Set.copyOf(pendingSaves.keySet());
     if (keysToProcess.isEmpty()) {
       return;
@@ -227,72 +204,45 @@ public final class PlayerPreferences {
       for (UUID uuid : keysToProcess) {
       PendingSave pending = pendingSaves.get(uuid);
       if (pending == null || pending.sqlSnapshot() == null) {
-        // Remove YAML entries from pendingSaves when using SQL
         pendingSaves.remove(uuid, pending);
         continue;
       }
-      
-        try {
-          boolean saved = sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
-          if (saved) {
-            // Only remove after successful persistence
-            pendingSaves.remove(uuid, pending);
-          } else {
-            failed = true;
-            plugin.getLogger().warning("Could not save SQL player preference for %s: storage returned false".formatted(uuid));
-          }
-        } catch (RuntimeException e) {
-          failed = true;
-          plugin.getLogger().warning("Could not save SQL player preference for %s: %s"
-            .formatted(uuid, e.getMessage()));
+      try {
+        boolean saved = sqlStorage.savePlayerPreference(uuid, pending.sqlSnapshot());
+        if (saved) {
+        pendingSaves.remove(uuid, pending);
+        } else {
+        failed = true;
+        plugin.getLogger().warning("Could not save SQL player preference for %s: storage returned false".formatted(uuid));
         }
+      } catch (RuntimeException e) {
+        failed = true;
+        plugin.getLogger().warning("Could not save SQL player preference for %s: %s".formatted(uuid, e.getMessage()));
+      }
       }
     } else {
-      // For YAML, we only save once per batch to avoid excessive I/O
-      boolean yamlSaved = false;
-      for (UUID uuid : keysToProcess) {
-      PendingSave pending = pendingSaves.get(uuid);
-      if (pending == null) {
-        continue; // Entry was removed by another thread
-      }
-      
-      // We only need to save once for YAML since it's a full file write
-      if (!yamlSaved) {
-        try {
-        saveYaml();
-        yamlSaved = true;
-        // Remove all processed entries
-        pendingSaves.keySet().removeAll(keysToProcess);
-        } catch (IOException e) {
-        failed = true;
-        plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
-        break;
-        }
-      }
+      try {
+      saveYaml();
+      pendingSaves.keySet().removeAll(keysToProcess);
+      } catch (IOException e) {
+      failed = true;
+      plugin.getLogger().warning("Could not save players.yml: %s".formatted(e.getMessage()));
       }
     }
     if (failed) {
-      reschedule = false;
       return;
     }
     }
   } finally {
     writerScheduled.set(false);
-    if (reschedule && !pendingSaves.isEmpty()) {
+    if (!pendingSaves.isEmpty()) {
     scheduleWriter();
     }
   }
   }
 
   private PlayerPref getOrDefault(UUID uuid) {
-  return cache.computeIfAbsent(uuid, k -> new PlayerPref(
-    true,
-    true,
-    true,
-    true,
-    true,
-    true,
-    DEFAULT_KNOCK_VOLUME));
+  return cache.computeIfAbsent(uuid, k -> new PlayerPref(true, true, true, true, true, true, DEFAULT_KNOCK_VOLUME, ""));
   }
 
   /** Returns whether the player has not globally disabled linked-door behavior. */
@@ -330,150 +280,87 @@ public final class PlayerPreferences {
   return getOrDefault(uuid).knockVolume();
   }
 
-  /**
-   * Toggles the player's global linked-door on/off switch.
-   *
-   * @param uuid the player's unique ID
-   * @return {@code true} if the feature is now enabled, {@code false} if now disabled
-   */
+  /** Returns the player's preferred locale override, or blank when unset. */
+  public String getLocale(UUID uuid) {
+  return getOrDefault(uuid).locale();
+  }
+
+  /** Sets the player's preferred locale override. */
+  public String setLocale(UUID uuid, String locale) {
+  PlayerPref current = getOrDefault(uuid);
+  String normalized = normalizeLocale(locale);
+  cache.put(uuid, new PlayerPref(
+    current.enabled(),
+    current.enableDoors(),
+    current.enableFenceGates(),
+    current.enableTrapdoors(),
+    current.enableAutoClose(),
+    current.enableKnockSound(),
+    current.knockVolume(),
+    normalized));
+  saveAsync(uuid);
+  return normalized;
+  }
+
+  /** Toggles the player's global linked-door on/off switch. */
   public boolean toggleAll(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enabled();
-  cache.put(uuid, new PlayerPref(
-    next,
-    current.enableDoors(),
-    current.enableFenceGates(),
-    current.enableTrapdoors(),
-    current.enableAutoClose(),
-    current.enableKnockSound(),
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(next, current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors(), current.enableAutoClose(), current.enableKnockSound(), current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Toggles the door-linking preference for the given player.
-   *
-   * @param uuid the player's unique ID
-   * @return the new enabled state
-   */
+  /** Toggles the door-linking preference for the given player. */
   public boolean toggleDoors(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableDoors();
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    next,
-    current.enableFenceGates(),
-    current.enableTrapdoors(),
-    current.enableAutoClose(),
-    current.enableKnockSound(),
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(current.enabled(), next, current.enableFenceGates(), current.enableTrapdoors(), current.enableAutoClose(), current.enableKnockSound(), current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Toggles the fence-gate-linking preference for the given player.
-   *
-   * @param uuid the player's unique ID
-   * @return the new enabled state
-   */
+  /** Toggles the fence-gate-linking preference for the given player. */
   public boolean toggleFenceGates(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableFenceGates();
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    current.enableDoors(),
-    next,
-    current.enableTrapdoors(),
-    current.enableAutoClose(),
-    current.enableKnockSound(),
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), next, current.enableTrapdoors(), current.enableAutoClose(), current.enableKnockSound(), current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Toggles the trapdoor-linking preference for the given player.
-   *
-   * @param uuid the player's unique ID
-   * @return the new enabled state
-   */
+  /** Toggles the trapdoor-linking preference for the given player. */
   public boolean toggleTrapdoors(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableTrapdoors();
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    current.enableDoors(),
-    current.enableFenceGates(),
-    next,
-    current.enableAutoClose(),
-    current.enableKnockSound(),
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), next, current.enableAutoClose(), current.enableKnockSound(), current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Toggles auto-close preference for the given player.
-   *
-   * @param uuid the player's unique ID
-   * @return the new enabled state
-   */
+  /** Toggles auto-close preference for the given player. */
   public boolean toggleAutoClose(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableAutoClose();
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    current.enableDoors(),
-    current.enableFenceGates(),
-    current.enableTrapdoors(),
-    next,
-    current.enableKnockSound(),
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors(), next, current.enableKnockSound(), current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Toggles knock-sound preference for the given player.
-   *
-   * @param uuid the player's unique ID
-   * @return the new enabled state
-   */
+  /** Toggles knock-sound preference for the given player. */
   public boolean toggleKnockSound(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableKnockSound();
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    current.enableDoors(),
-    current.enableFenceGates(),
-    current.enableTrapdoors(),
-    current.enableAutoClose(),
-    next,
-    current.knockVolume()));
+  cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors(), current.enableAutoClose(), next, current.knockVolume(), current.locale()));
   saveAsync(uuid);
   return next;
   }
 
-  /**
-   * Sets the player's knock volume preference.
-   *
-   * @param uuid the player's unique ID
-   * @param volume volume between 0.0 and 1.0
-   * @return the normalized volume that was stored
-   */
+  /** Sets the player's knock volume preference. */
   public double setKnockVolume(UUID uuid, double volume) {
   PlayerPref current = getOrDefault(uuid);
   double normalized = normalizeKnockVolume(volume);
-  cache.put(uuid, new PlayerPref(
-    current.enabled(),
-    current.enableDoors(),
-    current.enableFenceGates(),
-    current.enableTrapdoors(),
-    current.enableAutoClose(),
-    current.enableKnockSound(),
-    normalized));
+  cache.put(uuid, new PlayerPref(current.enabled(), current.enableDoors(), current.enableFenceGates(), current.enableTrapdoors(), current.enableAutoClose(), current.enableKnockSound(), normalized, current.locale()));
   saveAsync(uuid);
   return normalized;
   }
@@ -491,17 +378,15 @@ public final class PlayerPreferences {
   return value;
   }
 
-  /**
-   * Immutable snapshot of a single player's preferences.
-   *
-   * @param enabled      global linked-door on/off
-   * @param enableDoors    door-linking on/off
-   * @param enableFenceGates fence-gate-linking on/off
-   * @param enableTrapdoors  trapdoor-linking on/off
-   * @param enableAutoClose  per-player auto-close on/off
-   * @param enableKnockSound per-player knock sound on/off
-   * @param knockVolume    per-player knock volume (0.0-1.0)
-   */
+  private static String normalizeLocale(String locale) {
+  if (locale == null) {
+    return "";
+  }
+  String trimmed = locale.trim();
+  return trimmed.length() > 32 ? trimmed.substring(0, 32) : trimmed;
+  }
+
+  /** Immutable snapshot of a single player's preferences. */
   public record PlayerPref(
     boolean enabled,
     boolean enableDoors,
@@ -509,7 +394,8 @@ public final class PlayerPreferences {
     boolean enableTrapdoors,
     boolean enableAutoClose,
     boolean enableKnockSound,
-    double knockVolume
+    double knockVolume,
+    String locale
   ) {}
 
   private static final class PendingSave {

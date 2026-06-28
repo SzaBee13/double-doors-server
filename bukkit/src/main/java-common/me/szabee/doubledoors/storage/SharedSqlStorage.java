@@ -56,11 +56,13 @@ public final class SharedSqlStorage {
     + "enable_trapdoors BOOLEAN NOT NULL,"
     + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
     + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
-    + "knock_volume DOUBLE NOT NULL DEFAULT 1.0"
+    + "knock_volume DOUBLE NOT NULL DEFAULT 1.0,"
+    + "locale VARCHAR(32) NOT NULL DEFAULT ''"
     + ")");
     executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
     executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
     executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
+    executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''");
 
     executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings ("
     + "claim_id BIGINT PRIMARY KEY,"
@@ -93,8 +95,8 @@ public final class SharedSqlStorage {
    */
   public Map<UUID, SqlPlayerPref> loadAllPlayerPreferences() {
   Map<UUID, SqlPlayerPref> result = new HashMap<>();
-  String sql = "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, "
-    + "enable_auto_close, enable_knock_sound, knock_volume FROM dd_player_preferences";
+    String sql = "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, "
+     + "enable_auto_close, enable_knock_sound, knock_volume, locale FROM dd_player_preferences";
   try (Connection connection = openConnection();
      Statement statement = connection.createStatement();
      ResultSet rs = statement.executeQuery(sql)) {
@@ -102,14 +104,15 @@ public final class SharedSqlStorage {
     String rawUuid = rs.getString("player_uuid");
     try {
       UUID uuid = UUID.fromString(rawUuid);
-      result.put(uuid, new SqlPlayerPref(
-        rs.getBoolean("enabled"),
-        rs.getBoolean("enable_doors"),
-        rs.getBoolean("enable_fence_gates"),
-        rs.getBoolean("enable_trapdoors"),
-        rs.getBoolean("enable_auto_close"),
-        rs.getBoolean("enable_knock_sound"),
-        rs.getDouble("knock_volume")));
+        result.put(uuid, new SqlPlayerPref(
+         rs.getBoolean("enabled"),
+         rs.getBoolean("enable_doors"),
+         rs.getBoolean("enable_fence_gates"),
+         rs.getBoolean("enable_trapdoors"),
+         rs.getBoolean("enable_auto_close"),
+         rs.getBoolean("enable_knock_sound"),
+         rs.getDouble("knock_volume"),
+         rs.getString("locale")));
     } catch (IllegalArgumentException ignored) {
       // Ignore malformed UUID rows so startup keeps working.
     }
@@ -127,8 +130,8 @@ public final class SharedSqlStorage {
    * @param pref the preference values
    */
   public boolean savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
-  String updateSql = "UPDATE dd_player_preferences SET enabled=?, enable_doors=?, enable_fence_gates=?, "
-    + "enable_trapdoors=?, enable_auto_close=?, enable_knock_sound=?, knock_volume=? WHERE player_uuid=?";
+    String updateSql = "UPDATE dd_player_preferences SET enabled=?, enable_doors=?, enable_fence_gates=?, "
+     + "enable_trapdoors=?, enable_auto_close=?, enable_knock_sound=?, knock_volume=?, locale=? WHERE player_uuid=?";
   try (Connection connection = openConnection();
      PreparedStatement update = connection.prepareStatement(updateSql)) {
     update.setBoolean(1, pref.enabled());
@@ -138,12 +141,13 @@ public final class SharedSqlStorage {
     update.setBoolean(5, pref.enableAutoClose());
     update.setBoolean(6, pref.enableKnockSound());
     update.setDouble(7, pref.knockVolume());
-    update.setString(8, uuid.toString());
+    update.setString(8, pref.locale());
+    update.setString(9, uuid.toString());
     int changed = update.executeUpdate();
     if (changed == 0) {
-    String insertSql = "INSERT INTO dd_player_preferences (player_uuid, enabled, enable_doors, "
-      + "enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume) "
-      + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+     String insertSql = "INSERT INTO dd_player_preferences (player_uuid, enabled, enable_doors, "
+       + "enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) "
+       + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
     try (PreparedStatement insert = connection.prepareStatement(insertSql)) {
       insert.setString(1, uuid.toString());
       insert.setBoolean(2, pref.enabled());
@@ -153,6 +157,7 @@ public final class SharedSqlStorage {
       insert.setBoolean(6, pref.enableAutoClose());
       insert.setBoolean(7, pref.enableKnockSound());
       insert.setDouble(8, pref.knockVolume());
+      insert.setString(9, pref.locale());
       insert.executeUpdate();
     }
     }
@@ -341,8 +346,9 @@ public final class SharedSqlStorage {
    * @param enableTrapdoors trapdoor toggle
    * @param enableAutoClose auto-close toggle
    * @param enableKnockSound knock-sound toggle
-   * @param knockVolume knock sound volume
-   */
+    * @param knockVolume knock sound volume
+    * @param locale per-player locale override
+    */
   public record SqlPlayerPref(
     boolean enabled,
     boolean enableDoors,
@@ -350,7 +356,8 @@ public final class SharedSqlStorage {
     boolean enableTrapdoors,
     boolean enableAutoClose,
     boolean enableKnockSound,
-    double knockVolume
+    double knockVolume,
+    String locale
   ) {
   }
 }
