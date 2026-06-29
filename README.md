@@ -8,6 +8,7 @@
 <br>
 [![Online players](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Donline_players&style=flat)](https://faststats.dev/project/double-doors-server)
 [![Online servers](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Donline_servers&style=flat)](https://faststats.dev/project/double-doors-server)
+[![Total downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Ddownloads%26label%3DDownloads&style=flat)](https://faststats.dev/project/double-doors-server)
 
 A Bukkit/Spigot plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
 
@@ -28,7 +29,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.x` and `26.1.x`.
+- Supports Minecraft Java Edition `1.21.x`, `26.1.x` and `26.2.x`.
 
 ### Geyser / Floodgate
 

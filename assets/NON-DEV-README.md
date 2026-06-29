@@ -35,7 +35,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.X` `26.1.X`.
+- Supports Minecraft Java Edition `1.21.X`, `26.1.X` and `26.2.X`.
 ### Geyser / Floodgate
 
 - Plugin declares soft-depends on `Geyser-Spigot` and `floodgate`.
