@@ -5,13 +5,14 @@
 
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.5</version>
+  <version>1.4.6</version>
   <name>DoubleDoors Parent</name>
   <packaging>pom</packaging>
 
   <modules>
+  <module>core</module>
   <module>bukkit</module>
-  <module>proxy</module>
+    <module>velocity</module>
   </modules>
 
   <properties>
@@ -27,7 +28,7 @@
     <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
-    <version>6.1.0</version>
+    <version>6.1.1</version>
     <scope>test</scope>
     </dependency>
     <dependency>

@@ -6,7 +6,7 @@
   <parent>
   <groupId>me.szabee.doubledoors</groupId>
   <artifactId>doubledoors-parent</artifactId>
-  <version>1.4.5</version>
+  <version>1.4.6</version>
   </parent>
 
   <artifactId>doubledoors-bukkit</artifactId>
@@ -34,6 +34,11 @@
 
   <dependencies>
   <dependency>
+    <groupId>me.szabee.doubledoors</groupId>
+    <artifactId>doubledoors-core</artifactId>
+    <version>${project.version}</version>
+  </dependency>
+  <dependency>
     <groupId>org.junit.jupiter</groupId>
     <artifactId>junit-jupiter</artifactId>
     <scope>test</scope>
@@ -59,7 +64,7 @@
   <dependency>
     <groupId>dev.faststats.metrics</groupId>
     <artifactId>bukkit</artifactId>
-    <version>0.27.0</version>
+    <version>0.27.1</version>
   </dependency>
   <dependency>
     <groupId>com.google.code.gson</groupId>
