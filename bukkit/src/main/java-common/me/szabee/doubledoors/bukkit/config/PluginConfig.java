@@ -174,6 +174,8 @@ public final class PluginConfig {
   }
   String language = configuredLanguage.trim();
 
+  boolean perPlayerLocaleEnabled = plugin.getConfig().getBoolean("perPlayerLocaleEnabled", false);
+
   snapshot = new ConfigSnapshot(
     enableRecursiveOpening,
     recursiveOpeningMaxBlocksDistance,
@@ -210,7 +212,7 @@ public final class PluginConfig {
     griefPreventionRequireBuildForLinkedDoors,
     enableAnonymousTracking,
     language,
-    false,
+    perPlayerLocaleEnabled,
     sqlEnabled,
     sqlJdbcUrl,
     sqlUsername,
