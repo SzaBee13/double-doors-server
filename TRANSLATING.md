@@ -2,72 +2,35 @@
 
 Thank you for helping translate **DoubleDoors** for your language community.
 
-## Crowdin workflow
+## Crowdin
 
-Translations are managed through Crowdin.
-The Crowdin project is available at: [Crowdin/double-doors-server](https://crowdin.com/project/double-doors-server)
+For easier translation management, translations are managed through Crowdin.
+You can join the Crowdin project and submit translations [here](https://crowdin.com/project/double-doors-server).
 
-- Source language file: `bukkit/src/main/resources/lang/english/en_US.json`
-- Crowdin config: `.crowdin.yml`
-- GitHub workflow: `.github/workflows/crowdin.yml`
+## Request a Language
 
-### Maintainer setup
+If you would like to request a language that is not currently available, please open an issue on the [GitHub repository](https://github.com/double-doors/double-doors-server/issues).
+If you want to contribute a translation, go to the [Crowdin project](https://crowdin.com/project/double-doors-server), request the language and then submit your translations there.
+We welcome contributions from the community!
 
-Set these repository secrets before using the workflow:
+## Contribute to an Existing Translation
 
-- `CROWDIN_PROJECT_ID`
-- `CROWDIN_PERSONAL_TOKEN`
+If you want to contribute to an existing translation, go to the [Crowdin project](https://crowdin.com/project/double-doors-server) and submit your translations there.
 
-What the workflow does:
+## Guidelines
 
-- On push to `main`, uploads the latest source strings and imports existing repository translation files into Crowdin.
-- On schedule (weekly) or manual run, downloads translated files and opens a pull request.
-- Downloaded locales are normalized into this repository's language folder structure.
+- DO NOT change credits directly on crowdin, we will update them when the crowdin sync pull request comes, if you want a credit there, comment on that pull request, we will add your github username.
+- DO NOT translate variables in the translation strings, they will be replaced with the correct values at runtime.
+- DO NOT change the meaning of the translation strings, they should be clear and accurate.
 
-## How to contribute a translation
+## Translators:
 
-1. Join the Crowdin project and submit translations there.
-2. Maintainers trigger or wait for the sync workflow to create a pull request.
-3. Review the generated pull request and merge it.
+Thank you for helping to translate Double Doors Server! Your contributions are greatly appreciated.
 
-If Crowdin is unavailable, direct pull requests with JSON translation changes are still accepted.
-
-## Translation rules
-
-- Do not rename, remove, or reorder keys.
-- Keep placeholders unchanged (examples: `%player%`, `%world%`, `{0}`).
-- Keep color-code or formatting tokens unchanged.
-- Use clear, natural wording for Minecraft players.
-- Stay consistent with existing terms for doors, trapdoors, and fence gates.
-
-## Quality checklist
-
-Before submitting, verify:
-
-- No missing keys
-- No broken placeholders
-- No untranslated leftovers (unless intentional)
-- File encoding is UTF-8
-- Server starts without YAML errors
-
-If you have a friend that can co-auth/verify the language it would be good.
-
-## Testing locally
-
-1. Build with:
-
-   ```bash
-   mvn package
-   ```
-
-2. Place the JAR in your Paper/Spigot 1.21 server.
-3. Switch to your translated language.
-4. Test common flows:
-   - Door interaction messages
-   - Redstone-related behavior messages
-   - Permission/command feedback
-
-## Need help?
-
-If you are unsure about wording or placeholders, open a draft Pull Request and request review.
-Community translators are welcome and appreciated.
+<div align="center">
+  <div>
+    <a href="https://github.com/SzaBee13">
+      <img src="https://avatars.githubusercontent.com/u/170540798" alt="SzaBee13" width="32" height="32">
+    </a>
+  </div>
+</div>

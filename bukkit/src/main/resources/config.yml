@@ -111,6 +111,7 @@ trackingServerLocation: ""
 language: en_US
 
 # Allow players to override the plugin language per-account with /dd locale.
+# Logs on the console will still be in the server's language.
 perPlayerLocaleEnabled: false
 
 # Shared SQL storage configuration (Bukkit + proxy can use the same database).
