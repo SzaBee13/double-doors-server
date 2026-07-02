@@ -247,13 +247,13 @@ jobs:
         with:
           api_token: ${{ secrets.PAPERMC_API_TOKEN }}
           slug: ${{ vars.PAPERMC_SLUG }}
-          version: 'v${{ steps.version.outputs.version }}-velocity'
+          version: 'v${{ steps.version.outputs.version }}'
           channel: ${{ steps.release_channel.outputs.version_type }}
           files: |
             [
               {
                 "path": "${{ steps.artifact.outputs.jar_path }}",
-                "platform": ["PAPER"]
+                "platform": ["PAPER", "FOLIA"]
               },
               {
                 "path": "${{ steps.proxy_artifact.outputs.jar_path }}",

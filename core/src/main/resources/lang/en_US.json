@@ -45,5 +45,6 @@
   "cmd.preview.no_target": "Look at a door, fence gate, or trapdoor first.",
   "cmd.preview.unsupported": "This block type is not supported: %s",
   "cmd.preview.not_found": "No linked partner found (%s).",
-  "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s."
+  "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s.",
+  "cmd.locale.available": "Available languages: %s"
 }

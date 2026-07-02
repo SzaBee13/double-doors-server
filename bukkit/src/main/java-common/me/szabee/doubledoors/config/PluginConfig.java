@@ -137,21 +137,6 @@ public final class PluginConfig {
   boolean griefPreventionRequireBuildForLinkedDoors = plugin.getConfig().getBoolean("griefprevention.requireBuildForLinkedDoors", false);
 
   boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
-  boolean enableExtendedAnonymousTracking = plugin.getConfig().getBoolean("enableExtendedAnonymousTracking", false);
-
-  List<String> configuredCountries = plugin.getConfig().getStringList("trackingCountries");
-  List<String> trackingCountries = new ArrayList<>();
-  for (String country : configuredCountries) {
-    if (country != null && !country.isBlank()) {
-    trackingCountries.add(country.trim());
-    }
-  }
-
-  String trackingServerLocation = plugin.getConfig().getString("trackingServerLocation", "");
-  if (trackingServerLocation == null) {
-    trackingServerLocation = "";
-  }
-  trackingServerLocation = trackingServerLocation.trim();
 
   boolean sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
   String sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
@@ -224,9 +209,6 @@ public final class PluginConfig {
     worldGuardRespectUseFlag,
     griefPreventionRequireBuildForLinkedDoors,
     enableAnonymousTracking,
-    enableExtendedAnonymousTracking,
-    List.copyOf(trackingCountries),
-    trackingServerLocation,
     language,
     false,
     sqlEnabled,
@@ -526,33 +508,6 @@ public final class PluginConfig {
   }
 
   /**
-   * Gets whether extended anonymous tracking is enabled.
-   *
-   * @return true when extra telemetry should be sent
-   */
-  public boolean isEnableExtendedAnonymousTracking() {
-  return snapshot.enableExtendedAnonymousTracking();
-  }
-
-  /**
-   * Gets the configured countries associated with this server.
-   *
-   * @return immutable list of configured country codes
-   */
-  public List<String> getTrackingCountries() {
-  return snapshot.trackingCountries();
-  }
-
-  /**
-   * Gets the configured server location label.
-   *
-   * @return trimmed location label, or empty string
-   */
-  public String getTrackingServerLocation() {
-  return snapshot.trackingServerLocation();
-  }
-
-  /**
    * Gets the configured plugin language code.
    *
    * @return language code such as {@code en_US}
@@ -697,9 +652,6 @@ public final class PluginConfig {
     boolean worldGuardRespectUseFlag,
     boolean griefPreventionRequireBuildForLinkedDoors,
     boolean enableAnonymousTracking,
-    boolean enableExtendedAnonymousTracking,
-    List<String> trackingCountries,
-    String trackingServerLocation,
     String language,
     boolean perPlayerLocaleEnabled,
     boolean sqlEnabled,
@@ -748,9 +700,6 @@ public final class PluginConfig {
       true,
       false,
       true,
-      false,
-      List.of(),
-      "",
       "en_US",
       false,
       false,
@@ -800,9 +749,6 @@ public final class PluginConfig {
       worldGuardRespectUseFlag,
       griefPreventionRequireBuildForLinkedDoors,
       enableAnonymousTracking,
-      enableExtendedAnonymousTracking,
-      trackingCountries,
-      trackingServerLocation,
       language,
       perPlayerLocaleEnabled,
       sqlEnabled,

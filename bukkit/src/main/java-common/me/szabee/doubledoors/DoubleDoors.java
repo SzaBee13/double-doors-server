@@ -32,10 +32,13 @@ import org.lushplugins.pluginupdater.api.updater.Updater;
 import dev.faststats.bukkit.BukkitContext;
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.data.Metric;
+import java.util.Map;
+
 import me.szabee.doubledoors.api.DoubleDoorsAPI;
 import me.szabee.doubledoors.config.ClaimSettings;
 import me.szabee.doubledoors.config.PlayerPreferences;
 import me.szabee.doubledoors.config.PluginConfig;
+import me.szabee.doubledoors.i18n.TranslationCatalog;
 import me.szabee.doubledoors.i18n.TranslationManager;
 import me.szabee.doubledoors.listeners.DoorCacheInvalidationListener;
 import me.szabee.doubledoors.listeners.DoorInteractListener;
@@ -404,7 +407,7 @@ public final class DoubleDoors extends JavaPlugin {
   initializeUpdater();
 
   sqlStorage = null;
-  translationManager = new TranslationManager(this, pluginConfig);
+  translationManager = new TranslationManager(this);
   translationManager.reload();
   playerPreferences = new PlayerPreferences(this);
   claimSettings = new ClaimSettings(this);
@@ -512,6 +515,17 @@ public final class DoubleDoors extends JavaPlugin {
     return key;
   }
   return translationManager.tr(player, key, args);
+  }
+
+  /**
+   * Loads a language file from plugin resources or data folder.
+   * Called by TranslationManager via method reference.
+   *
+   * @param languageCode language code
+   * @return translations map
+   */
+  public Map<String, String> loadLanguageFile(String languageCode) {
+    return TranslationCatalog.loadLanguageFile(this, languageCode);
   }
 
   private static boolean hasAnyPluginEnabled(PluginManager pluginManager, String... pluginNames) {
@@ -626,13 +640,6 @@ public final class DoubleDoors extends JavaPlugin {
       BukkitContext context = new BukkitContext.Factory(this, token)
         .metrics(factory -> {
           BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
-          if (pluginConfig.isEnableExtendedAnonymousTracking()) {
-            bFactory = bFactory
-              .addMetric(Metric.string("server_location", pluginConfig::getTrackingServerLocation))
-              .addMetric(Metric.stringArray("countries", () -> pluginConfig.getTrackingCountries().toArray(String[]::new)))
-              .addMetric(Metric.string("java_version", () -> System.getProperty("java.version", "unknown")))
-              .addMetric(Metric.stringArray("system_statistics", this::getSystemStatistics));
-          }
           return bFactory.create();
         })
         .create();
@@ -895,6 +902,8 @@ public final class DoubleDoors extends JavaPlugin {
       sender.sendMessage(current.isBlank()
         ? t(player, "cmd.locale.current_default")
         : t(player, "cmd.locale.current", current));
+      String langs = String.join(", ", translationManager.getAvailableLanguages());
+      sender.sendMessage(t(player, "cmd.locale.available", langs));
       return true;
     }
     String requested = args[1];
