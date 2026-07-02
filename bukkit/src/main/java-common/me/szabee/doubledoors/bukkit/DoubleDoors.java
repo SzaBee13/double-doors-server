@@ -900,7 +900,7 @@ public final class DoubleDoors extends JavaPlugin {
     if (args.length == 1) {
       String current = playerPreferences.getLocale(player.getUniqueId());
       sender.sendMessage(current.isBlank()
-        ? t(player, "cmd.locale.current_default")
+        ? t(player, "cmd.locale.current_default", pluginConfig.getLanguage())
         : t(player, "cmd.locale.current", current));
       String langs = String.join(", ", translationManager.getAvailableLanguages());
       sender.sendMessage(t(player, "cmd.locale.available", langs));

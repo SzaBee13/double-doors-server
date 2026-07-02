@@ -47,5 +47,12 @@
   "cmd.preview.no_target": "Nézz előbb egy ajtóra, kapura vagy csapóajtóra.",
   "cmd.preview.unsupported": "Ez a blokk típus nem támogatott: %s",
   "cmd.preview.not_found": "Nem található összekapcsolt partner (%s).",
-  "cmd.preview.found": "Összekapcsolt partner: %s (%s, %s, %s), iránya %s."
+  "cmd.preview.found": "Összekapcsolt partner: %s (%s, %s, %s), iránya %s.",
+  "cmd.locale.available": "Elérhető nyelvek: %s",
+  "cmd.only_players.locale": "Csak játékosok használhatják a /%s locale parancsot.",
+  "cmd.locale.disabled": "A játékos szintű nyelvválasztás le van tiltva ezen a szerveren.",
+  "cmd.locale.current_default": "A nyelved: szerver alapértelmezett (%s)",
+  "cmd.locale.current": "A nyelved: %s",
+  "cmd.locale.cleared": "Nyelvpreferencia törölve, a szerver alapértelmezett használata.",
+  "cmd.locale.set": "Nyelv beállítva: %s."
 }
