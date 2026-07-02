@@ -14,7 +14,7 @@ Release date: 2026-06-29
 
 ## Changed
 
-- Version bumped to `1.4.6` in the Maven POMs.
+- Renamed `doubledoors-proxy` to `doubledoors-velocity`.
 
 ## Fixed
 

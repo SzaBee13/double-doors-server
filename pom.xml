@@ -11,7 +11,7 @@
 
   <modules>
   <module>bukkit</module>
-  <module>proxy</module>
+    <module>velocity</module>
   </modules>
 
   <properties>

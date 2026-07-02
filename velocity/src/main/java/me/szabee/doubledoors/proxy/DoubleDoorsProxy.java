@@ -75,13 +75,13 @@ public final class DoubleDoorsProxy {
       String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
       if (token == null) {
         metricsContext = null;
-        logger.warn("DoubleDoorsProxy anonymous tracking is enabled, but the built-in FastStats token is invalid;"
+        logger.warn("DoubleDoorsVelocity anonymous tracking is enabled, but the built-in FastStats token is invalid;"
           + " metrics are disabled.");
       }
 
       if (token != null) {
         try {
-          var pluginContainer = proxyServer.getPluginManager().getPlugin("doubledoors-proxy")
+          var pluginContainer = proxyServer.getPluginManager().getPlugin("doubledoors-velocity")
             .orElseThrow(() -> new RuntimeException("Could not find own plugin container"));
           VelocityContext context = new VelocityContext.Factory(pluginContainer, proxyServer, logger, dataDirectory)
             .token(token)
@@ -101,24 +101,24 @@ public final class DoubleDoorsProxy {
           metricsContext = context;
         } catch (RuntimeException e) {
           metricsContext = null;
-          logger.warn("DoubleDoorsProxy FastStats could not be initialized; continuing without metrics.", e);
+          logger.warn("DoubleDoorsVelocity FastStats could not be initialized; continuing without metrics.", e);
         }
       }
     } else {
       metricsContext = null;
-      logger.info("DoubleDoorsProxy anonymous tracking is disabled by config.");
+      logger.info("DoubleDoorsVelocity anonymous tracking is disabled by config.");
     }
 
     boolean sqlEnabled = Boolean.parseBoolean(config.getProperty("sql.enabled", "false"));
     if (!sqlEnabled) {
-      logger.info("DoubleDoorsProxy SQL heartbeat is disabled by config.");
+      logger.info("DoubleDoorsVelocity SQL heartbeat is disabled by config.");
       return;
     }
 
     geyserPresent = isPluginPresent("geyser", "geyser-velocity");
     floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
     if (!geyserPresent && !floodgatePresent) {
-      logger.info("DoubleDoorsProxy did not detect Geyser/Floodgate on this proxy.");
+      logger.info("DoubleDoorsVelocity did not detect Geyser/Floodgate on this proxy.");
       return;
     }
 
@@ -151,9 +151,9 @@ public final class DoubleDoorsProxy {
           .buildTask(this, this::writeHeartbeat)
           .repeat(repeatSeconds, TimeUnit.SECONDS)
           .schedule();
-        logger.info("DoubleDoorsProxy heartbeat enabled for proxyId='{}' every {}s.", proxyId, repeatSeconds);
+        logger.info("DoubleDoorsVelocity heartbeat enabled for proxyId='{}' every {}s.", proxyId, repeatSeconds);
       } catch (SQLException e) {
-        logger.warn("DoubleDoorsProxy could not initialize SQL heartbeat: {}", e.getMessage());
+        logger.warn("DoubleDoorsVelocity could not initialize SQL heartbeat: {}", e.getMessage());
       }
     }).schedule();
   }
@@ -196,7 +196,7 @@ public final class DoubleDoorsProxy {
     try {
       sqlClient.upsertHeartbeat(proxyId, "velocity", System.currentTimeMillis(), geyserPresent, floodgatePresent);
     } catch (SQLException e) {
-      logger.warn("DoubleDoorsProxy heartbeat write failed: {}", e.getMessage());
+      logger.warn("DoubleDoorsVelocity heartbeat write failed: {}", e.getMessage());
     }
   }
 
@@ -262,7 +262,7 @@ public final class DoubleDoorsProxy {
         }
       }
     } catch (IOException e) {
-      logger.warn("DoubleDoorsProxy could not read config.properties: {}", e.getMessage());
+      logger.warn("DoubleDoorsVelocity could not read config.properties: {}", e.getMessage());
     }
     return properties;
   }

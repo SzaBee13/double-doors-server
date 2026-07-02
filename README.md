@@ -63,7 +63,7 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 
 ### Proxy Installation
 
-1. Download the proxy JAR from the releases page (`doubledoors-proxy-<version>.jar`)
+1. Download the Velocity JAR from the releases page (`doubledoors-velocity-<version>.jar`)
 2. Place it in your Velocity `plugins/` directory
 3. Restart the proxy
 4. A `plugins/DoubleDoors/proxy-config.properties` file will be generated

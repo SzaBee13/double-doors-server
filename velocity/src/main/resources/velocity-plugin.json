@@ -1,6 +1,6 @@
 {
-  "id": "doubledoors-proxy",
-  "name": "DoubleDoorsProxy",
+  "id": "doubledoors-velocity",
+  "name": "DoubleDoorsVelocity",
   "version": "${project.version}",
   "description": "Proxy companion plugin for DoubleDoors shared SQL detection",
   "authors": ["SzaBee13"],

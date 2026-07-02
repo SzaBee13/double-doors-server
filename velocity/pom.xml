@@ -9,8 +9,8 @@
   <version>1.4.6</version>
   </parent>
 
-  <artifactId>doubledoors-proxy</artifactId>
-  <name>DoubleDoors Proxy</name>
+  <artifactId>doubledoors-velocity</artifactId>
+  <name>DoubleDoors Velocity</name>
   <packaging>jar</packaging>
 
   <repositories>

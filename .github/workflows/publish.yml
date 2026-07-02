@@ -57,15 +57,15 @@ jobs:
 
           echo "jar_path=$JAR_PATH" >> "$GITHUB_OUTPUT"
 
-      - name: Get proxy JAR path
+      - name: Get Velocity JAR path
         id: proxy_artifact
         run: |
-          PROXY_JAR_PATH=$(find proxy/target -maxdepth 1 -name "doubledoors-proxy-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          PROXY_JAR_PATH=$(find velocity/target -maxdepth 1 -name "doubledoors-velocity-*.jar" -not -name "original-*" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
 
           if [ -z "$PROXY_JAR_PATH" ]; then
-            echo "Could not find a publishable proxy JAR." >&2
-            echo "Contents of proxy/target:" >&2
-            ls -la proxy/target >&2 || true
+            echo "Could not find a publishable Velocity JAR." >&2
+            echo "Contents of velocity/target:" >&2
+            ls -la velocity/target >&2 || true
             exit 1
           fi
 
@@ -215,7 +215,7 @@ jobs:
           modrinth-id: ${{ vars.MODRINTH_ID }}
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.proxy_artifact.outputs.jar_path }}
-          name: 'Double Doors Proxy ${{ steps.version.outputs.version }}'
+          name: 'Double Doors Velocity ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: 'Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
@@ -241,6 +241,7 @@ jobs:
           java: |
             25
           game-version-filter: none
+        
       - name: Publish to PaperMC Hangar
         uses: milkdrinkers/Hangar-Publish@v2.2.0
         with:
