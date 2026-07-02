@@ -114,3 +114,7 @@ updateChecker:
   checkScheduleSeconds: 3600
   # Notify players with the doubledoors.update.notify permission
   notify: true
+
+# ── Debug Mode ───────────────────────────────────────────────
+# Enable verbose console logging for troubleshooting
+debug: false

@@ -46,5 +46,11 @@
   "cmd.preview.unsupported": "This block type is not supported: %s",
   "cmd.preview.not_found": "No linked partner found (%s).",
   "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s.",
-  "cmd.locale.available": "Available languages: %s"
+  "cmd.locale.available": "Available languages: %s",
+  "cmd.only_players.locale": "Only players can use /%s locale.",
+  "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
+  "cmd.locale.current_default": "Your locale: server default (%s)",
+  "cmd.locale.current": "Your locale: %s",
+  "cmd.locale.cleared": "Locale preference cleared, using server default.",
+  "cmd.locale.set": "Locale set to %s."
 }

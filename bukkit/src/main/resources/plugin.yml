@@ -1,6 +1,6 @@
 name: DoubleDoors
 version: ${project.version}
-main: me.szabee.doubledoors.DoubleDoors
+main: me.szabee.doubledoors.bukkit.DoubleDoors
 api-version: '1.21'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
