@@ -1,15 +1,18 @@
 package me.szabee.doubledoors.proxy;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import org.junit.jupiter.api.Test;
 import java.sql.SQLException;
+import java.lang.reflect.Method;
 import java.util.UUID;
+import org.junit.jupiter.api.Test;
 
 final class ProxySqlClientTest {
 
@@ -45,5 +48,23 @@ final class ProxySqlClientTest {
       client.close();
       // Cleanup database file handled by being in target/
     }
+  }
+
+  @Test
+  void testUppercaseJdbcUrlStillDetectsDriver() {
+    assertDoesNotThrow(() -> {
+      ProxySqlClient client = new ProxySqlClient("JDBC:SQLITE:target/test-uppercase-url.db", "", "");
+      client.close();
+    });
+  }
+
+  @Test
+  void testUnknownJdbcUrlDoesNotForceDriverDetection() {
+    assertDoesNotThrow(() -> {
+      Method method = ProxySqlClient.class.getDeclaredMethod("detectDriverClassName", String.class);
+      method.setAccessible(true);
+
+      assertNull(method.invoke(null, "jdbc:h2:mem:test"));
+    });
   }
 }

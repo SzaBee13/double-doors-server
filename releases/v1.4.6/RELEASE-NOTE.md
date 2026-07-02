@@ -18,4 +18,6 @@ Release date: 2026-06-29
 
 ## Fixed
 
-- None.
+- Hardened proxy JDBC driver detection for uppercase URL prefixes.
+- Reused the same schema connection during proxy heartbeat table initialization.
+- Added regression coverage for proxy SQL client URL handling.

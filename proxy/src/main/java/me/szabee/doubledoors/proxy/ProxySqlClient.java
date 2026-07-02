@@ -63,7 +63,7 @@ public final class ProxySqlClient {
     if (databaseTypeEnd < 0) {
       return null;
     }
-    String databaseType = jdbcUrl.substring(5, databaseTypeEnd);
+    String databaseType = jdbcUrl.substring(5, databaseTypeEnd).toLowerCase();
     return switch (databaseType) {
       case "mysql", "mariadb" -> MYSQL_DRIVER;
       case "sqlite" -> SQLITE_DRIVER;
@@ -98,9 +98,11 @@ public final class ProxySqlClient {
     try (Connection connection = dataSource.getConnection();
       Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
+      executeAlterAddColumnIfAbsent(connection,
+        "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
+      executeAlterAddColumnIfAbsent(connection,
+        "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
     }
-    executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
-    executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
   }
 
   /**
@@ -125,9 +127,8 @@ public final class ProxySqlClient {
     }
   }
 
-  private void executeAlterAddColumnIfAbsent(String sql) throws SQLException {
-    try (Connection connection = dataSource.getConnection();
-      Statement statement = connection.createStatement()) {
+  private static void executeAlterAddColumnIfAbsent(Connection connection, String sql) throws SQLException {
+    try (Statement statement = connection.createStatement()) {
       statement.executeUpdate(sql);
     } catch (SQLException e) {
       String message = e.getMessage();
