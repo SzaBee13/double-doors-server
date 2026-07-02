@@ -17,6 +17,8 @@ Release date: 2026-06-29
 - Renamed `doubledoors-proxy` to `doubledoors-velocity`.
 - Split shared DoubleDoors code into a new `core` module for future loader support.
 - Moved the public API and translation contract into `core` so Bukkit stays loader-focused.
+- Optimized the Crowdin GitHub workflow to cancel superseded runs and sync locale files directly in `core/src/main/resources/lang`.
+- Updated Crowdin config/workflow to use direct translation paths in `core/src/main/resources/lang/%locale_with_underscore%.json` and keep `es_409`/`es_419` aliasing compatible.
 
 ## Fixed
 

@@ -3,5 +3,5 @@
 "preserve_hierarchy": false
 
 files:
-  - source: "/core/src/main/resources/lang/english/en_US.json"
-    translation: "/.crowdin/%locale_with_underscore%.json"
+  - source: "/core/src/main/resources/lang/en_US.json"
+    translation: "/core/src/main/resources/lang/%locale_with_underscore%.json"
