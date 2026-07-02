@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths:
-      - bukkit/src/main/resources/lang/english/en_US.json
+      - core/src/main/resources/lang/en_US.json
       - .crowdin.yml
   workflow_dispatch:
     inputs:
@@ -47,12 +47,8 @@ jobs:
           shopt -s nullglob
     
           files=(
-          bukkit/src/main/resources/lang/english/*.json
-          bukkit/src/main/resources/lang/french/*.json
-          bukkit/src/main/resources/lang/german/*.json
-          bukkit/src/main/resources/lang/portuguese/*.json
-          bukkit/src/main/resources/lang/spanish/*.json
-          bukkit/src/main/resources/lang/hu_HU.json
+      core/src/main/resources/lang/*.json
+      core/src/main/resources/lang/hu_HU.json
           )
     
           for file in "${files[@]}"; do

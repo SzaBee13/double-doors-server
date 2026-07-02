@@ -15,6 +15,8 @@ Release date: 2026-06-29
 ## Changed
 
 - Renamed `doubledoors-proxy` to `doubledoors-velocity`.
+- Split shared DoubleDoors code into a new `core` module for future loader support.
+- Moved the public API and translation contract into `core` so Bukkit stays loader-focused.
 
 ## Fixed
 

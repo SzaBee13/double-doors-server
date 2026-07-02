@@ -41,6 +41,7 @@ import me.szabee.doubledoors.listeners.DoorCacheInvalidationListener;
 import me.szabee.doubledoors.listeners.DoorInteractListener;
 import me.szabee.doubledoors.listeners.RedstoneListener;
 import me.szabee.doubledoors.migration.YamlToSqlMigrator;
+import me.szabee.doubledoors.storage.BukkitSharedSqlStorage;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
 import me.szabee.doubledoors.util.DoorUtil;
 import me.szabee.doubledoors.util.OpenableType;
@@ -534,7 +535,7 @@ public final class DoubleDoors extends JavaPlugin {
     return;
   }
 
-  SharedSqlStorage storage = new SharedSqlStorage(this, pluginConfig);
+  SharedSqlStorage storage = new BukkitSharedSqlStorage(this, pluginConfig);
   final int capturedGeneration = ++initGeneration;
   SchedulerBridge.runAsync(this, () -> {
     try {
