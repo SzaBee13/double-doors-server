@@ -1,15 +1,18 @@
-# Build
+# Build & Maven
 target/
 dist/
 build/
+.m2/
+
 # IDEs
 .idea/
-.vscode/*
+.vscode/
 !.vscode/extensions.json
-.codex
+.codex/
 
 # OS files
 .DS_Store
+Thumbs.db
 
 # Logs 
 logs/
@@ -24,6 +27,3 @@ wiki/
 .env.local
 .env.*.local
 !.env.example
-
-# Other
-.m2/

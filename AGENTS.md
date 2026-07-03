@@ -20,13 +20,15 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 
 | File | Role |
 | --- | --- |
-| [`DoubleDoors.java`](src/main/java/szabee13/doubledoors/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
-| [`PluginConfig.java`](src/main/java/szabee13/doubledoors/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
-| [`PlayerPreferences.java`](src/main/java/szabee13/doubledoors/config/PlayerPreferences.java) | Reads/writes `players.yml` (per-player settings, persistent) |
-| [`DoorInteractListener.java`](src/main/java/szabee13/doubledoors/listeners/DoorInteractListener.java) | Player right-click linking logic |
-| [`RedstoneListener.java`](src/main/java/szabee13/doubledoors/listeners/RedstoneListener.java) | Redstone power changes + villager AI door events |
-| [`DoorUtil.java`](src/main/java/szabee13/doubledoors/util/DoorUtil.java) | Block-search utilities (mirrored partner, BFS connected set) |
-| [`ProtectionCompat.java`](src/main/java/szabee13/doubledoors/util/ProtectionCompat.java) | Reflective GriefPrevention integration |
+| [`DoubleDoors.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
+| [`PluginConfig.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
+| [`PlayerPreferences.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PlayerPreferences.java) | Reads/writes `players.yml` (per-player settings, persistent) |
+| [`DoorInteractListener.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/DoorInteractListener.java) | Player right-click linking logic |
+| [`RedstoneListener.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/RedstoneListener.java) | Redstone power changes + villager AI door events |
+| [`DoorUtil.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/DoorUtil.java) | Block-search utilities (mirrored partner, BFS connected set) |
+| [`ProtectionCompat.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/ProtectionCompat.java) | Reflective GriefPrevention integration |
+| [`TranslationManager.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationManager.java) | Locale-aware translation lookups (player vs. console) |
+| [`TranslationCatalog.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationCatalog.java) | Language file loading, available-languages list |
 
 ## Coding conventions
 
@@ -60,8 +62,8 @@ When releasing a new version:
 
 ## Localization
 
-- Only `en_US` is updated by default; other locales inherit from it until explicitly localized.
-- When adding/modifying message keys, update `src/main/resources/lang/defaults.json` and `src/main/resources/lang/english/en_US.json` first.  
+- Only `en_US` is updated by default; other locales inherit from it until explicitly localized, but update the keys in the other language files.
+- When adding/modifying message keys, update `core/src/main/resources/lang/defaults.json` and `core/src/main/resources/lang/en_US.json` first.  
 - If localization for other languages is requested, propagate changes to all regional variants (en_GB, fr_FR, de_DE, etc.) to maintain consistency.
 - See `TRANSLATING.md` and skill translation for details on contributing translations via Crowdin.
 

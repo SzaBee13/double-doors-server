@@ -1,143 +1,120 @@
-# Whether to enable the recursive opening feature
-enableRecursiveOpening: true
+# =============================================================
+#  DoubleDoors Configuration
+# =============================================================
 
-# Maximum block distance for recursive search (1-32)
+# ── Core Features ────────────────────────────────────────────
+# Enable recursive opening (opens connected openables together)
+enableRecursiveOpening: true
+# Max blocks distance for recursive search (1-32)
 recursiveOpeningMaxBlocksDistance: 10
 
-# Whether double doors are enabled
+# Enable double-door behavior by block type
 enableDoors: true
-
-# Whether double fence gates are enabled
 enableFenceGates: true
-
-# Whether double trapdoors are enabled
 enableTrapdoors: true
 
-# Whether villagers trigger linked-door behavior (open/close partner doors when pathfinding)
+# Villagers trigger linked-door behavior when pathfinding
 enableVillagerLinkedDoors: true
 
-# Whether player-triggered opens should auto-close after a delay.
+# Player-triggered opens auto-close after a delay
 enableAutoClose: false
-
-# Delay in seconds before auto-closing an opened block.
 autoCloseDelaySeconds: 5
 
-# Whether players can left-click doors to play a local knock sound.
+# Players can left-click doors to play a knock sound
 enableKnockFeature: true
-
-# Maximum distance in blocks where players can hear the knock sound.
 knockDistanceBlocks: 12
 
-# Play a sound at linked partner blocks when DoubleDoors updates them.
+# ── Sound & Visual ──────────────────────────────────────────
+# Play sound at linked partner blocks on update
 playPartnerSound: true
-
-# Optional generic override sound for linked updates. Empty means no manual override.
+# Override sound for linked updates (empty = none)
 # Example: BLOCK_WOODEN_DOOR_OPEN
 partnerSound: ""
-
-# Optional per-type sound overrides.
+# Per-type overrides for the partner sound
 partnerSoundOverrides:
   doors: ""
   fenceGates: ""
   trapdoors: ""
 
-# Emit subtle particles on the linked partner block.
+# Emit particles on the linked partner block
 enablePartnerParticles: false
 partnerParticle: END_ROD
 partnerParticleCount: 6
 
-# Extra ticks to wait before mirroring partner state to improve animation sync.
+# Extra delay (ticks) before mirroring partner state for animation sync (0-4)
 animationSyncExtraDelayTicks: 0
 
-# Preview command visual options.
+# ── Preview Command ─────────────────────────────────────────
+# Particle used by /dd preview
 previewParticle: WAX_OFF
 previewParticleCount: 18
 previewDurationTicks: 60
 
-# Cache TTL for mirrored door lookups in milliseconds.
+# ── Performance ─────────────────────────────────────────────
+# Cache TTL for mirrored door lookups (milliseconds)
 lookupCacheTtlMillis: 1200
-
-# Cooldown in milliseconds before the same player can toggle the same block again.
-# Set to 0 to disable cooldown logic (duplicate-fire debounce still remains).
+# Cooldown before the same player can toggle the same block again (0 = disable)
 interactionCooldownMillis: 250
 
-# Exact location filter for linked behavior, format world:x:y:z.
+# ── Location Filters ────────────────────────────────────────
+# Restrict linked behavior by location (world:x:y:z)
 locationFilter:
   mode: DISABLED
   locations: []
 
-# Optional WorldGuard region filtering for linked behavior.
+# ── WorldGuard Compatibility ────────────────────────────────
 worldGuardRegionFilter:
   mode: DISABLED
   regions: []
 
-# Optional WorldGuard custom state-flag name.
+# Custom state-flag name
 worldGuardCustomFlag: double-doors-allow
-
-# Also enforce WorldGuard's build check for linked door actions.
+# Enforce WorldGuard build permission for linked actions
 worldGuardRespectBuildPermission: true
-
-# Also enforce WorldGuard's use flag for linked door actions.
+# Enforce WorldGuard use flag for linked actions
 worldGuardRespectUseFlag: true
 
-# GriefPrevention compatibility options
+# ── GriefPrevention Compatibility ──────────────────────────
 griefprevention:
+  # Require Build trust (vs Access trust) for linked doors
   requireBuildForLinkedDoors: false
 
-# Global on/off switch for all DoubleDoors behavior on this server
+# ── Global Toggle ───────────────────────────────────────────
 serverWideEnabled: true
 
-# Enable anonymous FastStats tracking
-# ALSO CHANGE IN plugins/faststats/config.properties
-# Info we track is public usage data and can be viewed at: https://faststats.dev/project/double-doors-server/minecraft-plugin
+# ── Analytics ───────────────────────────────────────────────
+# Anonymous FastStats usage metrics
+# All data is public: https://faststats.dev/project/double-doors-server/minecraft-plugin
 enableAnonymousTracking: true
 
-# Enable additional anonymous telemetry like server location, countries, Java version, and system statistics.
-enableExtendedAnonymousTracking: false
-
-# Optional list of countries you want associated with this server, for example:
-# trackingCountries:
-#   - US
-#   - DE
-trackingCountries: []
-
-# Optional human-readable server location label, such as EU, US-East, or Frankfurt.
-trackingServerLocation: ""
-
-# Active plugin language code.
-# You can use full codes (e.g. en_US, de_DE) or aliases (e.g. en -> en_US).
-# Built-in language files are loaded from subfolders under: lang/
-# Custom language files can be added to: plugins/DoubleDoors/lang/
+# ── Language ────────────────────────────────────────────────
+# Server-wide language (full code or alias, e.g. en_US)
 language: en_US
+# Allow players to set their own locale via /dd locale
+# Console logs always use the server language above
+perPlayerLocaleEnabled: false
 
-# Shared SQL storage configuration (Bukkit + proxy can use the same database).
+# ── SQL Storage ─────────────────────────────────────────────
 sql:
-  # If false, YAML files (players.yml, claims.yml) remain the active storage.
   enabled: false
-
-  # Examples:
   # sqlite: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
-  # mysql: jdbc:mysql://127.0.0.1:3306/doubledoors
+  # mysql:  jdbc:mysql://127.0.0.1:3306/doubledoors
   jdbcUrl: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
-
-  # Leave empty for SQLite.
   username: ""
   password: ""
-
-  # Run a one-time import from existing YAML files into SQL.
+  # One-time import from existing YAML files
   migrateFromYaml: true
-
-  # Bukkit considers proxy heartbeats newer than this when detecting proxy-side Geyser/Floodgate.
+  # Max age of proxy heartbeats for Geyser/Floodgate detection (seconds)
   proxyHeartbeatMaxAgeSeconds: 180
 
-# Built-in updater configuration (PluginUpdater shadeable API).
-# If a separate PluginUpdater plugin is installed, this plugin's own update checker is disabled automatically.
+# ── Update Checker ──────────────────────────────────────────
+# Disabled when a separate PluginUpdater plugin is detected
 updateChecker:
-  # Enable automatic checks for new releases.
   enabled: true
-
-  # How often to check for updates, in seconds (300-86400).
   checkScheduleSeconds: 3600
-
-  # Notify online players with permission when an update is available.
+  # Notify players with the doubledoors.update.notify permission
   notify: true
+
+# ── Debug Mode ───────────────────────────────────────────────
+# Enable verbose console logging for troubleshooting
+debug: false

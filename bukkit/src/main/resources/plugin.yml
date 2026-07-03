@@ -1,6 +1,6 @@
 name: DoubleDoors
 version: ${project.version}
-main: me.szabee.doubledoors.DoubleDoors
+main: me.szabee.doubledoors.bukkit.DoubleDoors
 api-version: '1.21'
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
@@ -10,7 +10,7 @@ commands:
   doubledoors:
     description: Main DoubleDoors command
     aliases: [dd]
-    usage: /doubledoors <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>
+    usage: /doubledoors <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|locale [code]|server-toggle|grief villagers|debug|preview>
 permissions:
   doubledoors.use:
     description: Allows using DoubleDoors linked opening behavior
@@ -38,6 +38,9 @@ permissions:
     default: true
   doubledoors.toggle.knock:
     description: Allows toggling personal knock-sound preference
+    default: true
+  doubledoors.locale:
+    description: Allows changing the per-player locale when enabled in config
     default: true
   doubledoors.server-toggle:
     description: Allows toggling DoubleDoors server-wide behavior
