@@ -38,7 +38,7 @@ Release date: YYYY-MM-DD
 ## Artifacts
 
 - Bukkit/Spigot/Paper/Purpur: doubledoors-bukkit-X.Y.Z.jar
-- Optional proxy companion: doubledoors-proxy-X.Y.Z.jar
+- Velocity: doubledoors-velocity-X.Y.Z.jar
 
 ## Notes
 
