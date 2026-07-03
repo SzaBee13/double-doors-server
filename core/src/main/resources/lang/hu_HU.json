@@ -1,7 +1,6 @@
 {
-  "credits": [
-  "SzaBee13"
-  ],
+  "credits": ["SzaBee13"],
+  "language.name": "Magyar (Magyarország)",
   "log.luckperms_detected": "LuckPerms észlelve: a jogosultságok a doubledoors.* csomópontokon keresztül vannak kezelve.",
   "log.griefprevention_detected": "GriefPrevention észlelve: csatlakoztattot ajtók mostatntól tisztelve lesznek a területeken.",
   "log.worldguard_detected": "WorldGuard észlelve: a csatlakoztatott ajtók nyitása figyelembe veszi a terület szabályokat.",

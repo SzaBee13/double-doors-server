@@ -1,7 +1,6 @@
 {
-  "credits": [
-  "SzaBee13"
-  ],
+  "credits": ["SzaBee13"],
+  "language.name": "Українська (Україна)",  
   "log.luckperms_detected": "",
   "log.griefprevention_detected": "",
   "log.worldguard_detected": "",

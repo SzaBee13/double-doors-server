@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -643,6 +644,7 @@ public final class DoubleDoors extends JavaPlugin {
           return bFactory.create();
         })
         .create();
+      context.getLoggerFactory().setDebug(pluginConfig.isDebug());
       context.ready();
       metricsContext = context;
     } catch (RuntimeException e) {
@@ -840,7 +842,7 @@ public final class DoubleDoors extends JavaPlugin {
     // /doubledoors toggle [doors|gates|trapdoors|autoclose|knock]
     if (args.length >= 2) {
     if (!sender.hasPermission("doubledoors.toggle")) {
-      sender.sendMessage(t("cmd.no_permission"));
+      sender.sendMessage(t(player, "cmd.no_permission"));
       return true;
     }
     
@@ -848,43 +850,43 @@ public final class DoubleDoors extends JavaPlugin {
     switch (args[1].toLowerCase()) {
       case "doors" -> {
       boolean next = playerPreferences.toggleDoors(uuid);
-      sender.sendMessage(next ? t("cmd.toggle.doors.enabled") : t("cmd.toggle.doors.disabled"));
+      sender.sendMessage(next ? t(player, "cmd.toggle.doors.enabled") : t(player, "cmd.toggle.doors.disabled"));
       }
       case "gates" -> {
       boolean next = playerPreferences.toggleFenceGates(uuid);
-      sender.sendMessage(next ? t("cmd.toggle.gates.enabled") : t("cmd.toggle.gates.disabled"));
+      sender.sendMessage(next ? t(player, "cmd.toggle.gates.enabled") : t(player, "cmd.toggle.gates.disabled"));
       }
       case "trapdoors" -> {
       boolean next = playerPreferences.toggleTrapdoors(uuid);
-      sender.sendMessage(next ? t("cmd.toggle.trapdoors.enabled") : t("cmd.toggle.trapdoors.disabled"));
+      sender.sendMessage(next ? t(player, "cmd.toggle.trapdoors.enabled") : t(player, "cmd.toggle.trapdoors.disabled"));
       }
       case "autoclose" -> {
       if (!sender.hasPermission("doubledoors.toggle.autoclose")) {
-        sender.sendMessage(t("cmd.no_permission"));
+        sender.sendMessage(t(player, "cmd.no_permission"));
         return true;
       }
       boolean next = playerPreferences.toggleAutoClose(uuid);
-      sender.sendMessage(next ? t("cmd.toggle.autoclose.enabled") : t("cmd.toggle.autoclose.disabled"));
+      sender.sendMessage(next ? t(player, "cmd.toggle.autoclose.enabled") : t(player, "cmd.toggle.autoclose.disabled"));
       }
       case "knock" -> {
       if (!sender.hasPermission("doubledoors.toggle.knock")) {
-        sender.sendMessage(t("cmd.no_permission"));
+        sender.sendMessage(t(player, "cmd.no_permission"));
         return true;
       }
       boolean next = playerPreferences.toggleKnockSound(uuid);
-      sender.sendMessage(next ? t("cmd.toggle.knock.enabled") : t("cmd.toggle.knock.disabled"));
+      sender.sendMessage(next ? t(player, "cmd.toggle.knock.enabled") : t(player, "cmd.toggle.knock.disabled"));
       }
-      default -> sender.sendMessage(t("cmd.usage.toggle", label));
+      default -> sender.sendMessage(t(player, "cmd.usage.toggle", label));
     }
     return true;
     }
 
     if (!sender.hasPermission("doubledoors.toggle")) {
-    sender.sendMessage(t("cmd.no_permission"));
+    sender.sendMessage(t(player, "cmd.no_permission"));
     return true;
     }
     boolean enabled = playerPreferences.toggleAll(player.getUniqueId());
-    sender.sendMessage(enabled ? t("cmd.toggle.all.enabled") : t("cmd.toggle.all.disabled"));
+    sender.sendMessage(enabled ? t(player, "cmd.toggle.all.enabled") : t(player, "cmd.toggle.all.disabled"));
     return true;
   }
 
@@ -899,10 +901,17 @@ public final class DoubleDoors extends JavaPlugin {
     }
     if (args.length == 1) {
       String current = playerPreferences.getLocale(player.getUniqueId());
-      sender.sendMessage(current.isBlank()
-        ? t(player, "cmd.locale.current_default", pluginConfig.getLanguage())
-        : t(player, "cmd.locale.current", current));
-      String langs = String.join(", ", translationManager.getAvailableLanguages());
+      if (current.isBlank()) {
+        String defaultCode = pluginConfig.getLanguage();
+        sender.sendMessage(t(player, "cmd.locale.current_default",
+          translationManager.getLanguageName(defaultCode)));
+      } else {
+        sender.sendMessage(t(player, "cmd.locale.current",
+          translationManager.getLanguageName(current)));
+      }
+      String langs = translationManager.getAvailableLanguages().stream()
+        .map(translationManager::getLanguageName)
+        .collect(Collectors.joining(", "));
       sender.sendMessage(t(player, "cmd.locale.available", langs));
       return true;
     }
@@ -911,7 +920,8 @@ public final class DoubleDoors extends JavaPlugin {
     if (normalized.isBlank()) {
       sender.sendMessage(t(player, "cmd.locale.cleared"));
     } else {
-      sender.sendMessage(t(player, "cmd.locale.set", normalized));
+      sender.sendMessage(t(player, "cmd.locale.set",
+        translationManager.getLanguageName(normalized)));
     }
     return true;
     }
@@ -922,11 +932,11 @@ public final class DoubleDoors extends JavaPlugin {
     return true;
     }
     if (!sender.hasPermission("doubledoors.knock.volume")) {
-    sender.sendMessage(t("cmd.no_permission"));
+    sender.sendMessage(t(player, "cmd.no_permission"));
     return true;
     }
     if (args.length < 2) {
-    sender.sendMessage(t("cmd.usage.knock_volume", label));
+    sender.sendMessage(t(player, "cmd.usage.knock_volume", label));
     return true;
     }
 
@@ -934,22 +944,22 @@ public final class DoubleDoors extends JavaPlugin {
     try {
     volume = Double.parseDouble(args[1]);
     } catch (NumberFormatException ex) {
-    sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+    sender.sendMessage(t(player, "cmd.knock_volume.invalid", args[1]));
     return true;
     }
 
     if (!Double.isFinite(volume)) {
-    sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+    sender.sendMessage(t(player, "cmd.knock_volume.invalid", args[1]));
     return true;
     }
 
     if (volume < 0.0 || volume > 1.0) {
-    sender.sendMessage(t("cmd.knock_volume.invalid", args[1]));
+    sender.sendMessage(t(player, "cmd.knock_volume.invalid", args[1]));
     return true;
     }
 
     double normalized = playerPreferences.setKnockVolume(player.getUniqueId(), volume);
-    sender.sendMessage(t("cmd.knock_volume.set", normalized));
+    sender.sendMessage(t(player, "cmd.knock_volume.set", normalized));
     return true;
   }
 
@@ -973,12 +983,12 @@ public final class DoubleDoors extends JavaPlugin {
     return true;
     }
     if (!sender.hasPermission("doubledoors.debug")) {
-    sender.sendMessage(t("cmd.no_permission"));
+    sender.sendMessage(t(player, "cmd.no_permission"));
     return true;
     }
 
     boolean enabled = toggleDebug(player);
-    sender.sendMessage(enabled ? t("cmd.debug.enabled") : t("cmd.debug.disabled"));
+    sender.sendMessage(enabled ? t(player, "cmd.debug.enabled") : t(player, "cmd.debug.disabled"));
     return true;
   }
 
@@ -988,7 +998,7 @@ public final class DoubleDoors extends JavaPlugin {
     return true;
     }
     if (!sender.hasPermission("doubledoors.preview")) {
-    sender.sendMessage(t("cmd.no_permission"));
+    sender.sendMessage(t(player, "cmd.no_permission"));
     return true;
     }
 
@@ -1003,12 +1013,12 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (!sender.hasPermission("doubledoors.grief")) {
-    sender.sendMessage(t("cmd.no_permission"));
+    sender.sendMessage(t(player, "cmd.no_permission"));
     return true;
     }
 
     if (args.length < 2 || !args[1].equalsIgnoreCase("villagers")) {
-    sender.sendMessage(t("cmd.usage.grief", label));
+    sender.sendMessage(t(player, "cmd.usage.grief", label));
     return true;
     }
 
@@ -1016,19 +1026,19 @@ public final class DoubleDoors extends JavaPlugin {
     Block standingBlock = playerLocation.getBlock();
     long claimId = ProtectionCompat.getClaimIdAt(this, standingBlock);
     if (claimId < 0) {
-    sender.sendMessage(t("cmd.grief.no_claim"));
+    sender.sendMessage(t(player, "cmd.grief.no_claim"));
     return true;
     }
 
     if (!ProtectionCompat.isClaimManagerAt(this, player, standingBlock)) {
-    sender.sendMessage(t("cmd.grief.no_manage_permission"));
+    sender.sendMessage(t(player, "cmd.grief.no_manage_permission"));
     return true;
     }
 
     boolean blocked = claimSettings.toggleVillagersBlocked(claimId);
     sender.sendMessage(blocked
-      ? t("cmd.grief.villagers.blocked")
-      : t("cmd.grief.villagers.allowed"));
+      ? t(player, "cmd.grief.villagers.blocked")
+      : t(player, "cmd.grief.villagers.allowed"));
     return true;
   }
 
@@ -1074,11 +1084,11 @@ public final class DoubleDoors extends JavaPlugin {
   private void showPreview(Player player) {
   Block origin = player.getTargetBlockExact(8);
   if (origin == null) {
-    player.sendMessage(t("cmd.preview.no_target"));
+    player.sendMessage(t(player, "cmd.preview.no_target"));
     return;
   }
   if (!DoorInteractListener.isEnabledTypeForDebug(origin.getType(), pluginConfig, this)) {
-    player.sendMessage(t("cmd.preview.unsupported", origin.getType().name()));
+    player.sendMessage(t(player, "cmd.preview.unsupported", origin.getType().name()));
     return;
   }
 
@@ -1090,7 +1100,7 @@ public final class DoubleDoors extends JavaPlugin {
     result = DoorUtil.analyzeCornerDoorPartner(origin);
     }
     if (!result.found()) {
-    player.sendMessage(t("cmd.preview.not_found", result.reason()));
+    player.sendMessage(t(player, "cmd.preview.not_found", result.reason()));
     return;
     }
     partner = result.partner();
@@ -1098,7 +1108,7 @@ public final class DoubleDoors extends JavaPlugin {
   } else {
     var connected = DoorUtil.findConnectedDoors(origin, pluginConfig.getRecursiveOpeningMaxBlocksDistance());
     if (connected.isEmpty()) {
-    player.sendMessage(t("cmd.preview.not_found", "no_connected_block"));
+    player.sendMessage(t(player, "cmd.preview.not_found", "no_connected_block"));
     return;
     }
     partner = connected.iterator().next();
@@ -1106,7 +1116,7 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   Location center = partner.getLocation().add(0.5, 0.5, 0.5);
-  player.sendMessage(t(
+  player.sendMessage(t(player,
     "cmd.preview.found",
     partner.getWorld().getName(),
     partner.getX(),

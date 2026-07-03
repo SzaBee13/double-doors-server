@@ -1,5 +1,6 @@
 {
   "credits": ["SzaBee13"],
+  "language.name": "Español (América Latina)",
   "log.luckperms_detected": "LuckPerms detectado: los permisos se gestionan mediante nodos doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: las aperturas de puertas vinculadas respetarán las comprobaciones de construcción en claims.",
   "log.worldguard_detected": "WorldGuard detectado: las aperturas de puertas vinculadas respetarán las reglas de región y los flags personalizados.",

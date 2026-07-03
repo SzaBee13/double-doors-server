@@ -82,6 +82,16 @@ public final class TranslationManager {
     return TranslationCatalog.getAvailableLanguages(plugin);
   }
 
+  /**
+   * Returns the display name for a language code (from the {@code language.name} key),
+   * falling back to the language code itself if not found.
+   */
+  public String getLanguageName(String languageCode) {
+    ensureLoaded(languageCode);
+    String name = lookup(languageCode, "language.name");
+    return name != null && !"language.name".equals(name) ? name : languageCode;
+  }
+
   private void ensureLoaded(String languageCode) {
     if (!translations.containsKey(languageCode)) {
       Map<String, String> loaded = TranslationCatalog.loadLanguageFile(plugin, languageCode);

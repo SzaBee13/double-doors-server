@@ -138,6 +138,8 @@ public final class PluginConfig {
 
   boolean enableAnonymousTracking = plugin.getConfig().getBoolean("enableAnonymousTracking", true);
 
+  boolean debug = plugin.getConfig().getBoolean("debug", false);
+
   boolean sqlEnabled = plugin.getConfig().getBoolean("sql.enabled", false);
   String sqlJdbcUrl = plugin.getConfig().getString("sql.jdbcUrl", "jdbc:sqlite:plugins/DoubleDoors/doubledoors.db");
   if (sqlJdbcUrl == null || sqlJdbcUrl.isBlank()) {
@@ -211,6 +213,7 @@ public final class PluginConfig {
     worldGuardRespectUseFlag,
     griefPreventionRequireBuildForLinkedDoors,
     enableAnonymousTracking,
+    debug,
     language,
     perPlayerLocaleEnabled,
     sqlEnabled,
@@ -510,6 +513,15 @@ public final class PluginConfig {
   }
 
   /**
+   * Gets whether debug mode is enabled.
+   *
+   * @return true when debug mode is enabled
+   */
+  public boolean isDebug() {
+  return snapshot.debug();
+  }
+
+  /**
    * Gets the configured plugin language code.
    *
    * @return language code such as {@code en_US}
@@ -654,6 +666,7 @@ public final class PluginConfig {
     boolean worldGuardRespectUseFlag,
     boolean griefPreventionRequireBuildForLinkedDoors,
     boolean enableAnonymousTracking,
+    boolean debug,
     String language,
     boolean perPlayerLocaleEnabled,
     boolean sqlEnabled,
@@ -702,6 +715,7 @@ public final class PluginConfig {
       true,
       false,
       true,
+      false,
       "en_US",
       false,
       false,
@@ -751,6 +765,7 @@ public final class PluginConfig {
       worldGuardRespectUseFlag,
       griefPreventionRequireBuildForLinkedDoors,
       enableAnonymousTracking,
+      debug,
       language,
       perPlayerLocaleEnabled,
       sqlEnabled,
