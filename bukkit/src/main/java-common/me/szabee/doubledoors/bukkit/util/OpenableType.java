@@ -6,12 +6,19 @@ import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Gate;
 import org.bukkit.block.data.type.TrapDoor;
 
+/**
+ * Types of openable blocks supported by DoubleDoors linking.
+ */
 public enum OpenableType {
   DOOR,
   FENCE_GATE,
   TRAPDOOR,
   CUSTOM;
 
+  /**
+   * Returns the matching {@link OpenableType} for the given material,
+   * or {@code null} if the material is not an openable block.
+   */
   public static OpenableType fromMaterial(Material material) {
     if (material == null) {
       return null;
@@ -29,6 +36,13 @@ public enum OpenableType {
     return null;
   }
 
+  /**
+   * Resolves the openable type from block data, falling back to material-based detection.
+   *
+   * @param blockData the block data to inspect
+   * @param material  fallback material when block data alone is insufficient
+   * @return the resolved type, or {@code null} if neither source matches
+   */
   public static OpenableType fromBlockData(BlockData blockData, Material material) {
     if (blockData instanceof Door) {
       return DOOR;

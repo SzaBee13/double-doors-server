@@ -23,10 +23,6 @@ import me.szabee.doubledoors.bukkit.config.PluginConfig;
 /**
  * Optional protection-plugin compatibility hooks.
  */
-
-/**
- * Optional protection-plugin compatibility hooks.
- */
 public final class ProtectionCompat {
   private ProtectionCompat() {
   }
@@ -85,7 +81,7 @@ public final class ProtectionCompat {
     }
   }
 
-  String worldGuardReason = evaluateWorldGuard(plugin.getPluginConfig(), player, linkedBlock);
+  String worldGuardReason = evaluateWorldGuard(plugin, plugin.getPluginConfig(), player, linkedBlock);
   if (!worldGuardReason.isEmpty()) {
     return worldGuardReason;
   }
@@ -110,7 +106,7 @@ public final class ProtectionCompat {
   try {
     Field dataStoreField = gpClass.getField("dataStore");
     return dataStoreField.get(griefPrevention);
-  } catch (NoSuchFieldException ignored) {
+  } catch (NoSuchFieldException e) {
     Field dataStoreField = gpClass.getDeclaredField("dataStore");
     dataStoreField.setAccessible(true);
     return dataStoreField.get(griefPrevention);
@@ -379,7 +375,7 @@ public final class ProtectionCompat {
   return "";
   }
 
-  private static String evaluateWorldGuard(PluginConfig config, Player player, Block block) {
+  private static String evaluateWorldGuard(DoubleDoors plugin, PluginConfig config, Player player, Block block) {
   Plugin worldGuardPlugin = Bukkit.getPluginManager().getPlugin("WorldGuard");
   if (worldGuardPlugin == null || !worldGuardPlugin.isEnabled()) {
     return "";
@@ -396,7 +392,8 @@ public final class ProtectionCompat {
       return "worldguard_build_denied";
     }
     } catch (ReflectiveOperationException ex) {
-    // Fail open to keep compatibility resilient.
+      // Fail open to keep compatibility resilient.
+      plugin.getLogger().fine("WorldGuard build-permission check failed: " + ex.getMessage());
     }
   }
 
@@ -495,7 +492,7 @@ public final class ProtectionCompat {
       if (normalized.contains("allow")) {
       return "allow";
       }
-    } catch (ReflectiveOperationException ignored) {
+    } catch (ReflectiveOperationException ex) {
       // Move to the next region.
     }
     }

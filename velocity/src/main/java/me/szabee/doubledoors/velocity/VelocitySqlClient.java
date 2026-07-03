@@ -65,7 +65,7 @@ public final class VelocitySqlClient {
     }
     String databaseType = jdbcUrl.substring(5, databaseTypeEnd).toLowerCase();
     return switch (databaseType) {
-      case "mysql", "mariadb" -> MYSQL_DRIVER;
+      case "mysql" -> MYSQL_DRIVER;
       case "sqlite" -> SQLITE_DRIVER;
       default -> null;
     };

@@ -87,7 +87,8 @@ public final class PlayerPreferences {
     double knockVolume = normalizeKnockVolume(data.getDouble(key + ".knockVolume", DEFAULT_KNOCK_VOLUME));
     String locale = normalizeLocale(data.getString(key + ".locale", ""));
     cache.put(uuid, new PlayerPref(enabled, doors, gates, trapdoors, autoClose, knockSound, knockVolume, locale));
-    } catch (IllegalArgumentException ignored) {
+    } catch (IllegalArgumentException e) {
+      plugin.getLogger().fine("Skipping malformed player entry in players.yml: " + e.getMessage());
     }
   }
   }
@@ -245,47 +246,85 @@ public final class PlayerPreferences {
   return cache.computeIfAbsent(uuid, k -> new PlayerPref(true, true, true, true, true, true, DEFAULT_KNOCK_VOLUME, ""));
   }
 
-  /** Returns whether the player has not globally disabled linked-door behavior. */
+  /**
+   * Returns whether the player has not globally disabled linked-door behavior.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isEnabled(UUID uuid) {
   return getOrDefault(uuid).enabled();
   }
 
-  /** Returns whether the player has doors linking enabled. */
+  /**
+   * Returns whether the player has doors linking enabled.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isDoorsEnabled(UUID uuid) {
   return getOrDefault(uuid).enableDoors();
   }
 
-  /** Returns whether the player has fence-gate linking enabled. */
+  /**
+   * Returns whether the player has fence-gate linking enabled.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isFenceGatesEnabled(UUID uuid) {
   return getOrDefault(uuid).enableFenceGates();
   }
 
-  /** Returns whether the player has trapdoor linking enabled. */
+  /**
+   * Returns whether the player has trapdoor linking enabled.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isTrapdoorsEnabled(UUID uuid) {
   return getOrDefault(uuid).enableTrapdoors();
   }
 
-  /** Returns whether the player has auto-close enabled for their interactions. */
+  /**
+   * Returns whether the player has auto-close enabled for their interactions.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isAutoCloseEnabled(UUID uuid) {
   return getOrDefault(uuid).enableAutoClose();
   }
 
-  /** Returns whether the player has knock sound enabled for their interactions. */
+  /**
+   * Returns whether the player has knock sound enabled for their interactions.
+   *
+   * @param uuid the player's UUID
+   */
   public boolean isKnockSoundEnabled(UUID uuid) {
   return getOrDefault(uuid).enableKnockSound();
   }
 
-  /** Returns the player's knock sound volume (0.0-1.0). */
+  /**
+   * Returns the player's knock sound volume (0.0-1.0).
+   *
+   * @param uuid the player's UUID
+   */
   public double getKnockVolume(UUID uuid) {
   return getOrDefault(uuid).knockVolume();
   }
 
-  /** Returns the player's preferred locale override, or blank when unset. */
+  /**
+   * Returns the player's preferred locale override, or blank when unset.
+   *
+   * @param uuid the player's UUID
+   */
   public String getLocale(UUID uuid) {
   return getOrDefault(uuid).locale();
   }
 
-  /** Sets the player's preferred locale override. */
+  /**
+   * Sets the player's preferred locale override.
+   *
+   * @param uuid   the player's UUID
+   * @param locale the new locale code
+   * @return the normalized locale string
+   */
   public String setLocale(UUID uuid, String locale) {
   PlayerPref current = getOrDefault(uuid);
   String normalized = normalizeLocale(locale);
@@ -302,7 +341,12 @@ public final class PlayerPreferences {
   return normalized;
   }
 
-  /** Toggles the player's global linked-door on/off switch. */
+  /**
+   * Toggles the player's global linked-door on/off switch.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleAll(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enabled();
@@ -311,7 +355,12 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Toggles the door-linking preference for the given player. */
+  /**
+   * Toggles the door-linking preference for the given player.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleDoors(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableDoors();
@@ -320,7 +369,12 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Toggles the fence-gate-linking preference for the given player. */
+  /**
+   * Toggles the fence-gate-linking preference for the given player.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleFenceGates(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableFenceGates();
@@ -329,7 +383,12 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Toggles the trapdoor-linking preference for the given player. */
+  /**
+   * Toggles the trapdoor-linking preference for the given player.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleTrapdoors(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableTrapdoors();
@@ -338,7 +397,12 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Toggles auto-close preference for the given player. */
+  /**
+   * Toggles auto-close preference for the given player.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleAutoClose(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableAutoClose();
@@ -347,7 +411,12 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Toggles knock-sound preference for the given player. */
+  /**
+   * Toggles knock-sound preference for the given player.
+   *
+   * @param uuid the player's UUID
+   * @return the new state
+   */
   public boolean toggleKnockSound(UUID uuid) {
   PlayerPref current = getOrDefault(uuid);
   boolean next = !current.enableKnockSound();
@@ -356,7 +425,13 @@ public final class PlayerPreferences {
   return next;
   }
 
-  /** Sets the player's knock volume preference. */
+  /**
+   * Sets the player's knock volume preference.
+   *
+   * @param uuid   the player's UUID
+   * @param volume the new volume (clamped to 0.0-1.0)
+   * @return the normalized volume
+   */
   public double setKnockVolume(UUID uuid, double volume) {
   PlayerPref current = getOrDefault(uuid);
   double normalized = normalizeKnockVolume(volume);

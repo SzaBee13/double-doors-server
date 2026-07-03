@@ -1,8 +1,8 @@
 package me.szabee.doubledoors.i18n;
 
-import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Shared translation resolver.
@@ -11,12 +11,18 @@ public final class TranslationManager {
   private final TranslationCatalog catalog;
   private final String defaultLanguage;
   private final Map<String, Map<String, String>> translations;
-  private String activeLanguage;
+  private volatile String activeLanguage;
 
+  /**
+   * Creates a translation manager.
+   *
+   * @param catalog         translation catalog providing language data
+   * @param defaultLanguage fallback language code used when no translation is found
+   */
   public TranslationManager(TranslationCatalog catalog, String defaultLanguage) {
     this.catalog = catalog;
     this.defaultLanguage = defaultLanguage;
-    this.translations = new HashMap<>();
+    this.translations = new ConcurrentHashMap<>();
     this.activeLanguage = defaultLanguage;
   }
 
@@ -29,10 +35,12 @@ public final class TranslationManager {
     if (!loaded.isEmpty()) {
       translations.put(languageCode, loaded);
     }
-    // ensure default is loaded
+    // ensure default is loaded (only cache non-empty loads so retries can work)
     if (!translations.containsKey(defaultLanguage)) {
       Map<String, String> defaults = catalog.load(defaultLanguage);
-      translations.put(defaultLanguage, defaults);
+      if (!defaults.isEmpty()) {
+        translations.put(defaultLanguage, defaults);
+      }
     }
   }
 
@@ -78,7 +86,7 @@ public final class TranslationManager {
     Map<String, String> map = translations.get(languageCode);
     if (map != null) {
       String value = map.get(key);
-      if (value != null) {
+      if (value != null && !value.isEmpty()) {
         return value;
       }
     }
@@ -86,7 +94,7 @@ public final class TranslationManager {
     Map<String, String> active = translations.get(activeLanguage);
     if (active != null && !languageCode.equals(activeLanguage)) {
       String value = active.get(key);
-      if (value != null) {
+      if (value != null && !value.isEmpty()) {
         return value;
       }
     }
@@ -94,7 +102,7 @@ public final class TranslationManager {
     Map<String, String> def = translations.get(defaultLanguage);
     if (def != null && !languageCode.equals(defaultLanguage) && !activeLanguage.equals(defaultLanguage)) {
       String value = def.get(key);
-      if (value != null) {
+      if (value != null && !value.isEmpty()) {
         return value;
       }
     }

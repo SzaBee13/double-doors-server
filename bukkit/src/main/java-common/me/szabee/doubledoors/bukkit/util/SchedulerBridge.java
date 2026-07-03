@@ -11,10 +11,19 @@ import org.bukkit.Location;
 import org.bukkit.scheduler.BukkitTask;
 import org.bukkit.plugin.Plugin;
 
+/**
+ * Folia-aware scheduling bridge.
+ *
+ * <p>Attempts to use Folia's region/global/async schedulers via reflection;
+ * falls back to the standard Bukkit scheduler when Folia is unavailable.</p>
+ */
 public final class SchedulerBridge {
   private SchedulerBridge() {
   }
 
+  /**
+   * Runs a task on the next server tick on the global (main) thread.
+   */
   public static void runNextTick(Plugin plugin, Runnable task) {
     if (runFoliaGlobal(plugin, task, 1L)) {
       return;
@@ -22,6 +31,10 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTask(plugin, task);
   }
 
+  /**
+   * Runs a task after a delay on the region thread for the given location
+   * (Folia), or on the main thread (Bukkit fallback).
+   */
   public static void runLaterAtLocation(Plugin plugin, Location location, long delayTicks, Runnable task) {
     if (runFoliaRegion(plugin, location, delayTicks, task)) {
       return;
@@ -29,6 +42,9 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTaskLater(plugin, task, delayTicks);
   }
 
+  /**
+   * Runs a task asynchronously.
+   */
   public static void runAsync(Plugin plugin, Runnable task) {
     if (runFoliaAsync(plugin, task)) {
       return;
@@ -36,6 +52,9 @@ public final class SchedulerBridge {
     plugin.getServer().getScheduler().runTaskAsynchronously(plugin, task);
   }
 
+  /**
+   * Runs a repeating async timer task. Returns a {@link TaskToken} that can be used to cancel it.
+   */
   public static TaskToken runTimerAsync(Plugin plugin, long delayTicks, long periodTicks, Runnable task) {
     TaskToken foliaTask = runFoliaTimerAsync(plugin, delayTicks, periodTicks, task);
     if (foliaTask != null) {

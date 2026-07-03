@@ -74,8 +74,8 @@ public final class YamlToSqlMigrator {
     } else {
       success = false;
     }
-    } catch (IllegalArgumentException ignored) {
-    // Ignore unexpected top-level keys.
+    } catch (IllegalArgumentException e) {
+      plugin.getLogger().fine("Skipping unexpected key in players.yml: " + e.getMessage());
     }
   }
   plugin.getLogger().info(String.format("DoubleDoors migrated %d player preference rows from players.yml.", migrated));

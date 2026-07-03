@@ -15,9 +15,13 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.block.data.Bisected;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Door;
-import org.bukkit.block.data.type.Gate;
-import org.bukkit.block.data.type.TrapDoor;
 
+/**
+ * Door-matching and block-search utilities.
+ *
+ * <p>Provides mirror-door partner detection (hinge-based), corner-door detection,
+ * recursive connected-block BFS, and a TTL-backed cache for mirror search results.</p>
+ */
 public final class DoorUtil {
   private static final ConcurrentMap<MirrorCacheKey, MirrorCacheEntry> MIRROR_CACHE = new ConcurrentHashMap<>();
   private static final int MIRROR_CACHE_MAX_SIZE = 4_096;
@@ -28,6 +32,9 @@ public final class DoorUtil {
   private DoorUtil() {
   }
 
+  /**
+   * Sets the TTL for mirror-cache entries (minimum 1ms).
+   */
   public static void setMirrorCacheTtlMillis(long ttlMillis) {
     if (ttlMillis < 1L) {
       mirrorCacheTtlMillis = 1L;
@@ -36,11 +43,23 @@ public final class DoorUtil {
     mirrorCacheTtlMillis = ttlMillis;
   }
 
+  /**
+   * Finds the mirrored partner of a double door, or {@code null} when no partner exists.
+   *
+   * @param origin one half of a door block
+   * @return the partner door's bottom block, or {@code null}
+   */
   public static Block findMirroredDoubleDoorPartner(Block origin) {
     MirrorSearchResult analyzed = analyzeMirroredDoubleDoorPartner(origin);
     return analyzed.partner();
   }
 
+  /**
+   * Analyzes the mirrored partner of a double door, returning a detailed result.
+   *
+   * @param origin one half of a door block
+   * @return a {@link MirrorSearchResult} describing the partner or failure reason
+   */
   public static MirrorSearchResult analyzeMirroredDoubleDoorPartner(Block origin) {
     Block originBase = toLowerDoorBlock(origin);
     if (originBase == null) {
@@ -88,6 +107,9 @@ public final class DoorUtil {
     return MirrorSearchResult.failure(reason);
   }
 
+  /**
+   * Analyzes corner-door partners around the given door block.
+   */
   public static MirrorSearchResult analyzeCornerDoorPartner(Block origin) {
     Block originBase = toLowerDoorBlock(origin);
     if (originBase == null) {
@@ -116,6 +138,10 @@ public final class DoorUtil {
     return MirrorSearchResult.failure("corner_not_found");
   }
 
+  /**
+   * Invalidates mirror-cache entries for the given block and the block below it
+   * (to cover both halves of a door).
+   */
   public static void invalidateMirrorCacheAt(Block block) {
     if (block == null) {
       return;
@@ -128,11 +154,17 @@ public final class DoorUtil {
     invalidateMirrorCacheAt(worldId, x, y - 1, z);
   }
 
+  /**
+   * Invalidates a single mirror-cache entry by world and coordinates.
+   */
   public static void invalidateMirrorCacheAt(UUID worldId, int x, int y, int z) {
     MirrorCacheKey key = new MirrorCacheKey(worldId, x, y, z);
     MIRROR_CACHE.remove(key);
   }
 
+  /**
+   * Invalidates mirror-cache entries in a 3x3x2 region around the given block.
+   */
   public static void invalidateMirrorCacheNear(Block block) {
     if (block == null) {
       return;
@@ -149,6 +181,13 @@ public final class DoorUtil {
     }
   }
 
+  /**
+   * Finds all connected blocks of the same type using BFS up to the given distance.
+   *
+   * @param origin      the starting block
+   * @param maxDistance maximum BFS depth (minimum 1)
+   * @return a set of connected blocks (excluding the origin)
+   */
   public static Set<Block> findConnectedDoors(Block origin, int maxDistance) {
     Set<Block> result = new HashSet<>();
     if (origin == null || maxDistance < 1) {
@@ -185,36 +224,6 @@ public final class DoorUtil {
     }
 
     return result;
-  }
-
-  public static OpenableType fromMaterial(Material material) {
-    if (material == null) {
-      return null;
-    }
-    String name = material.name();
-    if (name.endsWith("_DOOR")) {
-      return OpenableType.DOOR;
-    }
-    if (name.endsWith("_FENCE_GATE")) {
-      return OpenableType.FENCE_GATE;
-    }
-    if (name.endsWith("_TRAPDOOR")) {
-      return OpenableType.TRAPDOOR;
-    }
-    return null;
-  }
-
-  public static OpenableType fromBlockData(BlockData blockData, Material material) {
-    if (blockData instanceof Door) {
-      return OpenableType.DOOR;
-    }
-    if (blockData instanceof Gate) {
-      return OpenableType.FENCE_GATE;
-    }
-    if (blockData instanceof TrapDoor) {
-      return OpenableType.TRAPDOOR;
-    }
-    return fromMaterial(material);
   }
 
   private static boolean isMirrorCacheEntryFresh(long now, MirrorCacheEntry entry) {

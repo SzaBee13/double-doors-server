@@ -16,7 +16,7 @@
   </modules>
 
   <properties>
-  <maven.compiler.release>25</maven.compiler.release>
+  <maven.compiler.release>26</maven.compiler.release>
   <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
   <pluginupdater.api.version>2.0.0</pluginupdater.api.version>
   <minecraft.version.id>v26_2_x</minecraft.version.id>

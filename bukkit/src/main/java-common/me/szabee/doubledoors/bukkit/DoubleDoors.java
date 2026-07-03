@@ -778,18 +778,6 @@ public final class DoubleDoors extends JavaPlugin {
   return normalized;
   }
 
-  private String[] getSystemStatistics() {
-  Runtime runtime = Runtime.getRuntime();
-  return new String[] {
-    "os=" + System.getProperty("os.name", "unknown"),
-    "os_version=" + System.getProperty("os.version", "unknown"),
-    "arch=" + System.getProperty("os.arch", "unknown"),
-    "java_version=" + System.getProperty("java.version", "unknown"),
-    "cores=" + runtime.availableProcessors(),
-    "max_memory_mb=" + (runtime.maxMemory() / (1024L * 1024L))
-  };
-  }
-
   @Override
   public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
   java.util.Objects.requireNonNull(sender, "sender");

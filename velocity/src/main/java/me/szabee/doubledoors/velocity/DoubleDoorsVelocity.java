@@ -26,7 +26,7 @@ import dev.faststats.velocity.VelocityContext;
  * Velocity-side component that reports proxy heartbeat into shared SQL storage.
  */
 @Plugin(
-  id = "doubledoors-proxy",
+  id = "doubledoors-velocity",
   name = "DoubleDoorsVelocity",
   version = "${project.version}",
   description = "Proxy companion plugin for DoubleDoors shared SQL detection",
