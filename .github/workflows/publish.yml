@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'Release tag to publish (for example: v3.0.0)'
+        description: 'Release tag to publish (for example: v1.2.3)'
         required: true
         type: string
 
@@ -135,23 +135,12 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ github.token }}
 
-      - name: Publish Bukkit to CurseForge
-        uses: Kir-Antipov/mc-publish@v3.3
-        with:
-          curseforge-id: ${{ vars.CURSEFORGE_ID }} # CurseForge doesn't support the latest version of minecraft.
-          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
-          files: ${{ steps.artifact.outputs.jar_path }}
-          name: 'Double Doors Server ${{ steps.version.outputs.version }}'
-          version: ${{ steps.version.outputs.version }}
-          version-type: ${{ steps.release_channel.outputs.version_type }}
-          changelog: ${{ steps.release_notes.outputs.body }}
-          loaders: |
-            bukkit
-            paper
-            purpur
-            spigot
-            folia
-          game-versions: |
+      - name: Define game versions
+        id: game_versions
+        run: |
+          {
+            echo "versions<<EOF"
+            cat <<EOF
             1.21
             1.21.1
             1.21.2
@@ -168,6 +157,28 @@ jobs:
             26.1.1
             26.1.2
             26.2
+            EOF
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish Bukkit to CurseForge
+        uses: Kir-Antipov/mc-publish@v3.3
+        with:
+          curseforge-id: ${{ vars.CURSEFORGE_ID }}
+          curseforge-token: ${{ secrets.CURSEFORGE_TOKEN }}
+          files: ${{ steps.artifact.outputs.jar_path }}
+          name: 'Double Doors Server ${{ steps.version.outputs.version }}'
+          version: ${{ steps.version.outputs.version }}
+          version-type: ${{ steps.release_channel.outputs.version_type }}
+          changelog: ${{ steps.release_notes.outputs.body }}
+          fail-mode: warn # CurseForge may not support the latest version of minecraft.
+          loaders: |
+            bukkit
+            paper
+            purpur
+            spigot
+            folia
+          game-versions: ${{ steps.game_versions.outputs.versions }}
           java: |
             25
           game-version-filter: none
@@ -188,23 +199,7 @@ jobs:
             purpur
             spigot
             folia
-          game-versions: |
-            1.21
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-            26.1
-            26.1.1
-            26.1.2
-            26.2
+          game-versions: ${{ steps.game_versions.outputs.versions }}
           java: |
             25
           game-version-filter: none
@@ -218,26 +213,10 @@ jobs:
           name: 'Double Doors Velocity ${{ steps.version.outputs.version }}'
           version: 'v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
-          changelog: 'Proxy companion for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
+          changelog: 'Velocity for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
           loaders: |
             velocity
-          game-versions: | # Velocity doesn't have a game version, but we want to show it on the same page as the server mod.
-            1.21
-            1.21.1
-            1.21.2
-            1.21.3
-            1.21.4
-            1.21.5
-            1.21.6
-            1.21.7
-            1.21.8
-            1.21.9
-            1.21.10
-            1.21.11
-            26.1
-            26.1.1
-            26.1.2
-            26.2
+          game-versions: ${{ steps.game_versions.outputs.versions }}
           java: |
             25
           game-version-filter: none
@@ -290,5 +269,6 @@ jobs:
             }
           platform_dependencies: |
             {
-              "PAPER": ["1.21.x", "26.1.x", "26.2.x"]
+              "PAPER": ["1.21.x", "26.1.x", "26.2.x"],
+              "VELOCITY": [">=3.4"]
             }
