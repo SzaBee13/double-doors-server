@@ -19,7 +19,7 @@ If you want to contribute to an existing translation, go to the [Crowdin project
 
 ## Guidelines
 
-- DO NOT change credits directly on crowdin, we will update them when the crowdin sync pull request comes, if you want a credit there, comment on that pull request, we will add your github username.
+- DO NOT change credits directly on Crowdin, we will update them when the Crowdin sync pull request comes, if you want a credit there, comment on that pull request, we will add your GitHub username.
 - DO NOT translate variables in the translation strings, they will be replaced with the correct values at runtime.
 - DO NOT change the meaning of the translation strings, they should be clear and accurate.
 

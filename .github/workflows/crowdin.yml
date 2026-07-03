@@ -91,6 +91,7 @@ jobs:
           token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Normalize locale aliases
         shell: bash
         run: |
@@ -111,7 +112,6 @@ jobs:
           title: "chore(i18n): sync translations from Crowdin"
           body: |
             Automated translation sync from Crowdin.
-      
             This PR was created by the Crowdin workflow.
           labels: |
             translation
