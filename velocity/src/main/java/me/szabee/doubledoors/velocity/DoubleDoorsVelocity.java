@@ -155,11 +155,11 @@ public final class DoubleDoorsVelocity {
   @Subscribe
   public void onProxyShutdown(ProxyShutdownEvent event) {
     if (heartbeatEnabled && sqlClient != null) {
-      try {
-        writeHeartbeat();
-      } finally {
-        sqlClient.close();
-      }
+      writeHeartbeat();
+    }
+    if (sqlClient != null) {
+      sqlClient.close();
+      sqlClient = null;
     }
 
     if (metricsContext != null) {

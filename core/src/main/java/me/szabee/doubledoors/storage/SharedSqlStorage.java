@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -18,16 +19,45 @@ import java.util.logging.Logger;
  * Shared SQL storage used by Bukkit and proxy components.
  */
 public class SharedSqlStorage {
+  private static final String MYSQL_PLAYER_PREF_UPSERT_SQL = "INSERT INTO dd_player_preferences "
+    + "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
+    + "ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), enable_doors=VALUES(enable_doors), "
+    + "enable_fence_gates=VALUES(enable_fence_gates), enable_trapdoors=VALUES(enable_trapdoors), "
+    + "enable_auto_close=VALUES(enable_auto_close), enable_knock_sound=VALUES(enable_knock_sound), "
+    + "knock_volume=VALUES(knock_volume), locale=VALUES(locale)";
+  private static final String SQLITE_PLAYER_PREF_UPSERT_SQL = "INSERT INTO dd_player_preferences "
+    + "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) "
+    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
+    + "ON CONFLICT(player_uuid) DO UPDATE SET enabled=excluded.enabled, enable_doors=excluded.enable_doors, "
+    + "enable_fence_gates=excluded.enable_fence_gates, enable_trapdoors=excluded.enable_trapdoors, "
+    + "enable_auto_close=excluded.enable_auto_close, enable_knock_sound=excluded.enable_knock_sound, "
+    + "knock_volume=excluded.knock_volume, locale=excluded.locale";
+  private static final String MYSQL_CLAIM_UPSERT_SQL = "INSERT INTO dd_claim_settings "
+    + "(claim_id, villagers_blocked) VALUES (?, ?) "
+    + "ON DUPLICATE KEY UPDATE villagers_blocked=VALUES(villagers_blocked)";
+  private static final String SQLITE_CLAIM_UPSERT_SQL = "INSERT INTO dd_claim_settings "
+    + "(claim_id, villagers_blocked) VALUES (?, ?) "
+    + "ON CONFLICT(claim_id) DO UPDATE SET villagers_blocked=excluded.villagers_blocked";
+  private static final String MYSQL_MIGRATION_UPSERT_SQL = "INSERT INTO dd_meta "
+    + "(meta_key, meta_value) VALUES (?, 'done') "
+    + "ON DUPLICATE KEY UPDATE meta_value='done'";
+  private static final String SQLITE_MIGRATION_UPSERT_SQL = "INSERT INTO dd_meta "
+    + "(meta_key, meta_value) VALUES (?, 'done') "
+    + "ON CONFLICT(meta_key) DO UPDATE SET meta_value='done'";
+
   private final Logger logger;
   private final String jdbcUrl;
   private final String username;
   private final String password;
+  private final boolean sqliteDialect;
 
   public SharedSqlStorage(Logger logger, String jdbcUrl, String username, String password) {
     this.logger = Objects.requireNonNull(logger);
     this.jdbcUrl = Objects.requireNonNull(jdbcUrl);
     this.username = username == null ? "" : username;
     this.password = password == null ? "" : password;
+    this.sqliteDialect = isSqliteJdbcUrl(jdbcUrl);
   }
 
   /**
@@ -97,7 +127,7 @@ public class SharedSqlStorage {
    * @return true on success, false on failure
    */
   public boolean savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
-    String sql = "INSERT INTO dd_player_preferences (player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), enable_doors=VALUES(enable_doors), enable_fence_gates=VALUES(enable_fence_gates), enable_trapdoors=VALUES(enable_trapdoors), enable_auto_close=VALUES(enable_auto_close), enable_knock_sound=VALUES(enable_knock_sound), knock_volume=VALUES(knock_volume), locale=VALUES(locale)";
+    String sql = sqliteDialect ? SQLITE_PLAYER_PREF_UPSERT_SQL : MYSQL_PLAYER_PREF_UPSERT_SQL;
     try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
       stmt.setString(1, uuid.toString());
       stmt.setBoolean(2, pref.enabled());
@@ -141,7 +171,7 @@ public class SharedSqlStorage {
    * @return true on success, false on failure
    */
   public boolean setVillagersBlocked(long claimId, boolean blocked) {
-    String sql = "INSERT INTO dd_claim_settings (claim_id, villagers_blocked) VALUES (?, ?) ON DUPLICATE KEY UPDATE villagers_blocked=VALUES(villagers_blocked)";
+    String sql = sqliteDialect ? SQLITE_CLAIM_UPSERT_SQL : MYSQL_CLAIM_UPSERT_SQL;
     try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
       stmt.setLong(1, claimId);
       stmt.setBoolean(2, blocked);
@@ -172,7 +202,7 @@ public class SharedSqlStorage {
    * Marks a migration as completed (idempotent).
    */
   public void markMigrationDone(String migrationKey) {
-    String sql = "INSERT INTO dd_meta (meta_key, meta_value) VALUES (?, 'done') ON DUPLICATE KEY UPDATE meta_value='done'";
+    String sql = sqliteDialect ? SQLITE_MIGRATION_UPSERT_SQL : MYSQL_MIGRATION_UPSERT_SQL;
     try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
       stmt.setString(1, migrationKey);
       stmt.executeUpdate();
@@ -236,6 +266,10 @@ public class SharedSqlStorage {
       }
       throw e;
     }
+  }
+
+  private static boolean isSqliteJdbcUrl(String jdbcUrl) {
+    return jdbcUrl != null && jdbcUrl.toLowerCase(Locale.ROOT).startsWith("jdbc:sqlite:");
   }
 
   public record SqlPlayerPref(boolean enabled, boolean enableDoors, boolean enableFenceGates, boolean enableTrapdoors, boolean enableAutoClose, boolean enableKnockSound, double knockVolume, String locale) {

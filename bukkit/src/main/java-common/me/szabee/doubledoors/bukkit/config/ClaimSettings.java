@@ -24,6 +24,7 @@ public final class ClaimSettings {
   private final SharedSqlStorage sqlStorage;
   private final boolean useSql;
   private final Set<Long> villagersBlockedClaims = ConcurrentHashMap.newKeySet();
+  private final Object writeLock = new Object();
 
   /**
    * Loads claim settings from {@code claims.yml}.
@@ -64,16 +65,18 @@ public final class ClaimSettings {
    * Saves all claim settings synchronously to {@code claims.yml}.
    */
   public void save() {
-  if (useSql) {
-    return;
-  }
+  synchronized (writeLock) {
+    if (useSql) {
+      return;
+    }
 
-  YamlConfiguration data = new YamlConfiguration();
-  data.set("villagersBlocked", List.copyOf(villagersBlockedClaims));
-  try {
-    data.save(dataFile);
-  } catch (IOException e) {
-    plugin.getLogger().warning("Could not save claims.yml: %s".formatted(e.getMessage()));
+    YamlConfiguration data = new YamlConfiguration();
+    data.set("villagersBlocked", List.copyOf(villagersBlockedClaims));
+    try {
+      data.save(dataFile);
+    } catch (IOException e) {
+      plugin.getLogger().warning("Could not save claims.yml: %s".formatted(e.getMessage()));
+    }
   }
   }
 
@@ -84,13 +87,16 @@ public final class ClaimSettings {
   SchedulerBridge.runAsync(plugin, this::save);
   }
 
-  private void saveAsync(long claimId, boolean blocked) {
+  private void saveAsync(long claimId) {
   SchedulerBridge.runAsync(plugin, () -> {
-    if (useSql) {
-    sqlStorage.setVillagersBlocked(claimId, blocked);
-    return;
+    synchronized (writeLock) {
+      if (useSql) {
+        boolean currentBlocked = villagersBlockedClaims.contains(claimId);
+        sqlStorage.setVillagersBlocked(claimId, currentBlocked);
+        return;
+      }
+      save();
     }
-    save();
   });
   }
 
@@ -112,11 +118,11 @@ public final class ClaimSettings {
    */
   public boolean toggleVillagersBlocked(long claimId) {
   if (villagersBlockedClaims.remove(claimId)) {
-    saveAsync(claimId, false);
+    saveAsync(claimId);
     return false;
   }
   villagersBlockedClaims.add(claimId);
-  saveAsync(claimId, true);
+  saveAsync(claimId);
   return true;
   }
 }

@@ -25,6 +25,12 @@ Release date: 2026-07-03
 - Hardened proxy JDBC driver detection for uppercase URL prefixes.
 - Reused the same schema connection during proxy heartbeat table initialization.
 - Added regression coverage for proxy SQL client URL handling.
+- Fixed SQL upsert statements in shared storage to support both SQLite (`ON CONFLICT`) and MySQL (`ON DUPLICATE KEY`), restoring SQL mode with default SQLite configuration.
+- Fixed Bukkit version bridge bootstrap class lookup so version-specific bridge loading works again.
+- Enforced the `doubledoors.locale` permission for `/dd locale`.
+- Serialized claim-settings persistence writes and switched SQL claim updates to current-state writes to avoid async persistence races.
+- Ensured Velocity always closes the SQL client on shutdown, even if heartbeat initialization failed.
+- Removed pre-delay block-data reads from MONITOR listener paths by deferring knock-state reads and using material-only type gating in event handlers.
 
 ## Upgrade Guide
 

@@ -70,7 +70,7 @@ public final class DoorInteractListener implements Listener {
   Action action = event.getAction();
 
   if (action == Action.LEFT_CLICK_BLOCK) {
-    playDoorKnock(player, clicked, config);
+    scheduleDoorKnock(player, clicked, config);
     return;
   }
   if (action != Action.RIGHT_CLICK_BLOCK) {
@@ -108,8 +108,15 @@ public final class DoorInteractListener implements Listener {
   scheduleAutoCloseAfterOpen(player, clicked, config);
   }
 
+  private void scheduleDoorKnock(Player player, Block clicked, PluginConfig config) {
+  SchedulerBridge.runLaterAtLocation(plugin, clicked.getLocation(), 1L, () -> playDoorKnock(player, clicked, config));
+  }
+
   private void playDoorKnock(Player player, Block clicked, PluginConfig config) {
   if (!config.isEnableKnockFeature()) {
+    return;
+  }
+  if (!player.isOnline()) {
     return;
   }
   if (!player.hasPermission("doubledoors.knock")) {
@@ -124,7 +131,7 @@ public final class DoorInteractListener implements Listener {
   if (!plugin.getPlayerPreferences().isDoorsEnabled(player.getUniqueId())) {
     return;
   }
-  if (OpenableType.fromBlockData(clicked.getBlockData(), clicked.getType()) != OpenableType.DOOR) {
+  if (OpenableType.fromMaterial(clicked.getType()) != OpenableType.DOOR) {
     return;
   }
 
@@ -380,7 +387,7 @@ public final class DoorInteractListener implements Listener {
 
   private boolean isEnabledTypeForPlayer(Block block, PluginConfig config, PlayerPreferences prefs, UUID playerId) {
   Material material = block.getType();
-  OpenableType type = OpenableType.fromBlockData(block.getBlockData(), material);
+  OpenableType type = OpenableType.fromMaterial(material);
   if (type == OpenableType.DOOR) {
     return config.isEnableDoors() && prefs.isDoorsEnabled(playerId);
   }
@@ -395,7 +402,7 @@ public final class DoorInteractListener implements Listener {
 
   // Kept for code paths that do not involve a specific player (e.g. redstone / villager)
   static boolean isEnabledType(Block block, PluginConfig config, DoubleDoors plugin) {
-  OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
+  OpenableType type = OpenableType.fromMaterial(block.getType());
   if (type == OpenableType.DOOR) {
     return config.isEnableDoors();
   }

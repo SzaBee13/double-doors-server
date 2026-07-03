@@ -1,6 +1,7 @@
 package me.szabee.doubledoors.bukkit.storage;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import me.szabee.doubledoors.storage.SharedSqlStorage;
@@ -38,6 +39,37 @@ final class SharedSqlStorageTest {
     insertProxyHeartbeat(jdbcUrl, "stale-proxy", System.currentTimeMillis() - 120_000L, true, true);
 
     assertFalse(storage.hasRecentProxyGeyserBridge(30_000L));
+  }
+
+  @Test
+  void testSQLiteUpsertPathsForPreferencesClaimsAndMeta() {
+    String jdbcUrl = "jdbc:sqlite:target/test-upserts-" + UUID.randomUUID() + ".db";
+    SharedSqlStorage storage = new SharedSqlStorage(Logger.getLogger("test"), jdbcUrl, "", "");
+    storage.initializeSchema();
+
+    UUID playerId = UUID.randomUUID();
+    assertTrue(storage.savePlayerPreference(playerId,
+      new SharedSqlStorage.SqlPlayerPref(true, true, true, true, true, true, 0.5, "en_US")));
+    assertTrue(storage.savePlayerPreference(playerId,
+      new SharedSqlStorage.SqlPlayerPref(false, false, true, true, true, false, 0.8, "fr_FR")));
+
+    SharedSqlStorage.SqlPlayerPref loaded = storage.loadAllPlayerPreferences().get(playerId);
+    assertEquals(false, loaded.enabled());
+    assertEquals(false, loaded.enableDoors());
+    assertEquals(true, loaded.enableFenceGates());
+    assertEquals(0.8, loaded.knockVolume());
+    assertEquals("fr_FR", loaded.locale());
+
+    long claimId = 123L;
+    assertTrue(storage.setVillagersBlocked(claimId, true));
+    assertTrue(storage.loadVillagersBlockedClaims().contains(claimId));
+    assertTrue(storage.setVillagersBlocked(claimId, false));
+    assertFalse(storage.loadVillagersBlockedClaims().contains(claimId));
+
+    String migrationKey = "test_migration";
+    assertFalse(storage.isMigrationDone(migrationKey));
+    storage.markMigrationDone(migrationKey);
+    assertTrue(storage.isMigrationDone(migrationKey));
   }
 
   private static void insertProxyHeartbeat(String jdbcUrl, String proxyId, long lastSeenMillis, boolean hasGeyser,

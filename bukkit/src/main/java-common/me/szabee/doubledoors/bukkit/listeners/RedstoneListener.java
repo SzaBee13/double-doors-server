@@ -100,7 +100,7 @@ public final class RedstoneListener implements Listener {
   }
 
   for (Block candidate : candidates) {
-    applyConnectedState(candidate, config, false, REDSTONE_DELAY_TICKS);
+    applyConnectedState(candidate, config, REDSTONE_DELAY_TICKS);
   }
   }
 
@@ -133,7 +133,7 @@ public final class RedstoneListener implements Listener {
     return;
   }
 
-  applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
+  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
   }
 
   /**
@@ -165,7 +165,7 @@ public final class RedstoneListener implements Listener {
     return;
   }
 
-  applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
+  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
   }
 
   /**
@@ -201,19 +201,13 @@ public final class RedstoneListener implements Listener {
     return;
   }
 
-  applyConnectedState(block, config, false, VILLAGER_DELAY_TICKS);
+  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
   }
 
-  private void applyConnectedState(Block origin, PluginConfig config, boolean requireOriginStateChange, long delayTicks) {
+  private void applyConnectedState(Block origin, PluginConfig config, long delayTicks) {
   if (!config.isEnableRecursiveOpening()) {
     return;
   }
-
-  BlockData beforeData = origin.getBlockData();
-  if (!(beforeData instanceof Openable beforeOpenable)) {
-    return;
-  }
-  boolean beforeState = beforeOpenable.isOpen();
 
   // Read and mirror state after the configured delay so we sync to vanilla's final result.
   long effectiveDelay = Math.max(1L, delayTicks + config.getAnimationSyncExtraDelayTicks());
@@ -225,9 +219,6 @@ public final class RedstoneListener implements Listener {
 
     boolean openState = openable.isOpen();
     BlockFace targetGateFacing = originData instanceof Gate gate ? gate.getFacing() : null;
-    if (requireOriginStateChange && beforeState == openState) {
-      return;
-    }
 
     if (originData instanceof Door) {
     DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);

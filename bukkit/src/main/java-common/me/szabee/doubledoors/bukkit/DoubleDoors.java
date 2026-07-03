@@ -481,7 +481,7 @@ public final class DoubleDoors extends JavaPlugin {
 
   private VersionBridge loadVersionBridge() {
   try {
-    Class<?> bridgeClass = Class.forName("me.szabee.doubledoors.version.VersionBridgeImpl");
+    Class<?> bridgeClass = Class.forName("me.szabee.doubledoors.bukkit.version.VersionBridgeImpl");
     if (!VersionBridge.class.isAssignableFrom(bridgeClass)) {
     getLogger().warning("Version bridge class does not implement VersionBridge.");
     return null;
@@ -881,6 +881,10 @@ public final class DoubleDoors extends JavaPlugin {
     if (args[0].equalsIgnoreCase("locale")) {
     if (!(sender instanceof Player player)) {
       sender.sendMessage(t("cmd.only_players.locale", label));
+      return true;
+    }
+    if (!sender.hasPermission(LOCALE_PERMISSION)) {
+      sender.sendMessage(t(player, "cmd.no_permission"));
       return true;
     }
     if (!pluginConfig.isPerPlayerLocaleEnabled()) {
