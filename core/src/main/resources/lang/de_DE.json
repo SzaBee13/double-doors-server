@@ -46,5 +46,12 @@
   "cmd.preview.no_target": "Sieh dir zuerst eine Tuer, ein Zauntor oder eine Falltuer an.",
   "cmd.preview.unsupported": "Dieser Blocktyp wird nicht unterstuetzt: %s",
   "cmd.preview.not_found": "Kein verknuepfter Partner gefunden (%s).",
-  "cmd.preview.found": "Verknuepfter Partner: %s (%s, %s, %s), Ausrichtung %s."
+  "cmd.preview.found": "Verknuepfter Partner: %s (%s, %s, %s), Ausrichtung %s.",
+  "cmd.locale.available": "Available languages: %s",
+  "cmd.only_players.locale": "Only players can use /%s locale.",
+  "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
+  "cmd.locale.current_default": "Your locale: server default (%s)",
+  "cmd.locale.current": "Your locale: %s",
+  "cmd.locale.cleared": "Locale preference cleared, using server default.",
+  "cmd.locale.set": "Locale set to %s."
 }

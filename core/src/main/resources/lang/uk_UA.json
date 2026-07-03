@@ -1,5 +1,5 @@
 {
-  "credits": ["SzaBee13"],
+  "credits": [""],
   "language.name": "Українська (Україна)",  
   "log.luckperms_detected": "",
   "log.griefprevention_detected": "",
@@ -46,5 +46,12 @@
   "cmd.preview.no_target": "",
   "cmd.preview.unsupported": "",
   "cmd.preview.not_found": "",
-  "cmd.preview.found": ""
+  "cmd.preview.found": "",
+  "cmd.locale.available": "",
+  "cmd.only_players.locale": "",
+  "cmd.locale.disabled": "",
+  "cmd.locale.current_default": "",
+  "cmd.locale.current": "",
+  "cmd.locale.cleared": "",
+  "cmd.locale.set": ""
 }

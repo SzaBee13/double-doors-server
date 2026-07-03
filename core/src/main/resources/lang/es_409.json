@@ -1,5 +1,5 @@
 {
-  "credits": ["SzaBee13"],
+  "credits": ["SzaBee13", "Machine Translation"],
   "language.name": "Español (América Latina)",
   "log.luckperms_detected": "LuckPerms detectado: los permisos se gestionan mediante nodos doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: las aperturas de puertas vinculadas respetarán las comprobaciones de construcción en claims.",
@@ -46,5 +46,12 @@
   "cmd.preview.no_target": "Mira primero una puerta, verja o trampilla.",
   "cmd.preview.unsupported": "Este tipo de bloque no es compatible: %s",
   "cmd.preview.not_found": "No se encontró ningún socio vinculado (%s).",
-  "cmd.preview.found": "Socio vinculado: %s (%s, %s, %s), orientado hacia %s."
+  "cmd.preview.found": "Socio vinculado: %s (%s, %s, %s), orientado hacia %s.",
+  "cmd.locale.available": "Available languages: %s",
+  "cmd.only_players.locale": "Only players can use /%s locale.",
+  "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
+  "cmd.locale.current_default": "Your locale: server default (%s)",
+  "cmd.locale.current": "Your locale: %s",
+  "cmd.locale.cleared": "Locale preference cleared, using server default.",
+  "cmd.locale.set": "Locale set to %s."
 }
