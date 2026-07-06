@@ -1,6 +1,8 @@
 {
-  "credits": ["SzaBee13", "Machine Translation"],
-  "language.name": "Français (Gabon)",  
+  "credits": [
+    "SzaBee13"
+  ],
+  "language.name": "Français (Gabon)",
   "log.luckperms_detected": "LuckPerms detecte : les permissions sont gerees via les noeuds doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detecte : les ouvertures de portes liees respecteront les verifications de construction des claims.",
   "log.worldguard_detected": "WorldGuard detecte : les ouvertures de portes liees respecteront les regles de region et les flags personnalises.",

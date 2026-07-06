@@ -1,6 +1,8 @@
 {
-  "credits": ["SzaBee13", "Machine Translation"],
-  "language.name": "Français (Haïti)",  
+  "credits": [
+    "SzaBee13"
+  ],
+  "language.name": "Français (Haïti)",
   "log.luckperms_detected": "LuckPerms détecté : les permissions sont gérées via les nœuds doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention détecté : les ouvertures de portes liées respecteront les vérifications de construction des claims.",
   "log.worldguard_detected": "WorldGuard détecté : les ouvertures de portes liées respecteront les règles de région et les flags personnalisés.",

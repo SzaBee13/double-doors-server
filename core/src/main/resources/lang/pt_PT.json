@@ -1,6 +1,8 @@
 {
-  "credits": ["SzaBee13", "Machine Translation"],
-  "language.name": "Português (Portugal)",  
+  "credits": [
+    "SzaBee13"
+  ],
+  "language.name": "Português (Portugal)",
   "log.luckperms_detected": "LuckPerms detectado: permissoes tratadas via nodes doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: aberturas de portas vinculadas respeitarao verificacoes de construcao em claims.",
   "log.worldguard_detected": "WorldGuard detectado: as aberturas de portas vinculadas respeitarao as regras da regiao e os sinalizadores personalizados.",

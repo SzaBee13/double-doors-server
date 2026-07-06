@@ -1,6 +1,8 @@
 {
-  "credits": ["SzaBee13"],
-  "language.name": "English (Ireland)",  
+  "credits": [
+    "SzaBee13"
+  ],
+  "language.name": "English (Ireland)",
   "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
   "log.griefprevention_detected": "GriefPrevention detected: linked door openings will respect claim build checks.",
   "log.worldguard_detected": "WorldGuard detected: linked door opens will respect region rules and custom flags.",
