@@ -38,16 +38,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v7
   
-      - name: Prepare locale aliases for Crowdin upload
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [ -f "core/src/main/resources/lang/es_409.json" ] && [ ! -f "core/src/main/resources/lang/es_419.json" ]; then
-            cp "core/src/main/resources/lang/es_409.json" "core/src/main/resources/lang/es_419.json"
-            echo "DD_TEMP_ES_419=1" >> "$GITHUB_ENV"
-          fi
-  
       - name: Upload source strings to Crowdin
         uses: crowdin/github-action@v2
         with:
@@ -91,14 +81,6 @@ jobs:
           token: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      - name: Normalize locale aliases
-        shell: bash
-        run: |
-          set -euo pipefail
-
-          if [ -f "core/src/main/resources/lang/es_419.json" ]; then
-            mv -f "core/src/main/resources/lang/es_419.json" "core/src/main/resources/lang/es_409.json"
-          fi
 
       - name: Create pull request for translation updates
         uses: peter-evans/create-pull-request@v8
