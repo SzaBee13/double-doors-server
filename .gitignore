@@ -1,5 +1,6 @@
 # Build outputs
 dist/
+target/
 build/
 .m2/
 .gradle/

@@ -6,6 +6,9 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Locale;
@@ -67,32 +70,60 @@ public class SharedSqlStorage {
    */
   public void initializeSchema() {
     try {
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
-        + "player_uuid VARCHAR(36) PRIMARY KEY,"
-        + "enabled BOOLEAN NOT NULL,"
-        + "enable_doors BOOLEAN NOT NULL,"
-        + "enable_fence_gates BOOLEAN NOT NULL,"
-        + "enable_trapdoors BOOLEAN NOT NULL,"
-        + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "knock_volume DOUBLE NOT NULL DEFAULT 1.0,"
-        + "locale VARCHAR(32) NOT NULL DEFAULT ''"
-        + ")");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id BIGINT PRIMARY KEY, villagers_blocked BOOLEAN NOT NULL)");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
-        + "proxy_id VARCHAR(128) PRIMARY KEY,"
-        + "platform VARCHAR(32) NOT NULL,"
-        + "last_seen_epoch_ms BIGINT NOT NULL,"
-        + "has_geyser BOOLEAN NOT NULL DEFAULT FALSE,"
-        + "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
-        + ")");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_meta (meta_key VARCHAR(128) PRIMARY KEY, meta_value VARCHAR(255) NOT NULL)");
+      executeStatement(sqliteDialect
+        ? "CREATE TABLE IF NOT EXISTS dd_player_preferences ("
+          + "player_uuid TEXT PRIMARY KEY,"
+          + "enabled INTEGER NOT NULL,"
+          + "enable_doors INTEGER NOT NULL,"
+          + "enable_fence_gates INTEGER NOT NULL,"
+          + "enable_trapdoors INTEGER NOT NULL,"
+          + "enable_auto_close INTEGER NOT NULL DEFAULT 1,"
+          + "enable_knock_sound INTEGER NOT NULL DEFAULT 1,"
+          + "knock_volume REAL NOT NULL DEFAULT 1.0,"
+          + "locale TEXT NOT NULL DEFAULT ''"
+          + ")"
+        : "CREATE TABLE IF NOT EXISTS dd_player_preferences ("
+          + "player_uuid VARCHAR(36) PRIMARY KEY,"
+          + "enabled BOOLEAN NOT NULL,"
+          + "enable_doors BOOLEAN NOT NULL,"
+          + "enable_fence_gates BOOLEAN NOT NULL,"
+          + "enable_trapdoors BOOLEAN NOT NULL,"
+          + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
+          + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
+          + "knock_volume DOUBLE NOT NULL DEFAULT 1.0,"
+          + "locale VARCHAR(32) NOT NULL DEFAULT ''"
+          + ")");
+      if (!sqliteDialect) {
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''");
+      }
+      executeStatement(sqliteDialect
+        ? "CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id INTEGER PRIMARY KEY, villagers_blocked INTEGER NOT NULL)"
+        : "CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id BIGINT PRIMARY KEY, villagers_blocked BOOLEAN NOT NULL)");
+      executeStatement(sqliteDialect
+        ? "CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
+          + "proxy_id TEXT PRIMARY KEY,"
+          + "platform TEXT NOT NULL,"
+          + "last_seen_epoch_ms INTEGER NOT NULL,"
+          + "has_geyser INTEGER NOT NULL DEFAULT 0,"
+          + "has_floodgate INTEGER NOT NULL DEFAULT 0"
+          + ")"
+        : "CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
+          + "proxy_id VARCHAR(128) PRIMARY KEY,"
+          + "platform VARCHAR(32) NOT NULL,"
+          + "last_seen_epoch_ms BIGINT NOT NULL,"
+          + "has_geyser BOOLEAN NOT NULL DEFAULT FALSE,"
+          + "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
+          + ")");
+      if (!sqliteDialect) {
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
+        executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
+      }
+      executeStatement(sqliteDialect
+        ? "CREATE TABLE IF NOT EXISTS dd_meta (meta_key TEXT PRIMARY KEY, meta_value TEXT NOT NULL)"
+        : "CREATE TABLE IF NOT EXISTS dd_meta (meta_key VARCHAR(128) PRIMARY KEY, meta_value VARCHAR(255) NOT NULL)");
     } catch (SQLException e) {
       throw new IllegalStateException("Could not initialize SQL schema", e);
     }
@@ -246,7 +277,31 @@ public class SharedSqlStorage {
   }
 
   private Connection openConnection() throws SQLException {
+    ensureSqliteParentDirectoryExists();
     return username.isBlank() ? DriverManager.getConnection(jdbcUrl) : DriverManager.getConnection(jdbcUrl, username, password);
+  }
+
+  private void ensureSqliteParentDirectoryExists() throws SQLException {
+    if (!sqliteDialect) {
+      return;
+    }
+
+    String path = jdbcUrl.substring("jdbc:sqlite:".length());
+    if (path.isBlank() || path.startsWith(":memory:")) {
+      return;
+    }
+
+    Path dbPath = Paths.get(path);
+    Path parent = dbPath.getParent();
+    if (parent == null) {
+      return;
+    }
+
+    try {
+      Files.createDirectories(parent);
+    } catch (Exception e) {
+      throw new SQLException("Could not create SQLite database directory: " + parent, e);
+    }
   }
 
   private void executeStatement(String sql) throws SQLException {

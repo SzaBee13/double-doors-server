@@ -6,6 +6,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 /**
  * SQL client used by the proxy module for heartbeat writes.
@@ -51,12 +54,41 @@ public final class VelocitySqlClient {
     config.setConnectionTimeout(10_000);
     config.setIdleTimeout(600_000);
     config.setMaxLifetime(1_800_000);
+    ensureSqliteParentDirectoryExists(jdbcUrl, driverClassName);
     this.dataSource = new HikariDataSource(config);
     this.upsertSql = SQLITE_DRIVER.equals(driverClassName) ? SQLITE_UPSERT_SQL : MYSQL_UPSERT_SQL;
   }
 
+  private static void ensureSqliteParentDirectoryExists(String jdbcUrl, String driverClassName) {
+    if (!SQLITE_DRIVER.equals(driverClassName) || jdbcUrl == null) {
+      return;
+    }
+
+    String normalizedUrl = jdbcUrl.toLowerCase();
+    if (!normalizedUrl.startsWith("jdbc:sqlite:")) {
+      return;
+    }
+
+    String path = jdbcUrl.substring("jdbc:sqlite:".length());
+    if (path.isBlank() || path.startsWith(":memory:")) {
+      return;
+    }
+
+    Path dbPath = Paths.get(path);
+    Path parent = dbPath.getParent();
+    if (parent == null) {
+      return;
+    }
+
+    try {
+      Files.createDirectories(parent);
+    } catch (Exception exception) {
+      throw new IllegalStateException("Could not create SQLite database directory: " + parent, exception);
+    }
+  }
+
   private static String detectDriverClassName(String jdbcUrl) {
-    if (jdbcUrl == null || !jdbcUrl.startsWith("jdbc:")) {
+    if (jdbcUrl == null || !jdbcUrl.regionMatches(true, 0, "jdbc:", 0, 5)) {
       return null;
     }
     int databaseTypeEnd = jdbcUrl.indexOf(':', 5);
