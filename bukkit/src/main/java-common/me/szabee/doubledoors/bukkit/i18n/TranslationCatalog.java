@@ -8,6 +8,7 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -83,6 +84,34 @@ public interface TranslationCatalog {
     return Map.of();
   }
 
+  /**
+   * Loads locale contributor credits from {@code lang/credits.json}.
+   * Custom credits in the plugin data folder override bundled credits when present.
+   *
+   * @param plugin the plugin instance
+   * @return a map of language code to contributor names
+   */
+  static Map<String, List<String>> loadLanguageCredits(JavaPlugin plugin) {
+    if (plugin == null) {
+      return Map.of();
+    }
+
+    File dataFile = new File(plugin.getDataFolder(), "lang" + File.separator + "credits.json");
+    if (dataFile.isFile()) {
+      try (InputStream in = new FileInputStream(dataFile)) {
+        return parseCreditsJson(in);
+      } catch (IOException ignored) {}
+    }
+
+    try (InputStream in = plugin.getResource("lang/credits.json")) {
+      if (in != null) {
+        return parseCreditsJson(in);
+      }
+    } catch (IOException ignored) {}
+
+    return Map.of();
+  }
+
   private static Map<String, String> parseJson(InputStream in) throws IOException {
     try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
       Map<String, Object> raw = new Gson().fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
@@ -95,6 +124,13 @@ public interface TranslationCatalog {
         }
       }
       return result;
+    }
+  }
+
+  private static Map<String, List<String>> parseCreditsJson(InputStream in) throws IOException {
+    try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
+      Map<String, List<String>> raw = new Gson().fromJson(reader, new TypeToken<Map<String, List<String>>>() {}.getType());
+      return raw == null ? Map.of() : raw;
     }
   }
 }

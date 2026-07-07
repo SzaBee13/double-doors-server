@@ -19,9 +19,10 @@ If you want to contribute to an existing translation, go to the [Crowdin project
 
 ## Guidelines
 
-- DO NOT change credits directly on Crowdin, we will update them when the Crowdin sync pull request comes, if you want a credit there, comment on that pull request, we will add your GitHub username.
 - DO NOT translate variables in the translation strings, they will be replaced with the correct values at runtime.
 - DO NOT change the meaning of the translation strings, they should be clear and accurate.
+- You may use a dictionary.
+- You may use machine translation, but you MUST review it or mention it.
 
 ## Translators:
 
@@ -29,8 +30,11 @@ Thank you for helping to translate Double Doors Server! Your contributions are g
 
 <div align="center">
   <div>
-    <a href="https://github.com/SzaBee13">
-      <img src="https://avatars.githubusercontent.com/u/170540798" alt="SzaBee13" width="32" height="32">
+    <a href="https://crowdin.com/profile/SzaBee13">
+      <img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/17641602/small/53ff0e7696491e45afc89b81b824a4be.jpeg" alt="SzaBee13">
+    </a>
+    <a href="https://crowdin.com/profile/Usia">
+      <img src="https://crowdin-static.cf-downloads.crowdin.com/avatar/16236470/small/315b1ebbd38e0f7e41d44bee752afa33.jpg" alt="Usia">
     </a>
   </div>
 </div>

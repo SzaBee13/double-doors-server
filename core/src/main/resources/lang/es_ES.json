@@ -1,5 +1,4 @@
 {
-  "credits": ["SzaBee13", "Machine Translation"],
   "language.name": "Español (España)",
   "log.luckperms_detected": "LuckPerms detectado: los permisos se gestionan mediante nodos doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: las aperturas de puertas vinculadas respetaran las comprobaciones de construccion en claims.",
@@ -7,7 +6,7 @@
   "log.geyser_detected": "Geyser/Floodgate detectado: el debounce de interaccion duplicada esta activo.",
   "log.enabled": "DoubleDoors activado.",
   "log.disabled": "DoubleDoors desactivado.",
-  "cmd.usage.main": "Uso: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>",
+  "cmd.usage.main": "Uso: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
   "cmd.no_permission": "No tienes permiso para usar este comando.",
   "cmd.reload.success": "Configuracion, preferencias e idioma de DoubleDoors recargados (activo: %s).",
   "cmd.only_players.toggle": "Solo los jugadores pueden usar /%s toggle.",
@@ -47,11 +46,16 @@
   "cmd.preview.unsupported": "Este tipo de bloque no es compatible: %s",
   "cmd.preview.not_found": "No se encontro ningun socio vinculado (%s).",
   "cmd.preview.found": "Socio vinculado: %s (%s, %s, %s), orientado hacia %s.",
-  "cmd.locale.available": "Available languages: %s",
-  "cmd.only_players.locale": "Only players can use /%s locale.",
-  "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
-  "cmd.locale.current_default": "Your locale: server default (%s)",
-  "cmd.locale.current": "Your locale: %s",
-  "cmd.locale.cleared": "Locale preference cleared, using server default.",
-  "cmd.locale.set": "Locale set to %s."
+  "cmd.locale.available": "Idiomas disponibles: %s",
+  "cmd.only_players.locale": "Solo los jugadores pueden usar /%s locale.",
+  "cmd.locale.disabled": "La selección de idioma por jugador está desactivada en este servidor.",
+  "cmd.locale.current_default": "Tu idioma: predeterminado del servidor (%s)",
+  "cmd.locale.current": "Tu idioma: %s",
+  "cmd.locale.cleared": "Preferencia de idioma borrada, usando el idioma predeterminado del servidor.",
+  "cmd.locale.set": "Idioma establecido en %s.",
+  "cmd.usage.locale": "Uso: /%s locale [code|credits|credit <code>]",
+  "cmd.locale.credits.title": "Créditos de idioma:",
+  "cmd.locale.credit.entry": "%s (%s): %s",
+  "cmd.locale.credit.none": "No se encontraron créditos para %s.",
+  "cmd.usage.locale.credit": "Uso: /%s locale credit <code>"
 }

@@ -1,13 +1,12 @@
 {
-  "credits": ["SzaBee13"],
-  "language.name": "English (United Kingdom)",  
+  "language.name": "English (United Kingdom)",
   "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
   "log.griefprevention_detected": "GriefPrevention detected: linked door openings will respect claim build checks.",
   "log.worldguard_detected": "WorldGuard detected: linked door opens will respect region rules and custom flags.",
   "log.geyser_detected": "Geyser/Floodgate detected: duplicate interaction debounce is active.",
   "log.enabled": "DoubleDoors enabled.",
   "log.disabled": "DoubleDoors disabled.",
-  "cmd.usage.main": "Usage: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>",
+  "cmd.usage.main": "Usage: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
   "cmd.no_permission": "You do not have permission to use this command.",
   "cmd.reload.success": "DoubleDoors config, preferences, and language reloaded (active: %s).",
   "cmd.only_players.toggle": "Only players can use /%s toggle.",
@@ -47,11 +46,16 @@
   "cmd.preview.unsupported": "This block type is not supported: %s",
   "cmd.preview.not_found": "No linked partner found (%s).",
   "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s.",
+  "cmd.usage.locale": "Usage: /%s locale [code|credits|credit <code>]",
   "cmd.locale.available": "Available languages: %s",
   "cmd.only_players.locale": "Only players can use /%s locale.",
   "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
   "cmd.locale.current_default": "Your locale: server default (%s)",
   "cmd.locale.current": "Your locale: %s",
   "cmd.locale.cleared": "Locale preference cleared, using server default.",
-  "cmd.locale.set": "Locale set to %s."
+  "cmd.locale.set": "Locale set to %s.",
+  "cmd.locale.credits.title": "Locale credits:",
+  "cmd.locale.credit.entry": "%s (%s): %s",
+  "cmd.locale.credit.none": "No credits found for %s.",
+  "cmd.usage.locale.credit": "Usage: /%s locale credit <code>"
 }

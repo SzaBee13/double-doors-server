@@ -1,6 +1,7 @@
 package me.szabee.doubledoors.bukkit.i18n;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -19,6 +20,7 @@ import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
 public final class TranslationManager {
   private final DoubleDoors plugin;
   private final Map<String, Map<String, String>> translations;
+  private Map<String, List<String>> languageCredits;
   private String activeLanguage;
 
   public TranslationManager(DoubleDoors plugin) {
@@ -83,6 +85,21 @@ public final class TranslationManager {
   }
 
   /**
+   * Returns the contributor credits for a language code.
+   *
+   * @param languageCode the language code to inspect
+   * @return contributor names, or an empty list when no credits are defined
+   */
+  public List<String> getLanguageCredits(String languageCode) {
+    if (plugin == null || languageCode == null || languageCode.isBlank()) {
+      return List.of();
+    }
+    ensureCreditsLoaded();
+    List<String> credits = languageCredits.get(languageCode);
+    return credits == null ? List.of() : List.copyOf(credits);
+  }
+
+  /**
    * Returns the display name for a language code (from the {@code language.name} key),
    * falling back to the language code itself if not found.
    */
@@ -96,6 +113,12 @@ public final class TranslationManager {
     if (!translations.containsKey(languageCode)) {
       Map<String, String> loaded = TranslationCatalog.loadLanguageFile(plugin, languageCode);
       translations.put(languageCode, loaded);
+    }
+  }
+
+  private void ensureCreditsLoaded() {
+    if (languageCredits == null) {
+      languageCredits = TranslationCatalog.loadLanguageCredits(plugin);
     }
   }
 
