@@ -1,19 +1,19 @@
 # GitHub Copilot — Workspace Instructions
 
 ## Project overview
-**DoubleDoors** is a Paper/Spigot 1.21 plugin written in Java 21.  
+**DoubleDoors** is a Paper/Spigot 1.21 plugin written in Java 25.  
 It links adjacent doors, fence gates, and trapdoors so they open and close simultaneously — for players, redstone, and villager AI.
 
 ## Build
 ```
-mvn package
+./gradlew build
 ```
-The shaded JAR is produced at `target/doubledoors-<version>.jar`.
+The shaded JARs are produced at `bukkit/build/libs/doubledoors-bukkit-<version>.jar` and `velocity/build/libs/doubledoors-velocity-<version>.jar`.
 
 ## Conventions
 
 ### Java style
-- Java 21 features are encouraged: records, sealed classes, pattern-matching instanceof, switch expressions.
+- Java 25 features are encouraged: records, sealed classes, pattern-matching instanceof, switch expressions.
 - All public API methods must have a Javadoc comment.
 - `final` on classes and fields unless mutability is required.
 - No wildcard imports.
@@ -54,8 +54,8 @@ Other regional locales (en_GB, fr_FR, de_DE, etc.) will inherit the English US t
 If the user asks to localize a new feature to other languages, then propagate the changes across all regional variants.
 
 ## Testing
-There are no automated unit tests; test manually on a local Paper 1.21 server.  
-Typical test scenarios: double doors, double fence gates, double trapdoors, redstone coupling, villager pathfinding, GriefPrevention claim boundary.
+There are automated unit tests in `bukkit` and `velocity`; run `./gradlew build` first.  
+Then test manually on a local Paper 1.21 server for double doors, double fence gates, double trapdoors, redstone coupling, villager pathfinding, and GriefPrevention claim boundaries.
 
 ## Source control (Git)
 - Use feature branches for new features and bug fixes; merge to `main` when complete.

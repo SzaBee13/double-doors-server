@@ -14,11 +14,11 @@ final class VelocityShadeConfigurationTest {
 
   @Test
   void testSlf4jIsNotRelocated() throws Exception {
-    String pom = Files.readString(Path.of("pom.xml"));
+    String buildScript = Files.readString(Path.of("build.gradle"));
 
-    assertFalse(pom.contains("<pattern>org.slf4j</pattern>"),
+    assertFalse(buildScript.contains("relocate \"org.slf4j\""),
       "Velocity injects org.slf4j.Logger; relocating SLF4J breaks plugin creation.");
-    assertFalse(pom.contains("me.szabee.doubledoors.lib.slf4j"),
+    assertFalse(buildScript.contains("me.szabee.doubledoors.lib.slf4j"),
       "The proxy jar must keep Velocity-provided SLF4J types unshaded.");
   }
 

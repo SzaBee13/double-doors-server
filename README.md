@@ -172,15 +172,15 @@ Language files:
 Requirements:
 
 - Java 25+
-- Maven
+- Gradle
 
 Build command:
 
 ```bash
-mvn -DskipTests package
+./gradlew build
 ```
 
-Output jar is generated under `target/`.
+Output jars are generated under `bukkit/build/libs/` and `velocity/build/libs/`.
 
 ## License
 
