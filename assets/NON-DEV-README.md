@@ -105,12 +105,9 @@ Check out more permissions at the [wiki](https://github.com/SzaBee13/double-door
 - `serverWideEnabled` (default: `true`)
 - `language` (default: `en_US`)
 
-Language files:
+## Language
 
-- Built-in fallback file: `src/main/resources/lang/en_US.json`
-- Runtime custom language folder: `plugins/DoubleDoors/lang/`
-- Set active language with `language: <code>` in `config.yml` (example: `language: de_DE`)
-- Custom files are JSON objects of key/value strings and override built-in messages when present.
+See supported languages and contribute on [Crowdin](https://crowdin.com/project/double-doors-server)
 
 ## License
 
