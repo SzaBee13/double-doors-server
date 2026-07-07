@@ -12,6 +12,7 @@ allprojects {
 subprojects {
   apply plugin: "java-library"
   apply plugin: "maven-publish"
+  apply plugin: "jacoco"
 
   java {
     sourceCompatibility = JavaVersion.toVersion(javaRelease)
@@ -25,6 +26,18 @@ subprojects {
 
   tasks.withType(Test).configureEach {
     useJUnitPlatform()
+    finalizedBy tasks.jacocoTestReport
+  }
+
+  jacoco {
+    toolVersion = "0.8.14"
+  }
+
+  tasks.jacocoTestReport {
+    reports {
+      xml.required = true
+      html.required = false
+    }
   }
 
   publishing {
