@@ -1,6 +1,6 @@
 # AGENTS.md — AI Agent Guide for DoubleDoors
 
-This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively in this repository.
+This file tells AI coding agents how to work effectively in this repository.
 
 ## Repository at a glance
 
@@ -8,8 +8,8 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 | --- | --- |
 | Language | Java 26 |
 | Framework | Paper/Spigot 1.21.x + 26.2 plugin API |
-| Build | Maven (`mvn package`) |
-| Output | `target/doubledoors-<version>.jar` (shaded) |
+| Build | Gradle (`./gradlew build`) |
+| Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
 
 ## Source Control (Git)
 
@@ -45,10 +45,10 @@ This file tells AI coding agents (GitHub Copilot, etc.) how to work effectively 
 
 When releasing a new version:
 
-1. Update `<version>` in `pom.xml`.
-2. Update `version:` in `src/main/resources/plugin.yml`.
+1. Update `version` in `gradle.properties`.
+2. Update `version:` in `bukkit/src/main/resources/plugin.yml`.
 3. Create `releases/v<version>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
-4. If `maven.compiler.release` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
+4. If `javaRelease` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 
 ### Release notes
 

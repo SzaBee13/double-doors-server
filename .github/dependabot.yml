@@ -7,6 +7,8 @@ updates:
       day: "monday"
       time: "04:00"
       timezone: "UTC"
+    ignore:
+      - dependency-name: "org.spigotmc:spigot"
     open-pull-requests-limit: 10
     target-branch: "dev"
 
