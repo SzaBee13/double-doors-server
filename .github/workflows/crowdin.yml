@@ -77,18 +77,5 @@ jobs:
           commit_message: "New Crowdin translations by GitHub Action"
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Create pull request for translation updates
-        uses: peter-evans/create-pull-request@v8
-        with:
-          branch: chore/crowdin-sync
-          delete-branch: true
-          add-paths: |
-            core/src/main/resources/lang/*.json
-          commit-message: "chore(i18n): sync translations from Crowdin"
-          title: "chore(i18n): sync translations from Crowdin"
-          body: |
-            Automated translation sync from Crowdin.
-            This PR was created by the Crowdin workflow.
-          labels: |
-            translation
+          CROWDIN_PROJECT_ID: ${{ vars.CROWDIN_PROJECT_ID }}
+          CROWDIN_PERSONAL_TOKEN: ${{ secrets.CROWDIN_PERSONAL_TOKEN }}

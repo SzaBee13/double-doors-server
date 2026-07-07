@@ -210,7 +210,7 @@ public final class DoorInteractListener implements Listener {
     if (!config.isEnableRecursiveOpening()) {
       return;
     }
-    if (!(origin.getBlockData() instanceof Openable)) {
+    if (OpenableType.fromMaterial(origin.getType()) == null) {
       return;
     }
 
@@ -357,27 +357,25 @@ public final class DoorInteractListener implements Listener {
       return;
     }
 
-    Block baseDoor = toDoorBottomHalf(clicked);
-    SchedulerBridge.runLaterAtLocation(
-      plugin,
-      baseDoor.getLocation(),
-      1L,
-      () -> {
-        BlockData data = baseDoor.getBlockData();
-        if (!(data instanceof Openable openable)) {
-          return;
-        }
-        openable.setOpen(!openable.isOpen());
-        baseDoor.setBlockData(openable, false);
-
-        Block top = baseDoor.getRelative(BlockFace.UP);
-        BlockData topData = top.getBlockData();
-        if (topData instanceof Openable topOpenable) {
-          topOpenable.setOpen(openable.isOpen());
-          top.setBlockData(topOpenable, false);
-        }
+    SchedulerBridge.runLaterAtLocation(plugin, clicked.getLocation(), 1L, () -> {
+      Block baseDoor = toDoorBottomHalf(clicked);
+      if (baseDoor == null) {
+        return;
       }
-    );
+      BlockData data = baseDoor.getBlockData();
+      if (!(data instanceof Openable openable)) {
+        return;
+      }
+      openable.setOpen(!openable.isOpen());
+      baseDoor.setBlockData(openable, false);
+
+      Block top = baseDoor.getRelative(BlockFace.UP);
+      BlockData topData = top.getBlockData();
+      if (topData instanceof Openable topOpenable) {
+        topOpenable.setOpen(openable.isOpen());
+        top.setBlockData(topOpenable, false);
+      }
+    });
   }
 
   private void scheduleAutoCloseAfterOpen(
