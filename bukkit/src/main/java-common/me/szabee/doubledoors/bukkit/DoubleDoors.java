@@ -892,22 +892,22 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
     if (args.length == 1) {
-      String current = playerPreferences.getLocale(player.getUniqueId());
-      if (current.isBlank()) {
-        String defaultCode = pluginConfig.getLanguage();
-        sender.sendMessage(t(player, "cmd.locale.current_default",
-          translationManager.getLanguageName(defaultCode)));
-      } else {
-        sender.sendMessage(t(player, "cmd.locale.current",
-          translationManager.getLanguageName(current)));
-      }
-      String langs = translationManager.getAvailableLanguages().stream()
-        .map(translationManager::getLanguageName)
-        .collect(Collectors.joining(", "));
-      sender.sendMessage(t(player, "cmd.locale.available", langs));
+      sendLocaleStatus(player);
       return true;
     }
     String requested = args[1];
+    if (requested.equalsIgnoreCase("credits")) {
+      sendLocaleCredits(player);
+      return true;
+    }
+    if (requested.equalsIgnoreCase("credit")) {
+      if (args.length < 3) {
+      sender.sendMessage(t(player, "cmd.usage.locale.credit", label));
+      return true;
+      }
+      sendLocaleCredit(player, args[2]);
+      return true;
+    }
     String normalized = playerPreferences.setLocale(player.getUniqueId(), requested);
     if (normalized.isBlank()) {
       sender.sendMessage(t(player, "cmd.locale.cleared"));
@@ -1065,12 +1065,73 @@ public final class DoubleDoors extends JavaPlugin {
     if (!args[1].isBlank() && "0.5".startsWith(args[1].toLowerCase())) {
     completions.add("0.5");
     }
+  } else if (args.length == 2 && args[0].equalsIgnoreCase("locale")) {
+    for (String sub : List.of("credits", "credit")) {
+    if (sub.startsWith(args[1].toLowerCase())) {
+      completions.add(sub);
+    }
+    }
+    for (String languageCode : translationManager.getAvailableLanguages()) {
+    if (languageCode.toLowerCase().startsWith(args[1].toLowerCase())) {
+      completions.add(languageCode);
+    }
+    }
+  } else if (args.length == 3 && args[0].equalsIgnoreCase("locale") && args[1].equalsIgnoreCase("credit")) {
+    for (String languageCode : translationManager.getAvailableLanguages()) {
+    if (languageCode.toLowerCase().startsWith(args[2].toLowerCase())) {
+      completions.add(languageCode);
+    }
+    }
   } else if (args.length == 2 && args[0].equalsIgnoreCase("grief")) {
     if ("villagers".startsWith(args[1].toLowerCase())) {
     completions.add("villagers");
     }
   }
   return completions;
+  }
+
+  private void sendLocaleStatus(Player player) {
+  String current = playerPreferences.getLocale(player.getUniqueId());
+  if (current.isBlank()) {
+    String defaultCode = pluginConfig.getLanguage();
+    player.sendMessage(t(player, "cmd.locale.current_default", translationManager.getLanguageName(defaultCode)));
+  } else {
+    player.sendMessage(t(player, "cmd.locale.current", translationManager.getLanguageName(current)));
+  }
+  String langs = translationManager.getAvailableLanguages().stream()
+    .sorted(String::compareToIgnoreCase)
+    .map(translationManager::getLanguageName)
+    .collect(Collectors.joining(", "));
+  player.sendMessage(t(player, "cmd.locale.available", langs));
+  }
+
+  private void sendLocaleCredits(Player player) {
+  player.sendMessage(t(player, "cmd.locale.credits.title"));
+  List<String> languageCodes = new ArrayList<>(translationManager.getAvailableLanguages());
+  languageCodes.sort(String::compareToIgnoreCase);
+  for (String languageCode : languageCodes) {
+    List<String> credits = translationManager.getLanguageCredits(languageCode);
+    if (credits.isEmpty()) {
+    player.sendMessage(t(player, "cmd.locale.credit.none", languageCode));
+    continue;
+    }
+    player.sendMessage(t(player, "cmd.locale.credit.entry",
+      translationManager.getLanguageName(languageCode),
+      languageCode,
+      String.join(", ", credits)));
+  }
+  }
+
+  private void sendLocaleCredit(Player player, String languageCode) {
+  List<String> credits = translationManager.getLanguageCredits(languageCode);
+  if (credits.isEmpty()) {
+    player.sendMessage(t(player, "cmd.locale.credit.none", languageCode));
+    return;
+  }
+  player.sendMessage(t(player, "cmd.locale.credit.entry",
+    translationManager.getLanguageName(languageCode),
+    languageCode,
+    String.join(", ", credits)));
   }
 
   private void showPreview(Player player) {

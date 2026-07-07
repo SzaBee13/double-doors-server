@@ -6,7 +6,7 @@
   "log.geyser_detected": "Виявлено Geyser/Floodgate: активний захист від повторних взаємодій.",
   "log.enabled": "DoubleDoors увімкнено.",
   "log.disabled": "DoubleDoors вимкнено.",
-  "cmd.usage.main": "Використання: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview>",
+  "cmd.usage.main": "Використання: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
   "cmd.no_permission": "У вас немає дозволу на використання цієї команди.",
   "cmd.reload.success": "Конфігурацію, налаштування та мову DoubleDoors перезавантажено (активна: %s).",
   "cmd.only_players.toggle": "Тільки гравці можуть використовувати /%s toggle.",
@@ -48,9 +48,14 @@
   "cmd.preview.found": "Пов'язана пара: %s (%s, %s, %s), напрямок %s.",
   "cmd.locale.available": "Доступні мови: %s",
   "cmd.only_players.locale": "Тільки гравці можуть використовувати /%s locale.",
-  "cmd.locale.disabled": "Вибір мови для кожного окремого гравця вимкнено на цьому сервері.",
-  "cmd.locale.current_default": "Ваша мова: за замовчуванням для сервера (%s)",
+  "cmd.locale.disabled": "Вибір мови для кожного гравця вимкнено на цьому сервері.",
+  "cmd.locale.current_default": "Ваша мова: мова сервера за замовчуванням (%s)",
   "cmd.locale.current": "Ваша мова: %s",
   "cmd.locale.cleared": "Налаштування мови скинуто, використовується стандартна мова сервера.",
-  "cmd.locale.set": "Мову змінено на %s."
+  "cmd.locale.set": "Мову встановлено на %s.",
+  "cmd.usage.locale": "Використання: /%s locale [code|credits|credit <code>]",
+  "cmd.locale.credits.title": "Подяки за переклади:",
+  "cmd.locale.credit.entry": "%s (%s): %s",
+  "cmd.locale.credit.none": "Немає відомостей про внесок для %s.",
+  "cmd.usage.locale.credit": "Використання: /%s locale credit <code>"
 }
