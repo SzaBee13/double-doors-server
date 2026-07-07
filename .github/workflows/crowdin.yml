@@ -93,7 +93,6 @@ jobs:
           title: "chore(i18n): sync translations from Crowdin"
           body: |
             Automated translation sync from Crowdin.
-      
             This PR was created by the Crowdin workflow.
           labels: |
             translation
