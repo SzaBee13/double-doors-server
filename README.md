@@ -14,7 +14,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Features
 
-- Same-tick partner door sync (no scheduled 1-tick delay)
+- Same-tick partner door sync
 - Strict mirrored pair matching for doors:
   - same door type
   - same facing direction
@@ -29,7 +29,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.x`, `26.1.x` and `26.2.x`.
+- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, and `26.2.x`.
 
 ### Geyser / Floodgate
 
@@ -122,18 +122,29 @@ sql.heartbeatSeconds=30
 - `/doubledoors toggle` - toggle behavior for yourself
 - `/doubledoors knock-volume <0-1>` - set personal knock sound volume
 - `/doubledoors server-toggle` - toggle behavior server-wide
+- `/doubledoors locale [code|credits|credit <code>]` - view or set your locale
 
 ## Permissions
 
 - `doubledoors.use` (default: `true`)
+- `doubledoors.knock` (default: `true`)
 - `doubledoors.knock.volume` (default: `true`)
+- `doubledoors.autoclose` (default: `true`)
+- `doubledoors.iron.manual` (default: `op`)
 - `doubledoors.toggle` (default: `true`)
+- `doubledoors.toggle.autoclose` (default: `true`)
+- `doubledoors.toggle.knock` (default: `true`)
+- `doubledoors.locale` (default: `true`)
 - `doubledoors.reload` (default: `op`)
 - `doubledoors.server-toggle` (default: `op`)
+- `doubledoors.grief` (default: `true`)
+- `doubledoors.debug` (default: `op`)
+- `doubledoors.preview` (default: `true`)
+- `doubledoors.update.notify` (default: `op`)
 
 ## Config
 
-`src/main/resources/config.yml`
+`bukkit/src/main/resources/config.yml`
 
 - `enableRecursiveOpening` (default: `true`)
 - `recursiveOpeningMaxBlocksDistance` (default: `10`)
@@ -142,6 +153,7 @@ sql.heartbeatSeconds=30
 - `enableTrapdoors` (default: `true`)
 - `enableVillagerLinkedDoors` (default: `true`)
 - `serverWideEnabled` (default: `true`)
+- `perPlayerLocaleEnabled` (default: `true`)
 - `language` (default: `en_US`)
 
 ### Update Checker
@@ -171,16 +183,16 @@ Language files:
 
 Requirements:
 
-- Java 25+
-- Maven
+- Java 26+
+- Gradle
 
 Build command:
 
 ```bash
-mvn -DskipTests package
+./gradlew build
 ```
 
-Output jar is generated under `target/`.
+Output jars are generated under `bukkit/build/libs/` and `velocity/build/libs/`.
 
 ## License
 

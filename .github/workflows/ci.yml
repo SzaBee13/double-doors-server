@@ -1,0 +1,41 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - "**"
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "25"
+          cache: gradle
+
+      - name: Build with Gradle
+        run: ./gradlew build
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: core/build/reports/jacoco/test/jacocoTestReport.xml,bukkit/build/reports/jacoco/test/jacocoTestReport.xml,velocity/build/reports/jacoco/test/jacocoTestReport.xml
+
+      - name: Upload build outputs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gradle-build-outputs
+          path: |
+            bukkit/build/libs/*
+            velocity/build/libs/*
+            core/build/libs/*

@@ -8,6 +8,7 @@ import me.szabee.doubledoors.storage.SharedSqlStorage;
  * Bukkit adapter for shared SQL storage configuration.
  */
 public final class BukkitSharedSqlStorage extends SharedSqlStorage {
+
   /**
    * Creates the storage adapter from Bukkit plugin config.
    *
@@ -15,6 +16,11 @@ public final class BukkitSharedSqlStorage extends SharedSqlStorage {
    * @param config Bukkit config wrapper
    */
   public BukkitSharedSqlStorage(DoubleDoors plugin, PluginConfig config) {
-    super(plugin.getLogger(), config.getSqlJdbcUrl(), config.getSqlUsername(), config.getSqlPassword());
+    super(
+      plugin.getLogger(),
+      config.getSqlJdbcUrl(),
+      config.getSqlUsername(),
+      config.getSqlPassword()
+    );
   }
 }

@@ -4,11 +4,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import org.bukkit.entity.Player;
-
 import me.szabee.doubledoors.bukkit.DoubleDoors;
 import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
+import org.bukkit.entity.Player;
 
 /**
  * Bukkit translation manager.
@@ -18,6 +16,7 @@ import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
  * which respects per-player locale overrides (if enabled).
  */
 public final class TranslationManager {
+
   private final DoubleDoors plugin;
   private final Map<String, Map<String, String>> translations;
   private Map<String, List<String>> languageCredits;
@@ -111,7 +110,10 @@ public final class TranslationManager {
 
   private void ensureLoaded(String languageCode) {
     if (!translations.containsKey(languageCode)) {
-      Map<String, String> loaded = TranslationCatalog.loadLanguageFile(plugin, languageCode);
+      Map<String, String> loaded = TranslationCatalog.loadLanguageFile(
+        plugin,
+        languageCode
+      );
       translations.put(languageCode, loaded);
     }
   }

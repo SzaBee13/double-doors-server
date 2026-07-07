@@ -1,12 +1,14 @@
 version: 2
 updates:
-  - package-ecosystem: "maven"
+  - package-ecosystem: "gradle"
     directory: "/"
     schedule:
       interval: "weekly"
       day: "monday"
       time: "04:00"
       timezone: "UTC"
+    ignore:
+      - dependency-name: "org.spigotmc:spigot"
     open-pull-requests-limit: 10
     target-branch: "dev"
 

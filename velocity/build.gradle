@@ -1,0 +1,92 @@
+plugins {
+  id "com.gradleup.shadow" version "9.5.1"
+}
+
+base {
+  archivesName = "doubledoors-velocity"
+}
+
+def filteredJavaDir = layout.buildDirectory.dir("generated/sources/filtered-java")
+
+tasks.register("filterVelocityJava", Copy) {
+  from("src/main/java")
+  into(filteredJavaDir)
+  include("**/*.java")
+  filteringCharset = "UTF-8"
+  expand(project: [version: project.version])
+}
+
+sourceSets {
+  main {
+    java {
+      setSrcDirs([filteredJavaDir])
+    }
+    resources {
+      setSrcDirs(["src/main/resources"])
+    }
+  }
+  test {
+    java {
+      setSrcDirs(["src/test/java"])
+    }
+  }
+}
+
+dependencies {
+  implementation project(":core")
+
+  compileOnly "com.velocitypowered:velocity-api:${findProperty("velocityApiVersion")}"
+  annotationProcessor "com.velocitypowered:velocity-api:${findProperty("velocityApiVersion")}"
+
+  implementation "dev.faststats.metrics:velocity:${findProperty("faststatsVersion")}"
+  implementation "org.xerial:sqlite-jdbc:${findProperty("sqliteVersion")}"
+  implementation "com.mysql:mysql-connector-j:${findProperty("mysqlConnectorVersion")}"
+  implementation "com.zaxxer:HikariCP:${findProperty("hikariVersion")}"
+
+  testImplementation platform("org.junit:junit-bom:${findProperty("junitVersion")}")
+  testImplementation "org.junit.jupiter:junit-jupiter"
+  testImplementation "com.velocitypowered:velocity-api:${findProperty("velocityApiVersion")}"
+  testRuntimeOnly platform("org.junit:junit-bom:${findProperty("junitVersion")}")
+  testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+tasks.compileJava {
+  dependsOn(tasks.named("filterVelocityJava"))
+}
+
+tasks.processResources {
+  filesMatching("velocity-plugin.json") {
+    expand(project: [version: project.version])
+  }
+}
+
+tasks.shadowJar {
+  archiveClassifier = ""
+  duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+  mergeServiceFiles()
+  relocate "dev.faststats", "me.szabee.doubledoors.lib.faststats"
+  relocate "com.google.gson", "me.szabee.doubledoors.lib.gson"
+  relocate "org.sqlite", "me.szabee.doubledoors.lib.sqlite"
+  relocate "com.mysql", "me.szabee.doubledoors.lib.mysql"
+  relocate "com.google.protobuf", "me.szabee.doubledoors.lib.protobuf"
+  relocate "com.zaxxer.hikari", "me.szabee.doubledoors.lib.hikari"
+  relocate "org.intellij.lang.annotations", "me.szabee.doubledoors.lib.annotations.intellij"
+  relocate "org.jetbrains.annotations", "me.szabee.doubledoors.lib.annotations.jetbrains"
+  exclude "module-info.class"
+  exclude "META-INF/MANIFEST.MF"
+  exclude "META-INF/versions/**/module-info.class"
+  exclude "META-INF/faststats.properties"
+}
+
+tasks.jar {
+  enabled = false
+}
+
+publishing {
+  publications {
+    mavenJava(MavenPublication) {
+      from components.shadow
+      artifactId = "doubledoors-velocity"
+    }
+  }
+}

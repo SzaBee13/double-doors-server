@@ -13,7 +13,7 @@ Describe what this pull request changes and why.
 
 ## Validation
 
-- [ ] Built successfully with `mvn -DskipTests package`
+- [ ] Built successfully with `./gradlew build`
 - [ ] Tested behavior on a supported server version
 - [ ] Updated docs/config comments when needed
 

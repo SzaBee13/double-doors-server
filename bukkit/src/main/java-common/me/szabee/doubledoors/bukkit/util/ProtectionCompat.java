@@ -10,22 +10,20 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
-
+import me.szabee.doubledoors.bukkit.DoubleDoors;
+import me.szabee.doubledoors.bukkit.config.PluginConfig;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
-import me.szabee.doubledoors.bukkit.DoubleDoors;
-import me.szabee.doubledoors.bukkit.config.PluginConfig;
-
 /**
  * Optional protection-plugin compatibility hooks.
  */
 public final class ProtectionCompat {
-  private ProtectionCompat() {
-  }
+
+  private ProtectionCompat() {}
 
   /**
    * Checks whether a player may toggle a linked block according to protection rules.
@@ -38,8 +36,12 @@ public final class ProtectionCompat {
    * @param linkedBlock the linked block to toggle
    * @return true if the linked interaction is allowed
    */
-  public static boolean canOpenLinkedDoor(DoubleDoors plugin, Player player, Block linkedBlock) {
-  return explainLinkedDoorDeniedReason(plugin, player, linkedBlock).isEmpty();
+  public static boolean canOpenLinkedDoor(
+    DoubleDoors plugin,
+    Player player,
+    Block linkedBlock
+  ) {
+    return explainLinkedDoorDeniedReason(plugin, player, linkedBlock).isEmpty();
   }
 
   /**
@@ -50,43 +52,77 @@ public final class ProtectionCompat {
    * @param linkedBlock the linked block to toggle
    * @return empty string when allowed, otherwise a machine-readable deny reason
    */
-  public static String explainLinkedDoorDeniedReason(DoubleDoors plugin, Player player, Block linkedBlock) {
-  String locationFilterReason = evaluateLocationFilters(plugin.getPluginConfig(), linkedBlock);
-  if (!locationFilterReason.isEmpty()) {
-    return locationFilterReason;
-  }
+  public static String explainLinkedDoorDeniedReason(
+    DoubleDoors plugin,
+    Player player,
+    Block linkedBlock
+  ) {
+    String locationFilterReason = evaluateLocationFilters(
+      plugin.getPluginConfig(),
+      linkedBlock
+    );
+    if (!locationFilterReason.isEmpty()) {
+      return locationFilterReason;
+    }
 
-  Plugin griefPrevention = Bukkit.getPluginManager().getPlugin("GriefPrevention");
-  if (griefPrevention != null && griefPrevention.isEnabled()) {
-    try {
-    Object dataStore = getDataStore(griefPrevention);
-    if (dataStore != null) {
-      Object claim = findClaimAt(dataStore, linkedBlock);
-      if (claim != null) {
-      Boolean checkPermissionResult = tryCheckPermission(claim, player, "Build", "Access", "Inventory");
-      if (checkPermissionResult != null && !checkPermissionResult) {
-        return "griefprevention_permission_denied";
-      }
+    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
+      "GriefPrevention"
+    );
+    if (griefPrevention != null && griefPrevention.isEnabled()) {
+      try {
+        Object dataStore = getDataStore(griefPrevention);
+        if (dataStore != null) {
+          Object claim = findClaimAt(dataStore, linkedBlock);
+          if (claim != null) {
+            Boolean checkPermissionResult = tryCheckPermission(
+              claim,
+              player,
+              "Build",
+              "Access",
+              "Inventory"
+            );
+            if (checkPermissionResult != null && !checkPermissionResult) {
+              return "griefprevention_permission_denied";
+            }
 
-      if (plugin.getPluginConfig().isGriefPreventionRequireBuildForLinkedDoors()) {
-        Boolean allowBuildResult = tryAllowBuild(claim, player, linkedBlock.getType());
-        if (allowBuildResult != null && !allowBuildResult) {
-          return "griefprevention_build_denied";
+            if (
+              plugin
+                .getPluginConfig()
+                .isGriefPreventionRequireBuildForLinkedDoors()
+            ) {
+              Boolean allowBuildResult = tryAllowBuild(
+                claim,
+                player,
+                linkedBlock.getType()
+              );
+              if (allowBuildResult != null && !allowBuildResult) {
+                return "griefprevention_build_denied";
+              }
+            }
+          }
         }
-      }
+      } catch (ReflectiveOperationException ex) {
+        plugin
+          .getLogger()
+          .fine(
+            "GriefPrevention compatibility check skipped: %s".formatted(
+              ex.getMessage()
+            )
+          );
       }
     }
-    } catch (ReflectiveOperationException ex) {
-    plugin.getLogger().fine("GriefPrevention compatibility check skipped: %s".formatted(ex.getMessage()));
+
+    String worldGuardReason = evaluateWorldGuard(
+      plugin,
+      plugin.getPluginConfig(),
+      player,
+      linkedBlock
+    );
+    if (!worldGuardReason.isEmpty()) {
+      return worldGuardReason;
     }
-  }
 
-  String worldGuardReason = evaluateWorldGuard(plugin, plugin.getPluginConfig(), player, linkedBlock);
-  if (!worldGuardReason.isEmpty()) {
-    return worldGuardReason;
-  }
-
-  return "";
+    return "";
   }
 
   /**
@@ -97,160 +133,179 @@ public final class ProtectionCompat {
    * @return true when allowed by configured location filters
    */
   public static boolean isLocationAllowed(DoubleDoors plugin, Block block) {
-  return evaluateLocationFilters(plugin.getPluginConfig(), block).isEmpty();
+    return evaluateLocationFilters(plugin.getPluginConfig(), block).isEmpty();
   }
 
-  private static Object getDataStore(Plugin griefPrevention) throws ReflectiveOperationException {
-  Class<?> gpClass = griefPrevention.getClass();
-
-  try {
-    Field dataStoreField = gpClass.getField("dataStore");
-    return dataStoreField.get(griefPrevention);
-  } catch (NoSuchFieldException e) {
-    Field dataStoreField = gpClass.getDeclaredField("dataStore");
-    dataStoreField.setAccessible(true);
-    return dataStoreField.get(griefPrevention);
-  }
-  }
-
-  private static Object findClaimAt(Object dataStore, Block linkedBlock) throws ReflectiveOperationException {
-  Method getClaimAt = null;
-  for (Method method : dataStore.getClass().getMethods()) {
-    if (!method.getName().equals("getClaimAt")) {
-    continue;
-    }
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    if (parameterTypes.length >= 1
-      && "org.bukkit.Location".equals(parameterTypes[0].getName())) {
-    getClaimAt = method;
-    break;
-    }
-  }
-
-  if (getClaimAt == null) {
-    return null;
-  }
-
-  Object[] args = new Object[getClaimAt.getParameterCount()];
-  Class<?>[] parameterTypes = getClaimAt.getParameterTypes();
-  args[0] = linkedBlock.getLocation();
-  for (int i = 1; i < parameterTypes.length; i++) {
-    if (parameterTypes[i] == boolean.class || parameterTypes[i] == Boolean.class) {
-    args[i] = Boolean.TRUE;
-    } else {
-    args[i] = null;
-    }
-  }
-
-  return getClaimAt.invoke(dataStore, args);
-  }
-
-  private static Boolean tryAllowBuild(Object claim, Player player, Material material)
+  private static Object getDataStore(Plugin griefPrevention)
     throws ReflectiveOperationException {
-  for (Method method : claim.getClass().getMethods()) {
-    if (!method.getName().equals("allowBuild")) {
-    continue;
-    }
+    Class<?> gpClass = griefPrevention.getClass();
 
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    if (parameterTypes.length != 2) {
-    continue;
-    }
-    if (!Player.class.isAssignableFrom(parameterTypes[0])) {
-    continue;
-    }
-    if (!Material.class.isAssignableFrom(parameterTypes[1])) {
-    continue;
-    }
-
-    Object result = method.invoke(claim, player, material);
-    if (result == null) {
-    return true;
-    }
-    if (result instanceof String message) {
-    return message.isEmpty();
-    }
-    return false;
-  }
-
-  return null;
-  }
-
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  private static Boolean tryCheckPermission(Object claim, Player player, String... permissionNames)
-    throws ReflectiveOperationException {
-  Class<?> claimPermissionClass;
-  try {
-    claimPermissionClass = Class.forName("me.ryanhamshire.GriefPrevention.ClaimPermission");
-  } catch (ClassNotFoundException ex) {
-    return null;
-  }
-
-  for (Method method : claim.getClass().getMethods()) {
-    if (!method.getName().equals("checkPermission")) {
-    continue;
-    }
-
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    if (parameterTypes.length < 2) {
-    continue;
-    }
-    if (!Player.class.isAssignableFrom(parameterTypes[0])) {
-    continue;
-    }
-    if (!parameterTypes[1].isAssignableFrom(claimPermissionClass)
-      && !claimPermissionClass.isAssignableFrom(parameterTypes[1])) {
-    continue;
-    }
-
-    boolean attemptedPermission = false;
-    for (String permissionName : permissionNames) {
-    Object permission;
     try {
-      permission = Enum.valueOf((Class<Enum>) claimPermissionClass, permissionName);
-    } catch (IllegalArgumentException ignored) {
-      continue;
-    }
-    attemptedPermission = true;
-
-    Object[] args = new Object[parameterTypes.length];
-    args[0] = player;
-    args[1] = permission;
-    for (int i = 2; i < parameterTypes.length; i++) {
-      args[i] = null;
-    }
-
-    Object result = method.invoke(claim, args);
-    if (result == null) {
-      return true;
-    }
-    if (result instanceof Boolean boolResult) {
-      if (boolResult) {
-      return true;
-      }
-      continue;
-    }
-    if (result instanceof String message) {
-      if (message.isEmpty()) {
-      return true;
-      }
-      continue;
-    }
-    if (result instanceof Supplier<?> supplier) {
-      Object supplied = supplier.get();
-      if (supplied == null || supplied.toString().isEmpty()) {
-      return true;
-      }
-      continue;
-    }
-    }
-
-    if (attemptedPermission) {
-    return false;
+      Field dataStoreField = gpClass.getField("dataStore");
+      return dataStoreField.get(griefPrevention);
+    } catch (NoSuchFieldException e) {
+      Field dataStoreField = gpClass.getDeclaredField("dataStore");
+      dataStoreField.setAccessible(true);
+      return dataStoreField.get(griefPrevention);
     }
   }
 
-  return null;
+  private static Object findClaimAt(Object dataStore, Block linkedBlock)
+    throws ReflectiveOperationException {
+    Method getClaimAt = null;
+    for (Method method : dataStore.getClass().getMethods()) {
+      if (!method.getName().equals("getClaimAt")) {
+        continue;
+      }
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      if (
+        parameterTypes.length >= 1 &&
+        "org.bukkit.Location".equals(parameterTypes[0].getName())
+      ) {
+        getClaimAt = method;
+        break;
+      }
+    }
+
+    if (getClaimAt == null) {
+      return null;
+    }
+
+    Object[] args = new Object[getClaimAt.getParameterCount()];
+    Class<?>[] parameterTypes = getClaimAt.getParameterTypes();
+    args[0] = linkedBlock.getLocation();
+    for (int i = 1; i < parameterTypes.length; i++) {
+      if (
+        parameterTypes[i] == boolean.class || parameterTypes[i] == Boolean.class
+      ) {
+        args[i] = Boolean.TRUE;
+      } else {
+        args[i] = null;
+      }
+    }
+
+    return getClaimAt.invoke(dataStore, args);
+  }
+
+  private static Boolean tryAllowBuild(
+    Object claim,
+    Player player,
+    Material material
+  ) throws ReflectiveOperationException {
+    for (Method method : claim.getClass().getMethods()) {
+      if (!method.getName().equals("allowBuild")) {
+        continue;
+      }
+
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      if (parameterTypes.length != 2) {
+        continue;
+      }
+      if (!Player.class.isAssignableFrom(parameterTypes[0])) {
+        continue;
+      }
+      if (!Material.class.isAssignableFrom(parameterTypes[1])) {
+        continue;
+      }
+
+      Object result = method.invoke(claim, player, material);
+      if (result == null) {
+        return true;
+      }
+      if (result instanceof String message) {
+        return message.isEmpty();
+      }
+      return false;
+    }
+
+    return null;
+  }
+
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  private static Boolean tryCheckPermission(
+    Object claim,
+    Player player,
+    String... permissionNames
+  ) throws ReflectiveOperationException {
+    Class<?> claimPermissionClass;
+    try {
+      claimPermissionClass = Class.forName(
+        "me.ryanhamshire.GriefPrevention.ClaimPermission"
+      );
+    } catch (ClassNotFoundException ex) {
+      return null;
+    }
+
+    for (Method method : claim.getClass().getMethods()) {
+      if (!method.getName().equals("checkPermission")) {
+        continue;
+      }
+
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      if (parameterTypes.length < 2) {
+        continue;
+      }
+      if (!Player.class.isAssignableFrom(parameterTypes[0])) {
+        continue;
+      }
+      if (
+        !parameterTypes[1].isAssignableFrom(claimPermissionClass) &&
+        !claimPermissionClass.isAssignableFrom(parameterTypes[1])
+      ) {
+        continue;
+      }
+
+      boolean attemptedPermission = false;
+      for (String permissionName : permissionNames) {
+        Object permission;
+        try {
+          permission = Enum.valueOf(
+            (Class<Enum>) claimPermissionClass,
+            permissionName
+          );
+        } catch (IllegalArgumentException ignored) {
+          continue;
+        }
+        attemptedPermission = true;
+
+        Object[] args = new Object[parameterTypes.length];
+        args[0] = player;
+        args[1] = permission;
+        for (int i = 2; i < parameterTypes.length; i++) {
+          args[i] = null;
+        }
+
+        Object result = method.invoke(claim, args);
+        if (result == null) {
+          return true;
+        }
+        if (result instanceof Boolean boolResult) {
+          if (boolResult) {
+            return true;
+          }
+          continue;
+        }
+        if (result instanceof String message) {
+          if (message.isEmpty()) {
+            return true;
+          }
+          continue;
+        }
+        if (result instanceof Supplier<?> supplier) {
+          Object supplied = supplier.get();
+          if (supplied == null || supplied.toString().isEmpty()) {
+            return true;
+          }
+          continue;
+        }
+      }
+
+      if (attemptedPermission) {
+        return false;
+      }
+    }
+
+    return null;
   }
 
   /**
@@ -264,24 +319,32 @@ public final class ProtectionCompat {
    * @return the claim ID, or {@code -1L} if unavailable
    */
   public static long getClaimIdAt(DoubleDoors plugin, Block block) {
-  Plugin griefPrevention = Bukkit.getPluginManager().getPlugin("GriefPrevention");
-  if (griefPrevention == null || !griefPrevention.isEnabled()) {
-    return -1L;
-  }
-  try {
-    Object dataStore = getDataStore(griefPrevention);
-    if (dataStore == null) {
-    return -1L;
+    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
+      "GriefPrevention"
+    );
+    if (griefPrevention == null || !griefPrevention.isEnabled()) {
+      return -1L;
     }
-    Object claim = findClaimAt(dataStore, block);
-    if (claim == null) {
-    return -1L;
+    try {
+      Object dataStore = getDataStore(griefPrevention);
+      if (dataStore == null) {
+        return -1L;
+      }
+      Object claim = findClaimAt(dataStore, block);
+      if (claim == null) {
+        return -1L;
+      }
+      return extractClaimId(claim);
+    } catch (ReflectiveOperationException ex) {
+      plugin
+        .getLogger()
+        .fine(
+          "GriefPrevention claim-ID lookup failed: %s".formatted(
+            ex.getMessage()
+          )
+        );
+      return -1L;
     }
-    return extractClaimId(claim);
-  } catch (ReflectiveOperationException ex) {
-    plugin.getLogger().fine("GriefPrevention claim-ID lookup failed: %s".formatted(ex.getMessage()));
-    return -1L;
-  }
   }
 
   /**
@@ -295,331 +358,468 @@ public final class ProtectionCompat {
    * @param block  the block whose claim is evaluated
    * @return true if the player may manage the claim
    */
-  public static boolean isClaimManagerAt(DoubleDoors plugin, Player player, Block block) {
-  Plugin griefPrevention = Bukkit.getPluginManager().getPlugin("GriefPrevention");
-  if (griefPrevention == null || !griefPrevention.isEnabled()) {
-    return true;
-  }
-  try {
-    Object dataStore = getDataStore(griefPrevention);
-    if (dataStore == null) {
-    return true;
+  public static boolean isClaimManagerAt(
+    DoubleDoors plugin,
+    Player player,
+    Block block
+  ) {
+    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
+      "GriefPrevention"
+    );
+    if (griefPrevention == null || !griefPrevention.isEnabled()) {
+      return true;
     }
-    Object claim = findClaimAt(dataStore, block);
-    if (claim == null) {
-    return true; // wilderness — no restrictions
-    }
-    Boolean allowBuild = tryAllowBuild(claim, player, block.getType());
-    if (allowBuild != null) {
-    return allowBuild;
-    }
-    Boolean checkPerm = tryCheckPermission(claim, player, "Build");
-    if (checkPerm != null) {
-    return checkPerm;
-    }
-  } catch (ReflectiveOperationException ex) {
-    plugin.getLogger().fine("GriefPrevention claim-manager check failed: %s".formatted(ex.getMessage()));
-  }
-  return true;
-  }
-
-  private static long extractClaimId(Object claim) throws ReflectiveOperationException {
-  for (Method method : claim.getClass().getMethods()) {
-    if (method.getName().equals("getID") && method.getParameterCount() == 0) {
-    Object result = method.invoke(claim);
-    if (result instanceof Long l) {
-      return l;
-    }
-    if (result instanceof Number n) {
-      return n.longValue();
-    }
-    }
-  }
-  try {
-    Field idField = claim.getClass().getDeclaredField("id");
-    idField.setAccessible(true);
-    Object val = idField.get(claim);
-    if (val instanceof Long l) {
-    return l;
-    }
-    if (val instanceof Number n) {
-    return n.longValue();
-    }
-  } catch (NoSuchFieldException ignored) {
-    // fall through
-  }
-  return -1L;
-  }
-
-  private static String evaluateLocationFilters(PluginConfig config, Block block) {
-  String normalized = normalizeLocation(block);
-  PluginConfig.LocationMode locationMode = config.getLocationMode();
-  Set<String> locationEntries = config.getLocationEntries();
-  if (locationMode == PluginConfig.LocationMode.BLACKLIST && locationEntries.contains(normalized)) {
-    return "location_blacklist";
-  }
-  if (locationMode == PluginConfig.LocationMode.WHITELIST && !locationEntries.contains(normalized)) {
-    return "location_not_whitelisted";
-  }
-
-  Set<String> regionIds = getWorldGuardRegionIds(block);
-  PluginConfig.RegionMode regionMode = config.getWorldGuardRegionMode();
-  Set<String> configuredRegionIds = config.getWorldGuardRegionIds();
-  boolean anyConfigured = regionIds.stream().anyMatch(configuredRegionIds::contains);
-  if (regionMode == PluginConfig.RegionMode.BLACKLIST && anyConfigured) {
-    return "worldguard_region_blacklist";
-  }
-  if (regionMode == PluginConfig.RegionMode.WHITELIST && !anyConfigured) {
-    return "worldguard_region_not_whitelisted";
-  }
-  return "";
-  }
-
-  private static String evaluateWorldGuard(DoubleDoors plugin, PluginConfig config, Player player, Block block) {
-  Plugin worldGuardPlugin = Bukkit.getPluginManager().getPlugin("WorldGuard");
-  if (worldGuardPlugin == null || !worldGuardPlugin.isEnabled()) {
-    return "";
-  }
-
-  if (config.isWorldGuardRespectBuildPermission()) {
     try {
-    Class<?> wgPluginClass = Class.forName("com.sk89q.worldguard.bukkit.WorldGuardPlugin");
-    Method inst = wgPluginClass.getMethod("inst");
-    Object wgPlugin = inst.invoke(null);
-    Method canBuild = wgPluginClass.getMethod("canBuild", Player.class, org.bukkit.Location.class);
-    Object allowed = canBuild.invoke(wgPlugin, player, block.getLocation());
-    if (allowed instanceof Boolean bool && !bool) {
-      return "worldguard_build_denied";
-    }
+      Object dataStore = getDataStore(griefPrevention);
+      if (dataStore == null) {
+        return true;
+      }
+      Object claim = findClaimAt(dataStore, block);
+      if (claim == null) {
+        return true; // wilderness — no restrictions
+      }
+      Boolean allowBuild = tryAllowBuild(claim, player, block.getType());
+      if (allowBuild != null) {
+        return allowBuild;
+      }
+      Boolean checkPerm = tryCheckPermission(claim, player, "Build");
+      if (checkPerm != null) {
+        return checkPerm;
+      }
     } catch (ReflectiveOperationException ex) {
-      // Fail open to keep compatibility resilient.
-      plugin.getLogger().fine("WorldGuard build-permission check failed: " + ex.getMessage());
+      plugin
+        .getLogger()
+        .fine(
+          "GriefPrevention claim-manager check failed: %s".formatted(
+            ex.getMessage()
+          )
+        );
     }
+    return true;
   }
 
-  if (config.isWorldGuardRespectUseFlag() && !isWorldGuardUseAllowed(player, block)) {
-    return "worldguard_use_denied";
+  private static long extractClaimId(Object claim)
+    throws ReflectiveOperationException {
+    for (Method method : claim.getClass().getMethods()) {
+      if (method.getName().equals("getID") && method.getParameterCount() == 0) {
+        Object result = method.invoke(claim);
+        if (result instanceof Long l) {
+          return l;
+        }
+        if (result instanceof Number n) {
+          return n.longValue();
+        }
+      }
+    }
+    try {
+      Field idField = claim.getClass().getDeclaredField("id");
+      idField.setAccessible(true);
+      Object val = idField.get(claim);
+      if (val instanceof Long l) {
+        return l;
+      }
+      if (val instanceof Number n) {
+        return n.longValue();
+      }
+    } catch (NoSuchFieldException ignored) {
+      // fall through
+    }
+    return -1L;
   }
 
-  String customFlag = config.getWorldGuardCustomFlag();
-  if (!customFlag.isEmpty()) {
-    String state = resolveWorldGuardCustomFlagState(block, customFlag);
-    if ("deny".equals(state)) {
-    return "worldguard_custom_flag_deny";
+  private static String evaluateLocationFilters(
+    PluginConfig config,
+    Block block
+  ) {
+    String normalized = normalizeLocation(block);
+    PluginConfig.LocationMode locationMode = config.getLocationMode();
+    Set<String> locationEntries = config.getLocationEntries();
+    if (
+      locationMode == PluginConfig.LocationMode.BLACKLIST &&
+      locationEntries.contains(normalized)
+    ) {
+      return "location_blacklist";
     }
-    if ("allow".equals(state)) {
+    if (
+      locationMode == PluginConfig.LocationMode.WHITELIST &&
+      !locationEntries.contains(normalized)
+    ) {
+      return "location_not_whitelisted";
+    }
+
+    Set<String> regionIds = getWorldGuardRegionIds(block);
+    PluginConfig.RegionMode regionMode = config.getWorldGuardRegionMode();
+    Set<String> configuredRegionIds = config.getWorldGuardRegionIds();
+    boolean anyConfigured = regionIds
+      .stream()
+      .anyMatch(configuredRegionIds::contains);
+    if (regionMode == PluginConfig.RegionMode.BLACKLIST && anyConfigured) {
+      return "worldguard_region_blacklist";
+    }
+    if (regionMode == PluginConfig.RegionMode.WHITELIST && !anyConfigured) {
+      return "worldguard_region_not_whitelisted";
+    }
     return "";
-    }
   }
-  return "";
+
+  private static String evaluateWorldGuard(
+    DoubleDoors plugin,
+    PluginConfig config,
+    Player player,
+    Block block
+  ) {
+    Plugin worldGuardPlugin = Bukkit.getPluginManager().getPlugin("WorldGuard");
+    if (worldGuardPlugin == null || !worldGuardPlugin.isEnabled()) {
+      return "";
+    }
+
+    if (config.isWorldGuardRespectBuildPermission()) {
+      try {
+        Class<?> wgPluginClass = Class.forName(
+          "com.sk89q.worldguard.bukkit.WorldGuardPlugin"
+        );
+        Method inst = wgPluginClass.getMethod("inst");
+        Object wgPlugin = inst.invoke(null);
+        Method canBuild = wgPluginClass.getMethod(
+          "canBuild",
+          Player.class,
+          org.bukkit.Location.class
+        );
+        Object allowed = canBuild.invoke(wgPlugin, player, block.getLocation());
+        if (allowed instanceof Boolean bool && !bool) {
+          return "worldguard_build_denied";
+        }
+      } catch (ReflectiveOperationException ex) {
+        // Fail open to keep compatibility resilient.
+        plugin
+          .getLogger()
+          .fine("WorldGuard build-permission check failed: " + ex.getMessage());
+      }
+    }
+
+    if (
+      config.isWorldGuardRespectUseFlag() &&
+      !isWorldGuardUseAllowed(player, block)
+    ) {
+      return "worldguard_use_denied";
+    }
+
+    String customFlag = config.getWorldGuardCustomFlag();
+    if (!customFlag.isEmpty()) {
+      String state = resolveWorldGuardCustomFlagState(block, customFlag);
+      if ("deny".equals(state)) {
+        return "worldguard_custom_flag_deny";
+      }
+      if ("allow".equals(state)) {
+        return "";
+      }
+    }
+    return "";
   }
 
   private static boolean isWorldGuardUseAllowed(Player player, Block block) {
-  try {
-    Class<?> worldGuardClass = Class.forName("com.sk89q.worldguard.WorldGuard");
-    Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
-    Object platform = worldGuard.getClass().getMethod("getPlatform").invoke(worldGuard);
-    Object regionContainer = platform.getClass().getMethod("getRegionContainer").invoke(platform);
-    Object regionQuery = regionContainer.getClass().getMethod("createQuery").invoke(regionContainer);
-
-    Class<?> bukkitAdapterClass = Class.forName("com.sk89q.worldedit.bukkit.BukkitAdapter");
-    Object adaptedLocation = bukkitAdapterClass.getMethod("adapt", org.bukkit.Location.class).invoke(null, block.getLocation());
-
-    Class<?> worldGuardPluginClass = Class.forName("com.sk89q.worldguard.bukkit.WorldGuardPlugin");
-    Object worldGuardPlugin = worldGuardPluginClass.getMethod("inst").invoke(null);
-    Object localPlayer = worldGuardPluginClass.getMethod("wrapPlayer", Player.class).invoke(worldGuardPlugin, player);
-
-    Class<?> flagsClass = Class.forName("com.sk89q.worldguard.protection.flags.Flags");
-    Object useFlag = flagsClass.getField("USE").get(null);
-    Class<?> stateFlagClass = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
-    Object stateFlags = Array.newInstance(stateFlagClass, 1);
-    Array.set(stateFlags, 0, useFlag);
-
-    Method testState = null;
-    for (Method method : regionQuery.getClass().getMethods()) {
-    if (!method.getName().equals("testState") || method.getParameterCount() != 3) {
-      continue;
-    }
-    if (!method.getParameterTypes()[2].isArray()) {
-      continue;
-    }
-    testState = method;
-    break;
-    }
-    if (testState == null) {
-    return true;
-    }
-
-    Object result = testState.invoke(regionQuery, adaptedLocation, localPlayer, stateFlags);
-    return !(result instanceof Boolean allowed) || allowed;
-  } catch (ReflectiveOperationException | IllegalArgumentException ex) {
-    return true;
-  }
-  }
-
-  private static String resolveWorldGuardCustomFlagState(Block block, String flagName) {
-  try {
-    Class<?> worldGuardClass = Class.forName("com.sk89q.worldguard.WorldGuard");
-    Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
-    Object registry = worldGuard.getClass().getMethod("getFlagRegistry").invoke(worldGuard);
-    Object flag = registry.getClass().getMethod("get", String.class).invoke(registry, flagName);
-    if (flag == null) {
-    return "";
-    }
-
-    Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
-    if (applicableRegionSet == null) {
-    return "";
-    }
-
-    String queriedState = queryWorldGuardStateFromApplicableSet(applicableRegionSet, flag);
-    if (!queriedState.isEmpty()) {
-    return queriedState;
-    }
-
-    List<Object> regions = new ArrayList<>();
-    for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
-    regions.add(region);
-    }
-    regions.sort(Comparator.comparingInt(ProtectionCompat::getWorldGuardRegionPriority).reversed());
-    for (Object region : regions) {
     try {
-      Object value = region.getClass().getMethod("getFlag", flag.getClass()).invoke(region, flag);
-      String normalized = normalizeWorldGuardState(value);
-      if (normalized.contains("deny")) {
-      return "deny";
+      Class<?> worldGuardClass = Class.forName(
+        "com.sk89q.worldguard.WorldGuard"
+      );
+      Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+      Object platform = worldGuard
+        .getClass()
+        .getMethod("getPlatform")
+        .invoke(worldGuard);
+      Object regionContainer = platform
+        .getClass()
+        .getMethod("getRegionContainer")
+        .invoke(platform);
+      Object regionQuery = regionContainer
+        .getClass()
+        .getMethod("createQuery")
+        .invoke(regionContainer);
+
+      Class<?> bukkitAdapterClass = Class.forName(
+        "com.sk89q.worldedit.bukkit.BukkitAdapter"
+      );
+      Object adaptedLocation = bukkitAdapterClass
+        .getMethod("adapt", org.bukkit.Location.class)
+        .invoke(null, block.getLocation());
+
+      Class<?> worldGuardPluginClass = Class.forName(
+        "com.sk89q.worldguard.bukkit.WorldGuardPlugin"
+      );
+      Object worldGuardPlugin = worldGuardPluginClass
+        .getMethod("inst")
+        .invoke(null);
+      Object localPlayer = worldGuardPluginClass
+        .getMethod("wrapPlayer", Player.class)
+        .invoke(worldGuardPlugin, player);
+
+      Class<?> flagsClass = Class.forName(
+        "com.sk89q.worldguard.protection.flags.Flags"
+      );
+      Object useFlag = flagsClass.getField("USE").get(null);
+      Class<?> stateFlagClass = Class.forName(
+        "com.sk89q.worldguard.protection.flags.StateFlag"
+      );
+      Object stateFlags = Array.newInstance(stateFlagClass, 1);
+      Array.set(stateFlags, 0, useFlag);
+
+      Method testState = null;
+      for (Method method : regionQuery.getClass().getMethods()) {
+        if (
+          !method.getName().equals("testState") ||
+          method.getParameterCount() != 3
+        ) {
+          continue;
+        }
+        if (!method.getParameterTypes()[2].isArray()) {
+          continue;
+        }
+        testState = method;
+        break;
       }
-      if (normalized.contains("allow")) {
-      return "allow";
+      if (testState == null) {
+        return true;
       }
-    } catch (ReflectiveOperationException ex) {
-      // Move to the next region.
+
+      Object result = testState.invoke(
+        regionQuery,
+        adaptedLocation,
+        localPlayer,
+        stateFlags
+      );
+      return !(result instanceof Boolean allowed) || allowed;
+    } catch (ReflectiveOperationException | IllegalArgumentException ex) {
+      return true;
     }
-    }
-  } catch (ReflectiveOperationException ignored) {
-    // Fail open.
   }
-  return "";
+
+  private static String resolveWorldGuardCustomFlagState(
+    Block block,
+    String flagName
+  ) {
+    try {
+      Class<?> worldGuardClass = Class.forName(
+        "com.sk89q.worldguard.WorldGuard"
+      );
+      Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+      Object registry = worldGuard
+        .getClass()
+        .getMethod("getFlagRegistry")
+        .invoke(worldGuard);
+      Object flag = registry
+        .getClass()
+        .getMethod("get", String.class)
+        .invoke(registry, flagName);
+      if (flag == null) {
+        return "";
+      }
+
+      Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+      if (applicableRegionSet == null) {
+        return "";
+      }
+
+      String queriedState = queryWorldGuardStateFromApplicableSet(
+        applicableRegionSet,
+        flag
+      );
+      if (!queriedState.isEmpty()) {
+        return queriedState;
+      }
+
+      List<Object> regions = new ArrayList<>();
+      for (Object region : getApplicableWorldGuardRegions(
+        applicableRegionSet
+      )) {
+        regions.add(region);
+      }
+      regions.sort(
+        Comparator.comparingInt(
+          ProtectionCompat::getWorldGuardRegionPriority
+        ).reversed()
+      );
+      for (Object region : regions) {
+        try {
+          Object value = region
+            .getClass()
+            .getMethod("getFlag", flag.getClass())
+            .invoke(region, flag);
+          String normalized = normalizeWorldGuardState(value);
+          if (normalized.contains("deny")) {
+            return "deny";
+          }
+          if (normalized.contains("allow")) {
+            return "allow";
+          }
+        } catch (ReflectiveOperationException ex) {
+          // Move to the next region.
+        }
+      }
+    } catch (ReflectiveOperationException ignored) {
+      // Fail open.
+    }
+    return "";
   }
 
   private static Set<String> getWorldGuardRegionIds(Block block) {
-  Set<String> ids = new HashSet<>();
-  Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
-  if (applicableRegionSet == null) {
+    Set<String> ids = new HashSet<>();
+    Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+    if (applicableRegionSet == null) {
+      return ids;
+    }
+    for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
+      try {
+        Object id = region.getClass().getMethod("getId").invoke(region);
+        if (id != null) {
+          ids.add(id.toString().trim().toLowerCase(Locale.ROOT));
+        }
+      } catch (ReflectiveOperationException ignored) {
+        // Best-effort region-id collection.
+      }
+    }
     return ids;
-  }
-  for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
-    try {
-    Object id = region.getClass().getMethod("getId").invoke(region);
-    if (id != null) {
-      ids.add(id.toString().trim().toLowerCase(Locale.ROOT));
-    }
-    } catch (ReflectiveOperationException ignored) {
-    // Best-effort region-id collection.
-    }
-  }
-  return ids;
   }
 
   private static Object getApplicableWorldGuardRegionSet(Block block) {
-  try {
-    Class<?> worldGuardClass = Class.forName("com.sk89q.worldguard.WorldGuard");
-    Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
-    Object platform = worldGuard.getClass().getMethod("getPlatform").invoke(worldGuard);
-    Object regionContainer = platform.getClass().getMethod("getRegionContainer").invoke(platform);
+    try {
+      Class<?> worldGuardClass = Class.forName(
+        "com.sk89q.worldguard.WorldGuard"
+      );
+      Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+      Object platform = worldGuard
+        .getClass()
+        .getMethod("getPlatform")
+        .invoke(worldGuard);
+      Object regionContainer = platform
+        .getClass()
+        .getMethod("getRegionContainer")
+        .invoke(platform);
 
-    Class<?> bukkitAdapterClass = Class.forName("com.sk89q.worldedit.bukkit.BukkitAdapter");
-    Object weWorld = bukkitAdapterClass.getMethod("adapt", org.bukkit.World.class).invoke(null, block.getWorld());
-    Object regionManager = null;
-    for (Method method : regionContainer.getClass().getMethods()) {
-    if (!method.getName().equals("get") || method.getParameterCount() != 1) {
-      continue;
+      Class<?> bukkitAdapterClass = Class.forName(
+        "com.sk89q.worldedit.bukkit.BukkitAdapter"
+      );
+      Object weWorld = bukkitAdapterClass
+        .getMethod("adapt", org.bukkit.World.class)
+        .invoke(null, block.getWorld());
+      Object regionManager = null;
+      for (Method method : regionContainer.getClass().getMethods()) {
+        if (
+          !method.getName().equals("get") || method.getParameterCount() != 1
+        ) {
+          continue;
+        }
+        Class<?> parameterType = method.getParameterTypes()[0];
+        if (
+          !parameterType.isInstance(weWorld) &&
+          !parameterType.isAssignableFrom(weWorld.getClass())
+        ) {
+          continue;
+        }
+        regionManager = method.invoke(regionContainer, weWorld);
+        break;
+      }
+      if (regionManager == null) {
+        return Set.of();
+      }
+
+      Class<?> blockVectorClass = Class.forName(
+        "com.sk89q.worldedit.math.BlockVector3"
+      );
+      Object blockVector = blockVectorClass
+        .getMethod("at", int.class, int.class, int.class)
+        .invoke(null, block.getX(), block.getY(), block.getZ());
+      Object applicable = regionManager
+        .getClass()
+        .getMethod("getApplicableRegions", blockVectorClass)
+        .invoke(regionManager, blockVector);
+      return applicable;
+    } catch (ReflectiveOperationException ignored) {
+      // Fail open.
     }
-    Class<?> parameterType = method.getParameterTypes()[0];
-    if (!parameterType.isInstance(weWorld) && !parameterType.isAssignableFrom(weWorld.getClass())) {
-      continue;
+
+    return null;
+  }
+
+  private static Iterable<?> getApplicableWorldGuardRegions(
+    Object applicableRegionSet
+  ) {
+    if (applicableRegionSet instanceof Iterable<?> iterable) {
+      return iterable;
     }
-    regionManager = method.invoke(regionContainer, weWorld);
-    break;
-    }
-    if (regionManager == null) {
     return Set.of();
+  }
+
+  private static String queryWorldGuardStateFromApplicableSet(
+    Object applicableRegionSet,
+    Object flag
+  ) {
+    try {
+      Class<?> stateFlagClass = Class.forName(
+        "com.sk89q.worldguard.protection.flags.StateFlag"
+      );
+      if (!stateFlagClass.isInstance(flag)) {
+        return "";
+      }
+      Object stateFlags = Array.newInstance(stateFlagClass, 1);
+      Array.set(stateFlags, 0, flag);
+
+      for (Method method : applicableRegionSet.getClass().getMethods()) {
+        if (
+          !method.getName().equals("queryState") ||
+          method.getParameterCount() != 2
+        ) {
+          continue;
+        }
+        Class<?>[] parameterTypes = method.getParameterTypes();
+        if (!parameterTypes[1].isArray()) {
+          continue;
+        }
+        Object result = method.invoke(applicableRegionSet, new Object[] {
+          null,
+          stateFlags,
+        });
+        String normalized = normalizeWorldGuardState(result);
+        if (normalized.contains("deny")) {
+          return "deny";
+        }
+        if (normalized.contains("allow")) {
+          return "allow";
+        }
+      }
+    } catch (ReflectiveOperationException | IllegalArgumentException ignored) {
+      // Fall back to priority-sorted region iteration.
     }
-
-    Class<?> blockVectorClass = Class.forName("com.sk89q.worldedit.math.BlockVector3");
-    Object blockVector = blockVectorClass.getMethod("at", int.class, int.class, int.class)
-      .invoke(null, block.getX(), block.getY(), block.getZ());
-    Object applicable = regionManager.getClass().getMethod("getApplicableRegions", blockVectorClass).invoke(regionManager, blockVector);
-    return applicable;
-  } catch (ReflectiveOperationException ignored) {
-    // Fail open.
-  }
-
-  return null;
-  }
-
-  private static Iterable<?> getApplicableWorldGuardRegions(Object applicableRegionSet) {
-  if (applicableRegionSet instanceof Iterable<?> iterable) {
-    return iterable;
-  }
-  return Set.of();
-  }
-
-  private static String queryWorldGuardStateFromApplicableSet(Object applicableRegionSet, Object flag) {
-  try {
-    Class<?> stateFlagClass = Class.forName("com.sk89q.worldguard.protection.flags.StateFlag");
-    if (!stateFlagClass.isInstance(flag)) {
     return "";
-    }
-    Object stateFlags = Array.newInstance(stateFlagClass, 1);
-    Array.set(stateFlags, 0, flag);
-
-    for (Method method : applicableRegionSet.getClass().getMethods()) {
-    if (!method.getName().equals("queryState") || method.getParameterCount() != 2) {
-      continue;
-    }
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    if (!parameterTypes[1].isArray()) {
-      continue;
-    }
-    Object result = method.invoke(applicableRegionSet, new Object[] {null, stateFlags});
-    String normalized = normalizeWorldGuardState(result);
-    if (normalized.contains("deny")) {
-      return "deny";
-    }
-    if (normalized.contains("allow")) {
-      return "allow";
-    }
-    }
-  } catch (ReflectiveOperationException | IllegalArgumentException ignored) {
-    // Fall back to priority-sorted region iteration.
-  }
-  return "";
   }
 
   private static int getWorldGuardRegionPriority(Object region) {
-  try {
-    Object value = region.getClass().getMethod("getPriority").invoke(region);
-    if (value instanceof Number number) {
-    return number.intValue();
+    try {
+      Object value = region.getClass().getMethod("getPriority").invoke(region);
+      if (value instanceof Number number) {
+        return number.intValue();
+      }
+    } catch (ReflectiveOperationException ignored) {
+      // Default priority.
     }
-  } catch (ReflectiveOperationException ignored) {
-    // Default priority.
-  }
-  return 0;
+    return 0;
   }
 
   private static String normalizeWorldGuardState(Object value) {
-  if (value == null) {
-    return "";
-  }
-  return value.toString().trim().toLowerCase(Locale.ROOT);
+    if (value == null) {
+      return "";
+    }
+    return value.toString().trim().toLowerCase(Locale.ROOT);
   }
 
   private static String normalizeLocation(Block block) {
-  return block.getWorld().getName().toLowerCase(Locale.ROOT)
-    + ":" + block.getX()
-    + ":" + block.getY()
-    + ":" + block.getZ();
+    return (
+      block.getWorld().getName().toLowerCase(Locale.ROOT) +
+      ":" +
+      block.getX() +
+      ":" +
+      block.getY() +
+      ":" +
+      block.getZ()
+    );
   }
 }

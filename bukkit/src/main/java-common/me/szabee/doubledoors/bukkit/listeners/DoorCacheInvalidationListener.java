@@ -1,21 +1,21 @@
 package me.szabee.doubledoors.bukkit.listeners;
 
+import me.szabee.doubledoors.bukkit.util.DoorUtil;
+import me.szabee.doubledoors.bukkit.util.OpenableType;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.event.block.BlockExplodeEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.EntityExplodeEvent;
-import org.bukkit.event.block.BlockExplodeEvent;
-
-import me.szabee.doubledoors.bukkit.util.DoorUtil;
-import me.szabee.doubledoors.bukkit.util.OpenableType;
 
 /**
  * Invalidates cached mirror lookups when door blocks change.
  */
 public final class DoorCacheInvalidationListener implements Listener {
+
   /**
    * Invalidates cache entries on door placement.
    *
@@ -23,7 +23,7 @@ public final class DoorCacheInvalidationListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockPlace(BlockPlaceEvent event) {
-  invalidateIfDoor(event.getBlockPlaced());
+    invalidateIfDoor(event.getBlockPlaced());
   }
 
   /**
@@ -33,7 +33,7 @@ public final class DoorCacheInvalidationListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockBreak(BlockBreakEvent event) {
-  invalidateIfDoor(event.getBlock());
+    invalidateIfDoor(event.getBlock());
   }
 
   /**
@@ -43,9 +43,9 @@ public final class DoorCacheInvalidationListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onEntityExplode(EntityExplodeEvent event) {
-  for (Block block : event.blockList()) {
-    invalidateIfDoor(block);
-  }
+    for (Block block : event.blockList()) {
+      invalidateIfDoor(block);
+    }
   }
 
   /**
@@ -55,19 +55,19 @@ public final class DoorCacheInvalidationListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockExplode(BlockExplodeEvent event) {
-  for (Block block : event.blockList()) {
-    invalidateIfDoor(block);
-  }
+    for (Block block : event.blockList()) {
+      invalidateIfDoor(block);
+    }
   }
 
   private void invalidateIfDoor(Block block) {
-  if (block == null) {
-    return;
-  }
-  OpenableType type = OpenableType.fromMaterial(block.getType());
-  if (type == null) {
-    return;
-  }
-  DoorUtil.invalidateMirrorCacheNear(block);
+    if (block == null) {
+      return;
+    }
+    OpenableType type = OpenableType.fromMaterial(block.getType());
+    if (type == null) {
+      return;
+    }
+    DoorUtil.invalidateMirrorCacheNear(block);
   }
 }

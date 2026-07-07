@@ -5,12 +5,10 @@ import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-
-import org.bukkit.configuration.file.YamlConfiguration;
-
 import me.szabee.doubledoors.bukkit.DoubleDoors;
-import me.szabee.doubledoors.storage.SharedSqlStorage;
 import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
+import me.szabee.doubledoors.storage.SharedSqlStorage;
+import org.bukkit.configuration.file.YamlConfiguration;
 
 /**
  * Manages per-GriefPrevention-claim settings, persisted to {@code claims.yml}.
@@ -23,7 +21,8 @@ public final class ClaimSettings {
   private final File dataFile;
   private final SharedSqlStorage sqlStorage;
   private final boolean useSql;
-  private final Set<Long> villagersBlockedClaims = ConcurrentHashMap.newKeySet();
+  private final Set<Long> villagersBlockedClaims =
+    ConcurrentHashMap.newKeySet();
   private final Object writeLock = new Object();
 
   /**
@@ -32,72 +31,74 @@ public final class ClaimSettings {
    * @param plugin the plugin instance
    */
   public ClaimSettings(DoubleDoors plugin) {
-  this.plugin = plugin;
-  this.dataFile = new File(plugin.getDataFolder(), "claims.yml");
-  this.sqlStorage = plugin.getSqlStorage();
-  this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
-  load();
+    this.plugin = plugin;
+    this.dataFile = new File(plugin.getDataFolder(), "claims.yml");
+    this.sqlStorage = plugin.getSqlStorage();
+    this.useSql = plugin.getPluginConfig().isSqlEnabled() && sqlStorage != null;
+    load();
   }
 
   /**
    * Reloads all claim settings from disk, clearing in-memory state.
    */
   public void load() {
-  if (useSql) {
-    villagersBlockedClaims.clear();
-    villagersBlockedClaims.addAll(sqlStorage.loadVillagersBlockedClaims());
-    return;
-  }
+    if (useSql) {
+      villagersBlockedClaims.clear();
+      villagersBlockedClaims.addAll(sqlStorage.loadVillagersBlockedClaims());
+      return;
+    }
 
-  YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
-  villagersBlockedClaims.clear();
-  List<?> blocked = data.getList("villagersBlocked");
-  if (blocked != null) {
-    for (Object entry : blocked) {
-    if (entry instanceof Number n) {
-      villagersBlockedClaims.add(n.longValue());
+    YamlConfiguration data = YamlConfiguration.loadConfiguration(dataFile);
+    villagersBlockedClaims.clear();
+    List<?> blocked = data.getList("villagersBlocked");
+    if (blocked != null) {
+      for (Object entry : blocked) {
+        if (entry instanceof Number n) {
+          villagersBlockedClaims.add(n.longValue());
+        }
+      }
     }
-    }
-  }
   }
 
   /**
    * Saves all claim settings synchronously to {@code claims.yml}.
    */
   public void save() {
-  synchronized (writeLock) {
-    if (useSql) {
-      return;
-    }
+    synchronized (writeLock) {
+      if (useSql) {
+        return;
+      }
 
-    YamlConfiguration data = new YamlConfiguration();
-    data.set("villagersBlocked", List.copyOf(villagersBlockedClaims));
-    try {
-      data.save(dataFile);
-    } catch (IOException e) {
-      plugin.getLogger().warning("Could not save claims.yml: %s".formatted(e.getMessage()));
+      YamlConfiguration data = new YamlConfiguration();
+      data.set("villagersBlocked", List.copyOf(villagersBlockedClaims));
+      try {
+        data.save(dataFile);
+      } catch (IOException e) {
+        plugin
+          .getLogger()
+          .warning("Could not save claims.yml: %s".formatted(e.getMessage()));
+      }
     }
-  }
   }
 
   /**
    * Saves asynchronously; safe to call from the main thread after every mutation.
    */
   public void saveAsync() {
-  SchedulerBridge.runAsync(plugin, this::save);
+    SchedulerBridge.runAsync(plugin, this::save);
   }
 
   private void saveAsync(long claimId) {
-  SchedulerBridge.runAsync(plugin, () -> {
-    synchronized (writeLock) {
-      if (useSql) {
-        boolean currentBlocked = villagersBlockedClaims.contains(claimId);
-        sqlStorage.setVillagersBlocked(claimId, currentBlocked);
-        return;
+    SchedulerBridge.runAsync(plugin, () -> {
+      synchronized (writeLock) {
+        if (useSql) {
+          boolean currentBlocked = villagersBlockedClaims.contains(claimId);
+          sqlStorage.setVillagersBlocked(claimId, currentBlocked);
+          return;
+        }
+        save();
       }
-      save();
-    }
-  });
+    });
   }
 
   /**
@@ -107,7 +108,7 @@ public final class ClaimSettings {
    * @return true if villagers are blocked in this claim
    */
   public boolean isVillagersBlocked(long claimId) {
-  return villagersBlockedClaims.contains(claimId);
+    return villagersBlockedClaims.contains(claimId);
   }
 
   /**
@@ -117,12 +118,12 @@ public final class ClaimSettings {
    * @return true if villagers are now blocked, false if now allowed
    */
   public boolean toggleVillagersBlocked(long claimId) {
-  if (villagersBlockedClaims.remove(claimId)) {
+    if (villagersBlockedClaims.remove(claimId)) {
+      saveAsync(claimId);
+      return false;
+    }
+    villagersBlockedClaims.add(claimId);
     saveAsync(claimId);
-    return false;
-  }
-  villagersBlockedClaims.add(claimId);
-  saveAsync(claimId);
-  return true;
+    return true;
   }
 }

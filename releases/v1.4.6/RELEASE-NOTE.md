@@ -47,4 +47,4 @@ Release date: 2026-07-03
 
 ## Notes
 
-- If you update the velocity proxy, you need to move the config directory in the plugins folder from `plugins/doubledoors-proxy/config.properties` to `plugins/doubledoors-velocity/config.properties`.
+- If you update the velocity proxy, you need to move the config file in the plugins folder from `plugins/doubledoors-proxy/config.properties` to `plugins/doubledoors-velocity/config.properties`.

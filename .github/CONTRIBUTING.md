@@ -12,13 +12,13 @@ Thanks for your interest in contributing to DoubleDoors.
 
 Requirements:
 
-- Java 21
-- Maven
+- Java 25
+- Gradle
 
 Build locally:
 
 ```bash
-mvn -DskipTests package
+./gradlew build
 ```
 
 ## Branch and PR Workflow
