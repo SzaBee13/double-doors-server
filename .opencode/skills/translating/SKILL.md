@@ -22,6 +22,7 @@ Work in `core/src/main/resources/lang/`:
 - Match the tone of the source message. Short operational messages should stay short.
 - Do not rewrite unrelated strings while editing a file.
 - If a message is unclear or context-sensitive, inspect the calling code before translating.
+- You must use the language's extra characters correctly, not just english caracters. Example: é, è, à, ñ, etc.
 
 ## Locale policy
 

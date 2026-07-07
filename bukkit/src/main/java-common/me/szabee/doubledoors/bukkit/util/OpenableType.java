@@ -43,7 +43,10 @@ public enum OpenableType {
    * @param material  fallback material when block data alone is insufficient
    * @return the resolved type, or {@code null} if neither source matches
    */
-  public static OpenableType fromBlockData(BlockData blockData, Material material) {
+  public static OpenableType fromBlockData(
+    BlockData blockData,
+    Material material
+  ) {
     if (blockData instanceof Door) {
       return DOOR;
     }

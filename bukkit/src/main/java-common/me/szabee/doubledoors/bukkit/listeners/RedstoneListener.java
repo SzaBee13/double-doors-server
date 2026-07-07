@@ -4,7 +4,12 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
-
+import me.szabee.doubledoors.bukkit.DoubleDoors;
+import me.szabee.doubledoors.bukkit.config.PluginConfig;
+import me.szabee.doubledoors.bukkit.util.DoorUtil;
+import me.szabee.doubledoors.bukkit.util.OpenableType;
+import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
+import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import org.bukkit.GameEvent;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -24,17 +29,11 @@ import org.bukkit.event.entity.EntityChangeBlockEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
 import org.bukkit.event.world.GenericGameEvent;
 
-import me.szabee.doubledoors.bukkit.DoubleDoors;
-import me.szabee.doubledoors.bukkit.config.PluginConfig;
-import me.szabee.doubledoors.bukkit.util.DoorUtil;
-import me.szabee.doubledoors.bukkit.util.OpenableType;
-import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
-import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
-
 /**
  * Handles redstone and villager-triggered door interactions.
  */
 public final class RedstoneListener implements Listener {
+
   /** Ticks to wait before reading door state after a redstone change. */
   private static final long REDSTONE_DELAY_TICKS = 1L;
   /**
@@ -53,7 +52,7 @@ public final class RedstoneListener implements Listener {
    * @param plugin the plugin instance
    */
   public RedstoneListener(DoubleDoors plugin) {
-  this.plugin = plugin;
+    this.plugin = plugin;
   }
 
   /**
@@ -63,45 +62,45 @@ public final class RedstoneListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onBlockRedstone(BlockRedstoneEvent event) {
-  int oldCurrent = event.getOldCurrent();
-  int newCurrent = event.getNewCurrent();
-  boolean wasPowered = oldCurrent > 0;
-  boolean nowPowered = newCurrent > 0;
-  if (wasPowered == nowPowered) {
-    return;
-  }
-
-  PluginConfig config = plugin.getPluginConfig();
-  if (!config.isServerWideEnabled()) {
-    return;
-  }
-
-  Block source = event.getBlock();
-  if (!plugin.isLocationAllowed(source)) {
-    return;
-  }
-
-  Set<Block> candidates = new HashSet<>();
-  if (DoorInteractListener.isEnabledType(source, config, plugin)) {
-    candidates.add(source);
-  }
-
-  // Some redstone changes are reported on the source block (for example a lever)
-  // rather than directly on the openable, so inspect immediate neighbors too.
-  for (BlockFace face : BlockFace.values()) {
-    if (!face.isCartesian()) {
-      continue;
+    int oldCurrent = event.getOldCurrent();
+    int newCurrent = event.getNewCurrent();
+    boolean wasPowered = oldCurrent > 0;
+    boolean nowPowered = newCurrent > 0;
+    if (wasPowered == nowPowered) {
+      return;
     }
 
-    Block neighbor = source.getRelative(face);
-    if (DoorInteractListener.isEnabledType(neighbor, config, plugin)) {
-    candidates.add(neighbor);
+    PluginConfig config = plugin.getPluginConfig();
+    if (!config.isServerWideEnabled()) {
+      return;
     }
-  }
 
-  for (Block candidate : candidates) {
-    applyConnectedState(candidate, config, REDSTONE_DELAY_TICKS);
-  }
+    Block source = event.getBlock();
+    if (!plugin.isLocationAllowed(source)) {
+      return;
+    }
+
+    Set<Block> candidates = new HashSet<>();
+    if (DoorInteractListener.isEnabledType(source, config, plugin)) {
+      candidates.add(source);
+    }
+
+    // Some redstone changes are reported on the source block (for example a lever)
+    // rather than directly on the openable, so inspect immediate neighbors too.
+    for (BlockFace face : BlockFace.values()) {
+      if (!face.isCartesian()) {
+        continue;
+      }
+
+      Block neighbor = source.getRelative(face);
+      if (DoorInteractListener.isEnabledType(neighbor, config, plugin)) {
+        candidates.add(neighbor);
+      }
+    }
+
+    for (Block candidate : candidates) {
+      applyConnectedState(candidate, config, REDSTONE_DELAY_TICKS);
+    }
   }
 
   /**
@@ -114,26 +113,28 @@ public final class RedstoneListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onVillagerInteract(EntityInteractEvent event) {
-  Entity entity = event.getEntity();
-  if (!(entity instanceof Villager)) {
-    return;
-  }
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Villager)) {
+      return;
+    }
 
-  Block block = normalizeOriginBlock(event.getBlock());
-  PluginConfig config = plugin.getPluginConfig();
-  if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
-    return;
-  }
-  if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
-    return;
-  }
+    Block block = normalizeOriginBlock(event.getBlock());
+    PluginConfig config = plugin.getPluginConfig();
+    if (
+      !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
+    ) {
+      return;
+    }
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
+      return;
+    }
 
-  long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
-  if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
-    return;
-  }
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
+      return;
+    }
 
-  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
+    applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
   }
 
   /**
@@ -146,26 +147,28 @@ public final class RedstoneListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onVillagerChangeBlock(EntityChangeBlockEvent event) {
-  Entity entity = event.getEntity();
-  if (!(entity instanceof Villager)) {
-    return;
-  }
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Villager)) {
+      return;
+    }
 
-  Block block = normalizeOriginBlock(event.getBlock());
-  PluginConfig config = plugin.getPluginConfig();
-  if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
-    return;
-  }
-  if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
-    return;
-  }
+    Block block = normalizeOriginBlock(event.getBlock());
+    PluginConfig config = plugin.getPluginConfig();
+    if (
+      !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
+    ) {
+      return;
+    }
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
+      return;
+    }
 
-  long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
-  if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
-    return;
-  }
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
+      return;
+    }
 
-  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
+    applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
   }
 
   /**
@@ -178,131 +181,164 @@ public final class RedstoneListener implements Listener {
    */
   @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
   public void onGenericGameEvent(GenericGameEvent event) {
-  if (event.getEvent() != GameEvent.BLOCK_CLOSE && event.getEvent() != GameEvent.BLOCK_OPEN) {
-    return;
-  }
-
-  Entity entity = event.getEntity();
-  if (!(entity instanceof Villager)) {
-    return;
-  }
-
-  Block block = normalizeOriginBlock(event.getLocation().getBlock());
-  PluginConfig config = plugin.getPluginConfig();
-  if (!config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()) {
-    return;
-  }
-  if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
-    return;
-  }
-
-  long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
-  if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
-    return;
-  }
-
-  applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
-  }
-
-  private void applyConnectedState(Block origin, PluginConfig config, long delayTicks) {
-  if (!config.isEnableRecursiveOpening()) {
-    return;
-  }
-
-  // Read and mirror state after the configured delay so we sync to vanilla's final result.
-  long effectiveDelay = Math.max(1L, delayTicks + config.getAnimationSyncExtraDelayTicks());
-  SchedulerBridge.runLaterAtLocation(plugin, origin.getLocation(), effectiveDelay, () -> {
-    BlockData originData = origin.getBlockData();
-    if (!(originData instanceof Openable openable)) {
+    if (
+      event.getEvent() != GameEvent.BLOCK_CLOSE &&
+      event.getEvent() != GameEvent.BLOCK_OPEN
+    ) {
       return;
     }
 
-    boolean openState = openable.isOpen();
-    BlockFace targetGateFacing = originData instanceof Gate gate ? gate.getFacing() : null;
-
-    if (originData instanceof Door) {
-    DoorUtil.MirrorSearchResult search = DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
-    if (!search.found()) {
-      search = DoorUtil.analyzeCornerDoorPartner(origin);
-    }
-    if (!search.found()) {
-      return;
-    }
-    Block partner = search.partner();
-    if (!plugin.isLocationAllowed(partner)) {
+    Entity entity = event.getEntity();
+    if (!(entity instanceof Villager)) {
       return;
     }
 
-    BlockData partnerData = partner.getBlockData();
-    if (!(partnerData instanceof Openable linked)) {
+    Block block = normalizeOriginBlock(event.getLocation().getBlock());
+    PluginConfig config = plugin.getPluginConfig();
+    if (
+      !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
+    ) {
+      return;
+    }
+    if (!DoorInteractListener.isEnabledType(block, config, plugin)) {
       return;
     }
 
-    if (linked.isOpen() == openState) {
+    long claimId = ProtectionCompat.getClaimIdAt(plugin, block);
+    if (claimId >= 0 && plugin.getClaimSettings().isVillagersBlocked(claimId)) {
       return;
     }
 
-    linked.setOpen(openState);
-    partner.setBlockData(linked, false);
-    plugin.playLinkedFeedback(partner, OpenableType.DOOR);
+    applyConnectedState(block, config, VILLAGER_DELAY_TICKS);
+  }
 
-    // Keep the upper half of the partner door in sync too.
-    Block partnerTop = partner.getRelative(BlockFace.UP);
-    BlockData topData = partnerTop.getBlockData();
-    if (topData instanceof Openable topOpenable) {
-      topOpenable.setOpen(openState);
-      partnerTop.setBlockData(topData, false);
-    }
-    return;
+  private void applyConnectedState(
+    Block origin,
+    PluginConfig config,
+    long delayTicks
+  ) {
+    if (!config.isEnableRecursiveOpening()) {
+      return;
     }
 
-    Set<Block> connected = DoorUtil.findConnectedDoors(origin, config.getRecursiveOpeningMaxBlocksDistance());
-    if (connected.isEmpty()) {
-    return;
-    }
+    // Read and mirror state after the configured delay so we sync to vanilla's final result.
+    long effectiveDelay = Math.max(
+      1L,
+      delayTicks + config.getAnimationSyncExtraDelayTicks()
+    );
+    SchedulerBridge.runLaterAtLocation(
+      plugin,
+      origin.getLocation(),
+      effectiveDelay,
+      () -> {
+        BlockData originData = origin.getBlockData();
+        if (!(originData instanceof Openable openable)) {
+          return;
+        }
 
-    // Snapshot first to avoid any ordering effects while mutating a connected component.
-    Map<Block, BlockData> snapshot = new HashMap<>();
-    for (Block block : connected) {
-    snapshot.put(block, block.getBlockData());
-    }
+        boolean openState = openable.isOpen();
+        BlockFace targetGateFacing =
+          originData instanceof Gate gate ? gate.getFacing() : null;
 
-    for (Map.Entry<Block, BlockData> entry : snapshot.entrySet()) {
-    Block block = entry.getKey();
-    BlockData data = entry.getValue();
-    if (!(data instanceof Openable linked)) {
-      continue;
-    }
-    if (linked.isOpen() == openState) {
-      continue;
-    }
+        if (originData instanceof Door) {
+          DoorUtil.MirrorSearchResult search =
+            DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+          if (!search.found()) {
+            search = DoorUtil.analyzeCornerDoorPartner(origin);
+          }
+          if (!search.found()) {
+            return;
+          }
+          Block partner = search.partner();
+          if (!plugin.isLocationAllowed(partner)) {
+            return;
+          }
 
-    if (!plugin.isLocationAllowed(block)) {
-      continue;
-    }
+          BlockData partnerData = partner.getBlockData();
+          if (!(partnerData instanceof Openable linked)) {
+            return;
+          }
 
-    if (openState && targetGateFacing != null && linked instanceof Gate gate) {
-      gate.setFacing(targetGateFacing);
-    }
-    linked.setOpen(openState);
-    block.setBlockData(linked, false);
-    OpenableType type = OpenableType.fromBlockData(block.getBlockData(), block.getType());
-    plugin.playLinkedFeedback(block, type == null ? OpenableType.CUSTOM : type);
-    }
-  });
+          if (linked.isOpen() == openState) {
+            return;
+          }
+
+          linked.setOpen(openState);
+          partner.setBlockData(linked, false);
+          plugin.playLinkedFeedback(partner, OpenableType.DOOR);
+
+          // Keep the upper half of the partner door in sync too.
+          Block partnerTop = partner.getRelative(BlockFace.UP);
+          BlockData topData = partnerTop.getBlockData();
+          if (topData instanceof Openable topOpenable) {
+            topOpenable.setOpen(openState);
+            partnerTop.setBlockData(topData, false);
+          }
+          return;
+        }
+
+        Set<Block> connected = DoorUtil.findConnectedDoors(
+          origin,
+          config.getRecursiveOpeningMaxBlocksDistance()
+        );
+        if (connected.isEmpty()) {
+          return;
+        }
+
+        // Snapshot first to avoid any ordering effects while mutating a connected component.
+        Map<Block, BlockData> snapshot = new HashMap<>();
+        for (Block block : connected) {
+          snapshot.put(block, block.getBlockData());
+        }
+
+        for (Map.Entry<Block, BlockData> entry : snapshot.entrySet()) {
+          Block block = entry.getKey();
+          BlockData data = entry.getValue();
+          if (!(data instanceof Openable linked)) {
+            continue;
+          }
+          if (linked.isOpen() == openState) {
+            continue;
+          }
+
+          if (!plugin.isLocationAllowed(block)) {
+            continue;
+          }
+
+          if (
+            openState && targetGateFacing != null && linked instanceof Gate gate
+          ) {
+            gate.setFacing(targetGateFacing);
+          }
+          linked.setOpen(openState);
+          block.setBlockData(linked, false);
+          OpenableType type = OpenableType.fromBlockData(
+            block.getBlockData(),
+            block.getType()
+          );
+          plugin.playLinkedFeedback(
+            block,
+            type == null ? OpenableType.CUSTOM : type
+          );
+        }
+      }
+    );
   }
 
   private Block normalizeOriginBlock(Block block) {
-  BlockData blockData = block.getBlockData();
-  if (!(blockData instanceof Bisected bisected) || bisected.getHalf() != Half.TOP) {
-    return block;
-  }
+    BlockData blockData = block.getBlockData();
+    if (
+      !(blockData instanceof Bisected bisected) ||
+      bisected.getHalf() != Half.TOP
+    ) {
+      return block;
+    }
 
-  Block lower = block.getRelative(BlockFace.DOWN);
-  if (!(lower.getBlockData() instanceof Door lowerDoor)) {
-    return block;
-  }
+    Block lower = block.getRelative(BlockFace.DOWN);
+    if (!(lower.getBlockData() instanceof Door lowerDoor)) {
+      return block;
+    }
 
-  return lowerDoor.getHalf() == Half.BOTTOM ? lower : block;
+    return lowerDoor.getHalf() == Half.BOTTOM ? lower : block;
   }
 }

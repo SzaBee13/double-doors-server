@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * Shared translation resolver.
  */
 public final class TranslationManager {
+
   private final TranslationCatalog catalog;
   private final String defaultLanguage;
   private final Map<String, Map<String, String>> translations;
@@ -19,7 +20,10 @@ public final class TranslationManager {
    * @param catalog         translation catalog providing language data
    * @param defaultLanguage fallback language code used when no translation is found
    */
-  public TranslationManager(TranslationCatalog catalog, String defaultLanguage) {
+  public TranslationManager(
+    TranslationCatalog catalog,
+    String defaultLanguage
+  ) {
     this.catalog = catalog;
     this.defaultLanguage = defaultLanguage;
     this.translations = new ConcurrentHashMap<>();
@@ -100,7 +104,11 @@ public final class TranslationManager {
     }
     // fallback to default language
     Map<String, String> def = translations.get(defaultLanguage);
-    if (def != null && !languageCode.equals(defaultLanguage) && !activeLanguage.equals(defaultLanguage)) {
+    if (
+      def != null &&
+      !languageCode.equals(defaultLanguage) &&
+      !activeLanguage.equals(defaultLanguage)
+    ) {
       String value = def.get(key);
       if (value != null && !value.isEmpty()) {
         return value;

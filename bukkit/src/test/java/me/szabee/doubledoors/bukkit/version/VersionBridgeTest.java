@@ -1,13 +1,13 @@
 package me.szabee.doubledoors.bukkit.version;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mockStatic;
+
 import org.bukkit.Bukkit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockedStatic;
 import org.mockito.junit.jupiter.MockitoExtension;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.mockito.Mockito.mockStatic;
 
 @ExtendWith(MockitoExtension.class)
 class VersionBridgeTest {
@@ -15,11 +15,13 @@ class VersionBridgeTest {
   @Test
   void testGetServerApiVersion() {
     VersionBridge bridge = new VersionBridgeImpl();
-    
+
     try (MockedStatic<Bukkit> mockedBukkit = mockStatic(Bukkit.class)) {
-      mockedBukkit.when(Bukkit::getBukkitVersion).thenReturn("26.1-R0.1-SNAPSHOT");
+      mockedBukkit
+        .when(Bukkit::getBukkitVersion)
+        .thenReturn("26.1-R0.1-SNAPSHOT");
       assertEquals("26.1-R0.1-SNAPSHOT", bridge.getServerApiVersion());
-      
+
       mockedBukkit.when(Bukkit::getBukkitVersion).thenReturn("");
       assertEquals("unknown", bridge.getServerApiVersion());
 
