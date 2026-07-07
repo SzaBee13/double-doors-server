@@ -32,7 +32,7 @@ This file tells AI coding agents how to work effectively in this repository.
 
 ## Coding conventions
 
-- Java 25 features are expected (records, switch expressions, pattern-matching `instanceof`).
+- Java 26 features are expected (records, switch expressions, pattern-matching `instanceof`).
 - All public methods require Javadoc.
 - `final` on classes/fields unless mutability is necessary.
 - No wildcard imports.

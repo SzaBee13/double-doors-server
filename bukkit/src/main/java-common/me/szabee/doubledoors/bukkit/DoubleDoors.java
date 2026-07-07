@@ -1123,22 +1123,22 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void sendLocaleCredit(Player player, String languageCode) {
-  boolean knownLanguage = translationManager.getAvailableLanguages().stream()
-    .anyMatch(code -> code.equalsIgnoreCase(languageCode));
-  if (!knownLanguage) {
-    player.sendMessage("Unknown locale code: " + languageCode + ".");
-    return;
-  }
+    boolean knownLanguage = translationManager.getAvailableLanguages().stream()
+      .anyMatch(code -> code.equalsIgnoreCase(languageCode));
+    if (!knownLanguage) {
+      player.sendMessage(t(player, "cmd.locale.credit.unknown", languageCode));
+      return;
+    }
 
-  List<String> credits = translationManager.getLanguageCredits(languageCode);
-  if (credits.isEmpty()) {
-    player.sendMessage(t(player, "cmd.locale.credit.none", languageCode));
-    return;
-  }
-  player.sendMessage(t(player, "cmd.locale.credit.entry",
-    translationManager.getLanguageName(languageCode),
-    languageCode,
-    String.join(", ", credits)));
+    List<String> credits = translationManager.getLanguageCredits(languageCode);
+    if (credits.isEmpty()) {
+      player.sendMessage(t(player, "cmd.locale.credit.none", languageCode));
+      return;
+    }
+    player.sendMessage(t(player, "cmd.locale.credit.entry",
+      translationManager.getLanguageName(languageCode),
+      languageCode,
+      String.join(", ", credits)));
   }
 
   private void showPreview(Player player) {
