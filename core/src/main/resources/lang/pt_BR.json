@@ -1,7 +1,4 @@
 {
-  "credits": [
-    "SzaBee13"
-  ],
   "language.name": "Português (Brasil)",
   "log.luckperms_detected": "LuckPerms detectado: permissoes tratadas via nodes doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: aberturas de portas vinculadas respeitarao verificacoes de construcao em claims.",

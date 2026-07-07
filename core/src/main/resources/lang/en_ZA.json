@@ -1,7 +1,4 @@
 {
-  "credits": [
-    "SzaBee13"
-  ],
   "language.name": "English (South Africa)",
   "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
   "log.griefprevention_detected": "GriefPrevention detected: linked door openings will respect claim build checks.",

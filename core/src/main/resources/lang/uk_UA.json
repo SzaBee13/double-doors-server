@@ -1,7 +1,4 @@
 {
-  "credits": [
-    "SzaBee13"
-  ],
   "language.name": "Українська (Україна)",
   "log.luckperms_detected": "Виявлено LuckPerms: права обробляються через вузли doubledoors.*.",
   "log.griefprevention_detected": "Виявлено GriefPrevention: відкриття пов'язаних дверей враховуватиме перевірки будівництва в приваті.",
