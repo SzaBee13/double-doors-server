@@ -32,7 +32,7 @@ jobs:
           settings-path: ${{ github.workspace }}
 
       - name: Cache Maven packages
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ~/.m2/repository
           key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
@@ -196,7 +196,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.artifact.outputs.jar_path }}
           name: 'Double Doors Bukkit ${{ steps.version.outputs.version }}'
-          version: 'v${{ steps.version.outputs.version }}-bukkit'
+          version: 'bukkit-v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: ${{ steps.release_notes.outputs.body }}
           loaders: |
@@ -217,7 +217,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.proxy_artifact.outputs.jar_path }}
           name: 'Double Doors Velocity ${{ steps.version.outputs.version }}'
-          version: 'v${{ steps.version.outputs.version }}-velocity'
+          version: 'velocity-v${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: 'Velocity for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
           loaders: |
