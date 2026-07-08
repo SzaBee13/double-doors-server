@@ -32,7 +32,9 @@ concurrency:
 jobs:
   upload-sources:
     if: github.event_name == 'push' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'upload' || github.event.inputs.mode == 'both'))
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - crowdin
     timeout-minutes: 15
     steps:
       - name: Checkout
@@ -53,7 +55,9 @@ jobs:
   
   download-translations:
     if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && (github.event.inputs.mode == 'download' || github.event.inputs.mode == 'both'))
-    runs-on: ubuntu-latest
+    runs-on:
+      - self-hosted
+      - crowdin
     timeout-minutes: 15
     steps:
       - name: Checkout
