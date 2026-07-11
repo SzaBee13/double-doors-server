@@ -9,6 +9,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.Locale;
 
 /**
  * SQL client used by the proxy module for heartbeat writes.
@@ -71,7 +72,7 @@ public final class VelocitySqlClient {
       return;
     }
 
-    String normalizedUrl = jdbcUrl.toLowerCase();
+    String normalizedUrl = jdbcUrl.toLowerCase(Locale.ROOT);
     if (!normalizedUrl.startsWith("jdbc:sqlite:")) {
       return;
     }
@@ -105,7 +106,7 @@ public final class VelocitySqlClient {
     if (databaseTypeEnd < 0) {
       return null;
     }
-    String databaseType = jdbcUrl.substring(5, databaseTypeEnd).toLowerCase();
+    String databaseType = jdbcUrl.substring(5, databaseTypeEnd).toLowerCase(Locale.ROOT);
     return switch (databaseType) {
       case "mysql" -> MYSQL_DRIVER;
       case "sqlite" -> SQLITE_DRIVER;

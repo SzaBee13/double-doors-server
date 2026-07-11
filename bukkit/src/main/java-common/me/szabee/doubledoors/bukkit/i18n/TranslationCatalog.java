@@ -91,6 +91,10 @@ public interface TranslationCatalog {
     JavaPlugin plugin,
     String languageCode
   ) {
+    if (!isSafeLanguageCode(languageCode)) {
+      return Map.of();
+    }
+
     // Check data folder first (user overrides)
     File dataFile = new File(
       plugin.getDataFolder(),
@@ -111,6 +115,20 @@ public interface TranslationCatalog {
     } catch (IOException ignored) {}
 
     return Map.of();
+  }
+
+  private static boolean isSafeLanguageCode(String languageCode) {
+    if (languageCode == null || languageCode.isBlank()) {
+      return false;
+    }
+    if (
+      languageCode.contains("/") ||
+      languageCode.contains("\\") ||
+      languageCode.contains("..")
+    ) {
+      return false;
+    }
+    return true;
   }
 
   /**

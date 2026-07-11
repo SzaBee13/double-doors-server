@@ -118,7 +118,7 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    Block block = normalizeOriginBlock(event.getBlock());
+    Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
     if (
       !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
@@ -152,7 +152,7 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    Block block = normalizeOriginBlock(event.getBlock());
+    Block block = event.getBlock();
     PluginConfig config = plugin.getPluginConfig();
     if (
       !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
@@ -193,7 +193,7 @@ public final class RedstoneListener implements Listener {
       return;
     }
 
-    Block block = normalizeOriginBlock(event.getLocation().getBlock());
+    Block block = event.getLocation().getBlock();
     PluginConfig config = plugin.getPluginConfig();
     if (
       !config.isServerWideEnabled() || !config.isEnableVillagerLinkedDoors()
@@ -217,10 +217,6 @@ public final class RedstoneListener implements Listener {
     PluginConfig config,
     long delayTicks
   ) {
-    if (!config.isEnableRecursiveOpening()) {
-      return;
-    }
-
     // Read and mirror state after the configured delay so we sync to vanilla's final result.
     long effectiveDelay = Math.max(
       1L,
@@ -231,7 +227,8 @@ public final class RedstoneListener implements Listener {
       origin.getLocation(),
       effectiveDelay,
       () -> {
-        BlockData originData = origin.getBlockData();
+        Block normalizedOrigin = normalizeOriginBlock(origin);
+        BlockData originData = normalizedOrigin.getBlockData();
         if (!(originData instanceof Openable openable)) {
           return;
         }
@@ -242,9 +239,9 @@ public final class RedstoneListener implements Listener {
 
         if (originData instanceof Door) {
           DoorUtil.MirrorSearchResult search =
-            DoorUtil.analyzeMirroredDoubleDoorPartner(origin);
+            DoorUtil.analyzeMirroredDoubleDoorPartner(normalizedOrigin);
           if (!search.found()) {
-            search = DoorUtil.analyzeCornerDoorPartner(origin);
+            search = DoorUtil.analyzeCornerDoorPartner(normalizedOrigin);
           }
           if (!search.found()) {
             return;
@@ -277,8 +274,12 @@ public final class RedstoneListener implements Listener {
           return;
         }
 
+        if (!config.isEnableRecursiveOpening()) {
+          return;
+        }
+
         Set<Block> connected = DoorUtil.findConnectedDoors(
-          origin,
+          normalizedOrigin,
           config.getRecursiveOpeningMaxBlocksDistance()
         );
         if (connected.isEmpty()) {

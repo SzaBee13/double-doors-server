@@ -287,8 +287,17 @@ public final class PlayerPreferences {
           }
         } else {
           try {
+            Map<UUID, PendingSave> batch = new java.util.HashMap<>();
+            for (UUID uuid : keysToProcess) {
+              PendingSave pending = pendingSaves.get(uuid);
+              if (pending != null) {
+                batch.put(uuid, pending);
+              }
+            }
             saveYaml();
-            pendingSaves.keySet().removeAll(keysToProcess);
+            for (Map.Entry<UUID, PendingSave> entry : batch.entrySet()) {
+              pendingSaves.remove(entry.getKey(), entry.getValue());
+            }
           } catch (IOException e) {
             failed = true;
             plugin

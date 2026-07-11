@@ -56,6 +56,7 @@
   "cmd.locale.set": "Sprache auf %s gesetzt.",
   "cmd.locale.credits.title": "Sprach-Credits:",
   "cmd.locale.credit.entry": "%s (%s): %s",
+  "cmd.locale.credit.unknown": "Unknown locale code: %s.",
   "cmd.locale.credit.none": "Keine Credits fuer %s gefunden.",
   "cmd.usage.locale.credit": "Verwendung: /%s locale credit <code>"
 }

@@ -54,7 +54,14 @@ public final class YamlToSqlMigrator {
       return;
     }
 
-    sqlStorage.markMigrationDone(MIGRATION_KEY);
+    if (!sqlStorage.markMigrationDone(MIGRATION_KEY)) {
+      plugin
+        .getLogger()
+        .warning(
+          "DoubleDoors YAML to SQL migration marker could not be written; migration will be retried."
+        );
+      return;
+    }
     plugin
       .getLogger()
       .info(

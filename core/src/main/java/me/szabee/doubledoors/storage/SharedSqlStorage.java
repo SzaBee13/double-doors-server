@@ -107,20 +107,26 @@ public class SharedSqlStorage {
               "locale VARCHAR(32) NOT NULL DEFAULT ''" +
               ")"
       );
-      if (!sqliteDialect) {
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE"
-        );
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE"
-        );
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0"
-        );
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''"
-        );
-      }
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close INTEGER NOT NULL DEFAULT 1"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound INTEGER NOT NULL DEFAULT 1"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN knock_volume REAL NOT NULL DEFAULT 1.0"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN locale TEXT NOT NULL DEFAULT ''"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''"
+      );
       executeStatement(
         sqliteDialect
           ? "CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id INTEGER PRIMARY KEY, villagers_blocked INTEGER NOT NULL)"
@@ -143,14 +149,16 @@ public class SharedSqlStorage {
               "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE" +
               ")"
       );
-      if (!sqliteDialect) {
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE"
-        );
-        executeAlterAddColumnIfAbsent(
-          "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
-        );
-      }
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser INTEGER NOT NULL DEFAULT 0"
+          : "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate INTEGER NOT NULL DEFAULT 0"
+          : "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
+      );
       executeStatement(
         sqliteDialect
           ? "CREATE TABLE IF NOT EXISTS dd_meta (meta_key TEXT PRIMARY KEY, meta_value TEXT NOT NULL)"
@@ -323,8 +331,10 @@ public class SharedSqlStorage {
 
   /**
    * Marks a migration as completed (idempotent).
+   *
+   * @return {@code true} when the marker was persisted
    */
-  public void markMigrationDone(String migrationKey) {
+  public boolean markMigrationDone(String migrationKey) {
     String sql = sqliteDialect
       ? SQLITE_MIGRATION_UPSERT_SQL
       : MYSQL_MIGRATION_UPSERT_SQL;
@@ -334,6 +344,7 @@ public class SharedSqlStorage {
     ) {
       stmt.setString(1, migrationKey);
       stmt.executeUpdate();
+      return true;
     } catch (SQLException e) {
       logger.warning(
         String.format(
@@ -341,6 +352,7 @@ public class SharedSqlStorage {
           e.getMessage()
         )
       );
+      return false;
     }
   }
 

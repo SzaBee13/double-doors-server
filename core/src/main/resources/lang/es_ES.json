@@ -56,6 +56,7 @@
   "cmd.usage.locale": "Uso: /%s locale [code|credits|credit <code>]",
   "cmd.locale.credits.title": "Créditos de idioma:",
   "cmd.locale.credit.entry": "%s (%s): %s",
+  "cmd.locale.credit.unknown": "Unknown locale code: %s.",
   "cmd.locale.credit.none": "No se encontraron créditos para %s.",
   "cmd.usage.locale.credit": "Uso: /%s locale credit <code>"
 }

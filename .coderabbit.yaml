@@ -39,7 +39,9 @@ reviews:
     - "!**/target/**"
     - "!**/build/**"
     - "!**/.git/**"
-  path_instructions: []
+  path_instructions:
+    - path: "/releases/**"
+      instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md"
   abort_on_close: true
   auto_review:
     enabled: true

@@ -448,6 +448,9 @@ public final class ProtectionCompat {
     }
 
     Set<String> regionIds = getWorldGuardRegionIds(block);
+    if (regionIds == null) {
+      return "";
+    }
     PluginConfig.RegionMode regionMode = config.getWorldGuardRegionMode();
     Set<String> configuredRegionIds = config.getWorldGuardRegionIds();
     boolean anyConfigured = regionIds
@@ -665,7 +668,7 @@ public final class ProtectionCompat {
     Set<String> ids = new HashSet<>();
     Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
     if (applicableRegionSet == null) {
-      return ids;
+      return null;
     }
     for (Object region : getApplicableWorldGuardRegions(applicableRegionSet)) {
       try {
@@ -719,7 +722,7 @@ public final class ProtectionCompat {
         break;
       }
       if (regionManager == null) {
-        return Set.of();
+        return null;
       }
 
       Class<?> blockVectorClass = Class.forName(

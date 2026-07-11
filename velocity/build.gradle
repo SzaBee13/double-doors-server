@@ -62,7 +62,7 @@ tasks.processResources {
 
 tasks.shadowJar {
   archiveClassifier = ""
-  duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+  duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
   mergeServiceFiles()
   relocate "dev.faststats", "me.szabee.doubledoors.lib.faststats"
   relocate "com.google.gson", "me.szabee.doubledoors.lib.gson"

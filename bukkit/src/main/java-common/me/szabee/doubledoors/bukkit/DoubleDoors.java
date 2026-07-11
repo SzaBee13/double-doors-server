@@ -6,6 +6,7 @@ import dev.faststats.data.Metric;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -82,6 +83,12 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile VersionBridge versionBridge;
   private volatile int initGeneration = 0;
   private final DoubleDoorsAPI api = new DoubleDoorsAPI() {
+    /**
+     * Returns whether linked open behavior is available to a player.
+     *
+     * @param player the player to check
+     * @return {@code true} when the server, player preference, and permission allow linked opening
+     */
     @Override
     public boolean isDoubleBehaviorEnabled(Player player) {
       return (
@@ -92,6 +99,13 @@ public final class DoubleDoors extends JavaPlugin {
       );
     }
 
+    /**
+     * Opens or closes blocks linked to the origin block.
+     *
+     * @param origin the block that initiated the linked open action
+     * @param actor the player responsible for the action, or {@code null} for non-player triggers
+     * @return {@code true} when at least one linked block was changed
+     */
     @Override
     public boolean triggerLinkedOpen(Block origin, Player actor) {
       if (!isApiTriggerAllowed(origin, actor)) {
@@ -188,6 +202,11 @@ public final class DoubleDoors extends JavaPlugin {
       return changedAny;
     }
 
+    /**
+     * Registers a Bukkit material as a custom openable block type.
+     *
+     * @param material the material to treat as custom openable
+     */
     @Override
     public void registerCustomOpenableBlock(Material material) {
       if (material != null) {
@@ -195,6 +214,11 @@ public final class DoubleDoors extends JavaPlugin {
       }
     }
 
+    /**
+     * Removes a Bukkit material from the custom openable registry.
+     *
+     * @param material the material to stop treating as custom openable
+     */
     @Override
     public void unregisterCustomOpenableBlock(Material material) {
       if (material != null) {
@@ -279,7 +303,10 @@ public final class DoubleDoors extends JavaPlugin {
       origin.getType()
     );
     if (type == null) {
-      return false;
+      if (!isCustomOpenable(origin.getType())) {
+        return false;
+      }
+      type = OpenableType.CUSTOM;
     }
     boolean typeEnabled = switch (type) {
       case DOOR -> pluginConfig.isEnableDoors();
@@ -427,6 +454,10 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
+  /**
+   * Initializes the plugin, loads configuration and integrations, registers listeners,
+   * and starts optional background services.
+   */
   @Override
   public void onEnable() {
     saveDefaultConfig();
@@ -601,13 +632,13 @@ public final class DoubleDoors extends JavaPlugin {
   }
 
   private void initializeSqlIfEnabledAsync() {
+    final int capturedGeneration = ++initGeneration;
     sqlStorage = null;
     if (!pluginConfig.isSqlEnabled()) {
       return;
     }
 
     SharedSqlStorage storage = new BukkitSharedSqlStorage(this, pluginConfig);
-    final int capturedGeneration = ++initGeneration;
     SchedulerBridge.runAsync(this, () -> {
       try {
         storage.initializeSchema();
@@ -873,13 +904,22 @@ public final class DoubleDoors extends JavaPlugin {
       return null;
     }
 
-    String normalized = rawToken.trim().toLowerCase().replace("-", "");
+    String normalized = rawToken.trim().toLowerCase(Locale.ROOT).replace("-", "");
     if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
       return null;
     }
     return normalized;
   }
 
+  /**
+   * Handles the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param command the command being executed
+   * @param label the alias used to execute the command
+   * @param args command arguments
+   * @return {@code true} when the command was handled by this plugin
+   */
   @Override
   public boolean onCommand(
     CommandSender sender,
@@ -1195,6 +1235,15 @@ public final class DoubleDoors extends JavaPlugin {
     return true;
   }
 
+  /**
+   * Provides tab completions for the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param command the command being completed
+   * @param alias the alias used for completion
+   * @param args current command arguments
+   * @return matching completion candidates
+   */
   @Override
   public List<String> onTabComplete(
     CommandSender sender,
