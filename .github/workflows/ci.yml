@@ -1,5 +1,4 @@
 name: CI
-
 on:
   push:
     branches:
@@ -11,35 +10,35 @@ on:
       - dev
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ${{ github.workflow }}-${{ github.head_ref || github.ref_name }}
   cancel-in-progress: true
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    # This prevents duplicates for same-repo PRs
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository)
 
+    runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           persist-credentials: false
-
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: "25"
           cache: gradle
-
       - name: Build with Gradle
         run: ./gradlew build
-
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: core/build/reports/jacoco/test/jacocoTestReport.xml,bukkit/build/reports/jacoco/test/jacocoTestReport.xml,velocity/build/reports/jacoco/test/jacocoTestReport.xml
-
       - name: Upload build outputs
         if: failure()
         uses: actions/upload-artifact@v4
