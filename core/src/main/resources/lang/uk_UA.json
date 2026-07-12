@@ -56,7 +56,7 @@
   "cmd.usage.locale": "Використання: /%s locale [code|credits|credit <code>]",
   "cmd.locale.credits.title": "Подяки за переклади:",
   "cmd.locale.credit.entry": "%s (%s): %s",
-  "cmd.locale.credit.unknown": "Unknown locale code: %s.",
+  "cmd.locale.credit.unknown": "Невідомий код локалі: %s.",
   "cmd.locale.credit.none": "Немає відомостей про внесок для %s.",
   "cmd.usage.locale.credit": "Використання: /%s locale credit <code>"
 }

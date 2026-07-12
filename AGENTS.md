@@ -63,7 +63,7 @@ If the release date is in the past, instead of updating the file with the releas
 
 ## Localization
 
-- Only `en_US` is updated by default; other locales inherit from it until explicitly localized, but update the keys in the other language files.
+- Only `en_US` is updated by default; other locales inherit from it until explicitly localized, but add the keys in the other language files and leave it empty.
 - When adding/modifying message keys, update `core/src/main/resources/lang/defaults.json` and `core/src/main/resources/lang/en_US.json` first.  
 - If localization for other languages is requested, propagate changes to all regional variants (en_GB, fr_FR, de_DE, etc.) to maintain consistency.
 - See `TRANSLATING.md` and skill translation for details on contributing translations via Crowdin.

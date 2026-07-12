@@ -42,6 +42,8 @@ reviews:
   path_instructions:
     - path: "/releases/**"
       instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md"
+    - path: "/core/src/main/resources/lang/**"
+      instructions: "Do not suggest adding missing strings"
   abort_on_close: true
   auto_review:
     enabled: true
