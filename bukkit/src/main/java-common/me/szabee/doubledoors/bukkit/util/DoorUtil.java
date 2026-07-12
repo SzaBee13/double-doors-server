@@ -549,7 +549,18 @@ public final class DoorUtil {
 
   private record SearchNode(Block block, int depth) {}
 
+  /**
+   * Result of a mirrored-double-door partner search.
+   *
+   * @param partner the partner block, or {@code null} when no match was found
+   * @param reason  human-readable reason when the search fails, empty on success
+   */
   public record MirrorSearchResult(Block partner, String reason) {
+    /**
+     * Returns {@code true} when a valid partner was found.
+     *
+     * @return whether the search succeeded
+     */
     public boolean found() {
       return partner != null;
     }

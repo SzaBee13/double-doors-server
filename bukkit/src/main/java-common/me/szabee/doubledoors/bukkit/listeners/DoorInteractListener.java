@@ -202,6 +202,19 @@ public final class DoorInteractListener implements Listener {
     lastInteractionByPlayer.remove(event.getPlayer().getUniqueId());
   }
 
+  /**
+   * Propagates the origin block's open/close state to all connected partner and
+   * recursive openable blocks. For doors, the mirrored double-door partner is
+   * updated (including both halves). For gates and trapdoors, the BFS connected
+   * set is iterated and each block is set to match the origin state.
+   * <p>
+   * The actual state read is scheduled one tick after the click so that vanilla
+   * has already processed the interaction.
+   *
+   * @param player the player who initiated the interaction
+   * @param origin the block the player clicked
+   * @param config active plugin configuration
+   */
   private void applyConnectedState(
     Player player,
     Block origin,
@@ -346,6 +359,15 @@ public final class DoorInteractListener implements Listener {
     );
   }
 
+  /**
+   * Schedules a delayed toggle for iron doors that players cannot open by hand.
+   * Because iron doors are not openable via right-click in vanilla, this method
+   * flips the door state one tick after the click if the player has the
+   * {@code doubledoors.iron.manual} permission.
+   *
+   * @param player  the player who clicked the iron door
+   * @param clicked the iron door block
+   */
   private void scheduleManualIronDoorToggleIfPermitted(
     Player player,
     Block clicked
@@ -417,6 +439,13 @@ public final class DoorInteractListener implements Listener {
     );
   }
 
+  /**
+   * Closes the origin block and all connected linked blocks after an auto-close
+   * delay. Redstone-powered blocks are skipped. For doors, only the mirrored
+   * partner is closed; for gates/trapdoors, the full connected set is traversed.
+   *
+   * @param origin the block to close
+   */
   private void closeLinked(Block origin) {
     BlockData originData = origin.getBlockData();
     if (!(originData instanceof Openable openable) || !openable.isOpen()) {

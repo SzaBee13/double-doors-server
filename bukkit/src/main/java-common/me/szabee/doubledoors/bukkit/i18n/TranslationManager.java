@@ -22,6 +22,12 @@ public final class TranslationManager {
   private Map<String, List<String>> languageCredits;
   private String activeLanguage;
 
+  /**
+   * Creates a translation manager bound to the given plugin instance.
+   * The server's configured language is loaded eagerly.
+   *
+   * @param plugin the plugin instance
+   */
   public TranslationManager(DoubleDoors plugin) {
     this.plugin = plugin;
     this.translations = new HashMap<>();
@@ -72,6 +78,11 @@ public final class TranslationManager {
     return tr(key, args);
   }
 
+  /**
+   * Returns the server's currently active language code.
+   *
+   * @return the active language code (e.g. {@code "en_US"})
+   */
   public String getActiveLanguage() {
     return activeLanguage;
   }

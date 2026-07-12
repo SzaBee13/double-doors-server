@@ -76,6 +76,12 @@ public interface TranslationCatalog {
     return codes;
   }
 
+  /**
+   * Loads translations for the given language code from bundled resources or the data folder.
+   *
+   * @param languageCode the language code to load (e.g. {@code "en_US"})
+   * @return a map of translation keys to localized strings
+   */
   Map<String, String> load(String languageCode);
 
   /**

@@ -62,6 +62,14 @@ public class SharedSqlStorage {
   private final String password;
   private final boolean sqliteDialect;
 
+  /**
+   * Creates a new SQL storage backed by the given JDBC connection details.
+   *
+   * @param logger   logger for diagnostics
+   * @param jdbcUrl  JDBC connection URL (e.g. {@code jdbc:sqlite:...} or {@code jdbc:mysql://...})
+   * @param username database username (may be empty for SQLite)
+   * @param password database password (may be empty for SQLite)
+   */
   public SharedSqlStorage(
     Logger logger,
     String jdbcUrl,
@@ -476,6 +484,18 @@ public class SharedSqlStorage {
     );
   }
 
+  /**
+   * Immutable snapshot of a player's per-player preference row stored in SQL.
+   *
+   * @param enabled           whether double-door linking is enabled for this player
+   * @param enableDoors       whether doors are enabled
+   * @param enableFenceGates  whether fence gates are enabled
+   * @param enableTrapdoors   whether trapdoors are enabled
+   * @param enableAutoClose   whether auto-close is enabled
+   * @param enableKnockSound  whether the knock sound is enabled
+   * @param knockVolume       knock sound volume (0.0–1.0)
+   * @param locale            preferred locale code, or blank for server default
+   */
   public record SqlPlayerPref(
     boolean enabled,
     boolean enableDoors,
