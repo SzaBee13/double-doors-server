@@ -52,10 +52,11 @@
   "cmd.locale.current_default": "Votre langue : langue du serveur par defaut (%s)",
   "cmd.locale.current": "Votre langue : %s",
   "cmd.locale.cleared": "Preference de langue effacee, langue du serveur utilisee.",
-  "cmd.locale.set": "Langue definie sur %s.",
+  "cmd.locale.set": "Langue définie sur %s.",
   "cmd.usage.locale": "Utilisation : /%s locale [code|credits|credit <code>]",
   "cmd.locale.credits.title": "Credits des langues :",
   "cmd.locale.credit.entry": "%s (%s) : %s",
+  "cmd.locale.credit.unknown": "Code de langue inconnu : %s.",
   "cmd.locale.credit.none": "Aucun credit trouve pour %s.",
   "cmd.usage.locale.credit": "Utilisation : /%s locale credit <code>"
 }

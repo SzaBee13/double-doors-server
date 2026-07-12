@@ -1,5 +1,8 @@
 package me.szabee.doubledoors.storage;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.PreparedStatement;
@@ -19,32 +22,39 @@ import java.util.logging.Logger;
  * Shared SQL storage used by Bukkit and proxy components.
  */
 public class SharedSqlStorage {
-  private static final String MYSQL_PLAYER_PREF_UPSERT_SQL = "INSERT INTO dd_player_preferences "
-    + "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) "
-    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-    + "ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), enable_doors=VALUES(enable_doors), "
-    + "enable_fence_gates=VALUES(enable_fence_gates), enable_trapdoors=VALUES(enable_trapdoors), "
-    + "enable_auto_close=VALUES(enable_auto_close), enable_knock_sound=VALUES(enable_knock_sound), "
-    + "knock_volume=VALUES(knock_volume), locale=VALUES(locale)";
-  private static final String SQLITE_PLAYER_PREF_UPSERT_SQL = "INSERT INTO dd_player_preferences "
-    + "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) "
-    + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) "
-    + "ON CONFLICT(player_uuid) DO UPDATE SET enabled=excluded.enabled, enable_doors=excluded.enable_doors, "
-    + "enable_fence_gates=excluded.enable_fence_gates, enable_trapdoors=excluded.enable_trapdoors, "
-    + "enable_auto_close=excluded.enable_auto_close, enable_knock_sound=excluded.enable_knock_sound, "
-    + "knock_volume=excluded.knock_volume, locale=excluded.locale";
-  private static final String MYSQL_CLAIM_UPSERT_SQL = "INSERT INTO dd_claim_settings "
-    + "(claim_id, villagers_blocked) VALUES (?, ?) "
-    + "ON DUPLICATE KEY UPDATE villagers_blocked=VALUES(villagers_blocked)";
-  private static final String SQLITE_CLAIM_UPSERT_SQL = "INSERT INTO dd_claim_settings "
-    + "(claim_id, villagers_blocked) VALUES (?, ?) "
-    + "ON CONFLICT(claim_id) DO UPDATE SET villagers_blocked=excluded.villagers_blocked";
-  private static final String MYSQL_MIGRATION_UPSERT_SQL = "INSERT INTO dd_meta "
-    + "(meta_key, meta_value) VALUES (?, 'done') "
-    + "ON DUPLICATE KEY UPDATE meta_value='done'";
-  private static final String SQLITE_MIGRATION_UPSERT_SQL = "INSERT INTO dd_meta "
-    + "(meta_key, meta_value) VALUES (?, 'done') "
-    + "ON CONFLICT(meta_key) DO UPDATE SET meta_value='done'";
+
+  private static final String MYSQL_PLAYER_PREF_UPSERT_SQL =
+    "INSERT INTO dd_player_preferences " +
+    "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) " +
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+    "ON DUPLICATE KEY UPDATE enabled=VALUES(enabled), enable_doors=VALUES(enable_doors), " +
+    "enable_fence_gates=VALUES(enable_fence_gates), enable_trapdoors=VALUES(enable_trapdoors), " +
+    "enable_auto_close=VALUES(enable_auto_close), enable_knock_sound=VALUES(enable_knock_sound), " +
+    "knock_volume=VALUES(knock_volume), locale=VALUES(locale)";
+  private static final String SQLITE_PLAYER_PREF_UPSERT_SQL =
+    "INSERT INTO dd_player_preferences " +
+    "(player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale) " +
+    "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?) " +
+    "ON CONFLICT(player_uuid) DO UPDATE SET enabled=excluded.enabled, enable_doors=excluded.enable_doors, " +
+    "enable_fence_gates=excluded.enable_fence_gates, enable_trapdoors=excluded.enable_trapdoors, " +
+    "enable_auto_close=excluded.enable_auto_close, enable_knock_sound=excluded.enable_knock_sound, " +
+    "knock_volume=excluded.knock_volume, locale=excluded.locale";
+  private static final String MYSQL_CLAIM_UPSERT_SQL =
+    "INSERT INTO dd_claim_settings " +
+    "(claim_id, villagers_blocked) VALUES (?, ?) " +
+    "ON DUPLICATE KEY UPDATE villagers_blocked=VALUES(villagers_blocked)";
+  private static final String SQLITE_CLAIM_UPSERT_SQL =
+    "INSERT INTO dd_claim_settings " +
+    "(claim_id, villagers_blocked) VALUES (?, ?) " +
+    "ON CONFLICT(claim_id) DO UPDATE SET villagers_blocked=excluded.villagers_blocked";
+  private static final String MYSQL_MIGRATION_UPSERT_SQL =
+    "INSERT INTO dd_meta " +
+    "(meta_key, meta_value) VALUES (?, 'done') " +
+    "ON DUPLICATE KEY UPDATE meta_value='done'";
+  private static final String SQLITE_MIGRATION_UPSERT_SQL =
+    "INSERT INTO dd_meta " +
+    "(meta_key, meta_value) VALUES (?, 'done') " +
+    "ON CONFLICT(meta_key) DO UPDATE SET meta_value='done'";
 
   private final Logger logger;
   private final String jdbcUrl;
@@ -52,7 +62,20 @@ public class SharedSqlStorage {
   private final String password;
   private final boolean sqliteDialect;
 
-  public SharedSqlStorage(Logger logger, String jdbcUrl, String username, String password) {
+  /**
+   * Creates a new SQL storage backed by the given JDBC connection details.
+   *
+   * @param logger   logger for diagnostics
+   * @param jdbcUrl  JDBC connection URL (e.g. {@code jdbc:sqlite:...} or {@code jdbc:mysql://...})
+   * @param username database username (may be empty for SQLite)
+   * @param password database password (may be empty for SQLite)
+   */
+  public SharedSqlStorage(
+    Logger logger,
+    String jdbcUrl,
+    String username,
+    String password
+  ) {
     this.logger = Objects.requireNonNull(logger);
     this.jdbcUrl = Objects.requireNonNull(jdbcUrl);
     this.username = username == null ? "" : username;
@@ -67,32 +90,88 @@ public class SharedSqlStorage {
    */
   public void initializeSchema() {
     try {
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_player_preferences ("
-        + "player_uuid VARCHAR(36) PRIMARY KEY,"
-        + "enabled BOOLEAN NOT NULL,"
-        + "enable_doors BOOLEAN NOT NULL,"
-        + "enable_fence_gates BOOLEAN NOT NULL,"
-        + "enable_trapdoors BOOLEAN NOT NULL,"
-        + "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE,"
-        + "knock_volume DOUBLE NOT NULL DEFAULT 1.0,"
-        + "locale VARCHAR(32) NOT NULL DEFAULT ''"
-        + ")");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id BIGINT PRIMARY KEY, villagers_blocked BOOLEAN NOT NULL)");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_proxy_presence ("
-        + "proxy_id VARCHAR(128) PRIMARY KEY,"
-        + "platform VARCHAR(32) NOT NULL,"
-        + "last_seen_epoch_ms BIGINT NOT NULL,"
-        + "has_geyser BOOLEAN NOT NULL DEFAULT FALSE,"
-        + "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
-        + ")");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE");
-      executeAlterAddColumnIfAbsent("ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE");
-      executeStatement("CREATE TABLE IF NOT EXISTS dd_meta (meta_key VARCHAR(128) PRIMARY KEY, meta_value VARCHAR(255) NOT NULL)");
+      executeStatement(
+        sqliteDialect
+          ? "CREATE TABLE IF NOT EXISTS dd_player_preferences (" +
+              "player_uuid TEXT PRIMARY KEY," +
+              "enabled INTEGER NOT NULL," +
+              "enable_doors INTEGER NOT NULL," +
+              "enable_fence_gates INTEGER NOT NULL," +
+              "enable_trapdoors INTEGER NOT NULL," +
+              "enable_auto_close INTEGER NOT NULL DEFAULT 1," +
+              "enable_knock_sound INTEGER NOT NULL DEFAULT 1," +
+              "knock_volume REAL NOT NULL DEFAULT 1.0," +
+              "locale TEXT NOT NULL DEFAULT ''" +
+              ")"
+          : "CREATE TABLE IF NOT EXISTS dd_player_preferences (" +
+              "player_uuid VARCHAR(36) PRIMARY KEY," +
+              "enabled BOOLEAN NOT NULL," +
+              "enable_doors BOOLEAN NOT NULL," +
+              "enable_fence_gates BOOLEAN NOT NULL," +
+              "enable_trapdoors BOOLEAN NOT NULL," +
+              "enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE," +
+              "enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE," +
+              "knock_volume DOUBLE NOT NULL DEFAULT 1.0," +
+              "locale VARCHAR(32) NOT NULL DEFAULT ''" +
+              ")"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close INTEGER NOT NULL DEFAULT 1"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN enable_auto_close BOOLEAN NOT NULL DEFAULT TRUE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound INTEGER NOT NULL DEFAULT 1"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN enable_knock_sound BOOLEAN NOT NULL DEFAULT TRUE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN knock_volume REAL NOT NULL DEFAULT 1.0"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN knock_volume DOUBLE NOT NULL DEFAULT 1.0"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_player_preferences ADD COLUMN locale TEXT NOT NULL DEFAULT ''"
+          : "ALTER TABLE dd_player_preferences ADD COLUMN locale VARCHAR(32) NOT NULL DEFAULT ''"
+      );
+      executeStatement(
+        sqliteDialect
+          ? "CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id INTEGER PRIMARY KEY, villagers_blocked INTEGER NOT NULL)"
+          : "CREATE TABLE IF NOT EXISTS dd_claim_settings (claim_id BIGINT PRIMARY KEY, villagers_blocked BOOLEAN NOT NULL)"
+      );
+      executeStatement(
+        sqliteDialect
+          ? "CREATE TABLE IF NOT EXISTS dd_proxy_presence (" +
+              "proxy_id TEXT PRIMARY KEY," +
+              "platform TEXT NOT NULL," +
+              "last_seen_epoch_ms INTEGER NOT NULL," +
+              "has_geyser INTEGER NOT NULL DEFAULT 0," +
+              "has_floodgate INTEGER NOT NULL DEFAULT 0" +
+              ")"
+          : "CREATE TABLE IF NOT EXISTS dd_proxy_presence (" +
+              "proxy_id VARCHAR(128) PRIMARY KEY," +
+              "platform VARCHAR(32) NOT NULL," +
+              "last_seen_epoch_ms BIGINT NOT NULL," +
+              "has_geyser BOOLEAN NOT NULL DEFAULT FALSE," +
+              "has_floodgate BOOLEAN NOT NULL DEFAULT FALSE" +
+              ")"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser INTEGER NOT NULL DEFAULT 0"
+          : "ALTER TABLE dd_proxy_presence ADD COLUMN has_geyser BOOLEAN NOT NULL DEFAULT FALSE"
+      );
+      executeAlterAddColumnIfAbsent(
+        sqliteDialect
+          ? "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate INTEGER NOT NULL DEFAULT 0"
+          : "ALTER TABLE dd_proxy_presence ADD COLUMN has_floodgate BOOLEAN NOT NULL DEFAULT FALSE"
+      );
+      executeStatement(
+        sqliteDialect
+          ? "CREATE TABLE IF NOT EXISTS dd_meta (meta_key TEXT PRIMARY KEY, meta_value TEXT NOT NULL)"
+          : "CREATE TABLE IF NOT EXISTS dd_meta (meta_key VARCHAR(128) PRIMARY KEY, meta_value VARCHAR(255) NOT NULL)"
+      );
     } catch (SQLException e) {
       throw new IllegalStateException("Could not initialize SQL schema", e);
     }
@@ -105,18 +184,42 @@ public class SharedSqlStorage {
    */
   public Map<UUID, SqlPlayerPref> loadAllPlayerPreferences() {
     Map<UUID, SqlPlayerPref> result = new HashMap<>();
-    String sql = "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale FROM dd_player_preferences";
-    try (Connection connection = openConnection(); Statement statement = connection.createStatement(); ResultSet rs = statement.executeQuery(sql)) {
+    String sql =
+      "SELECT player_uuid, enabled, enable_doors, enable_fence_gates, enable_trapdoors, enable_auto_close, enable_knock_sound, knock_volume, locale FROM dd_player_preferences";
+    try (
+      Connection connection = openConnection();
+      Statement statement = connection.createStatement();
+      ResultSet rs = statement.executeQuery(sql)
+    ) {
       while (rs.next()) {
         try {
           UUID uuid = UUID.fromString(rs.getString("player_uuid"));
-          result.put(uuid, new SqlPlayerPref(rs.getBoolean("enabled"), rs.getBoolean("enable_doors"), rs.getBoolean("enable_fence_gates"), rs.getBoolean("enable_trapdoors"), rs.getBoolean("enable_auto_close"), rs.getBoolean("enable_knock_sound"), rs.getDouble("knock_volume"), rs.getString("locale")));
+          result.put(
+            uuid,
+            new SqlPlayerPref(
+              rs.getBoolean("enabled"),
+              rs.getBoolean("enable_doors"),
+              rs.getBoolean("enable_fence_gates"),
+              rs.getBoolean("enable_trapdoors"),
+              rs.getBoolean("enable_auto_close"),
+              rs.getBoolean("enable_knock_sound"),
+              rs.getDouble("knock_volume"),
+              rs.getString("locale")
+            )
+          );
         } catch (IllegalArgumentException e) {
-          logger.fine("Skipping malformed player UUID in SQL storage: " + e.getMessage());
+          logger.fine(
+            "Skipping malformed player UUID in SQL storage: " + e.getMessage()
+          );
         }
       }
     } catch (SQLException e) {
-      logger.warning(String.format("Could not load player preferences from SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not load player preferences from SQL: %s",
+          e.getMessage()
+        )
+      );
     }
     return result;
   }
@@ -127,8 +230,13 @@ public class SharedSqlStorage {
    * @return true on success, false on failure
    */
   public boolean savePlayerPreference(UUID uuid, SqlPlayerPref pref) {
-    String sql = sqliteDialect ? SQLITE_PLAYER_PREF_UPSERT_SQL : MYSQL_PLAYER_PREF_UPSERT_SQL;
-    try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
+    String sql = sqliteDialect
+      ? SQLITE_PLAYER_PREF_UPSERT_SQL
+      : MYSQL_PLAYER_PREF_UPSERT_SQL;
+    try (
+      Connection connection = openConnection();
+      PreparedStatement stmt = connection.prepareStatement(sql)
+    ) {
       stmt.setString(1, uuid.toString());
       stmt.setBoolean(2, pref.enabled());
       stmt.setBoolean(3, pref.enableDoors());
@@ -140,7 +248,12 @@ public class SharedSqlStorage {
       stmt.setString(9, pref.locale());
       stmt.executeUpdate();
     } catch (SQLException e) {
-      logger.warning(String.format("Could not save player preference to SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not save player preference to SQL: %s",
+          e.getMessage()
+        )
+      );
       return false;
     }
     return true;
@@ -151,8 +264,12 @@ public class SharedSqlStorage {
    */
   public Set<Long> loadVillagersBlockedClaims() {
     Set<Long> blocked = new HashSet<>();
-    String sql = "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=?";
-    try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement(sql)) {
+    String sql =
+      "SELECT claim_id FROM dd_claim_settings WHERE villagers_blocked=?";
+    try (
+      Connection connection = openConnection();
+      PreparedStatement statement = connection.prepareStatement(sql)
+    ) {
       statement.setBoolean(1, true);
       try (ResultSet rs = statement.executeQuery()) {
         while (rs.next()) {
@@ -160,7 +277,12 @@ public class SharedSqlStorage {
         }
       }
     } catch (SQLException e) {
-      logger.warning(String.format("Could not load claim settings from SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not load claim settings from SQL: %s",
+          e.getMessage()
+        )
+      );
     }
     return blocked;
   }
@@ -171,13 +293,20 @@ public class SharedSqlStorage {
    * @return true on success, false on failure
    */
   public boolean setVillagersBlocked(long claimId, boolean blocked) {
-    String sql = sqliteDialect ? SQLITE_CLAIM_UPSERT_SQL : MYSQL_CLAIM_UPSERT_SQL;
-    try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
+    String sql = sqliteDialect
+      ? SQLITE_CLAIM_UPSERT_SQL
+      : MYSQL_CLAIM_UPSERT_SQL;
+    try (
+      Connection connection = openConnection();
+      PreparedStatement stmt = connection.prepareStatement(sql)
+    ) {
       stmt.setLong(1, claimId);
       stmt.setBoolean(2, blocked);
       stmt.executeUpdate();
     } catch (SQLException e) {
-      logger.warning(String.format("Could not save claim setting to SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format("Could not save claim setting to SQL: %s", e.getMessage())
+      );
       return false;
     }
     return true;
@@ -187,27 +316,51 @@ public class SharedSqlStorage {
    * Checks whether a migration has been completed.
    */
   public boolean isMigrationDone(String migrationKey) {
-    try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("SELECT meta_value FROM dd_meta WHERE meta_key=?")) {
+    try (
+      Connection connection = openConnection();
+      PreparedStatement statement = connection.prepareStatement(
+        "SELECT meta_value FROM dd_meta WHERE meta_key=?"
+      )
+    ) {
       statement.setString(1, migrationKey);
       try (ResultSet rs = statement.executeQuery()) {
         return rs.next() && "done".equalsIgnoreCase(rs.getString("meta_value"));
       }
     } catch (SQLException e) {
-      logger.warning(String.format("Could not read SQL migration metadata: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not read SQL migration metadata: %s",
+          e.getMessage()
+        )
+      );
       return false;
     }
   }
 
   /**
    * Marks a migration as completed (idempotent).
+   *
+   * @return {@code true} when the marker was persisted
    */
-  public void markMigrationDone(String migrationKey) {
-    String sql = sqliteDialect ? SQLITE_MIGRATION_UPSERT_SQL : MYSQL_MIGRATION_UPSERT_SQL;
-    try (Connection connection = openConnection(); PreparedStatement stmt = connection.prepareStatement(sql)) {
+  public boolean markMigrationDone(String migrationKey) {
+    String sql = sqliteDialect
+      ? SQLITE_MIGRATION_UPSERT_SQL
+      : MYSQL_MIGRATION_UPSERT_SQL;
+    try (
+      Connection connection = openConnection();
+      PreparedStatement stmt = connection.prepareStatement(sql)
+    ) {
       stmt.setString(1, migrationKey);
       stmt.executeUpdate();
+      return true;
     } catch (SQLException e) {
-      logger.warning(String.format("Could not write SQL migration metadata: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not write SQL migration metadata: %s",
+          e.getMessage()
+        )
+      );
+      return false;
     }
   }
 
@@ -216,13 +369,23 @@ public class SharedSqlStorage {
    */
   public boolean hasRecentProxyHeartbeat(long maxAgeMillis) {
     long threshold = System.currentTimeMillis() - maxAgeMillis;
-    try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? LIMIT 1")) {
+    try (
+      Connection connection = openConnection();
+      PreparedStatement statement = connection.prepareStatement(
+        "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? LIMIT 1"
+      )
+    ) {
       statement.setLong(1, threshold);
       try (ResultSet rs = statement.executeQuery()) {
         return rs.next();
       }
     } catch (SQLException e) {
-      logger.warning(String.format("Could not read proxy heartbeat from SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not read proxy heartbeat from SQL: %s",
+          e.getMessage()
+        )
+      );
       return false;
     }
   }
@@ -232,7 +395,12 @@ public class SharedSqlStorage {
    */
   public boolean hasRecentProxyGeyserBridge(long maxAgeMillis) {
     long threshold = System.currentTimeMillis() - maxAgeMillis;
-    try (Connection connection = openConnection(); PreparedStatement statement = connection.prepareStatement("SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? AND (has_geyser = ? OR has_floodgate = ?) LIMIT 1")) {
+    try (
+      Connection connection = openConnection();
+      PreparedStatement statement = connection.prepareStatement(
+        "SELECT 1 FROM dd_proxy_presence WHERE last_seen_epoch_ms >= ? AND (has_geyser = ? OR has_floodgate = ?) LIMIT 1"
+      )
+    ) {
       statement.setLong(1, threshold);
       statement.setBoolean(2, true);
       statement.setBoolean(3, true);
@@ -240,17 +408,54 @@ public class SharedSqlStorage {
         return rs.next();
       }
     } catch (SQLException e) {
-      logger.warning(String.format("Could not read proxy Geyser/Floodgate heartbeat from SQL: %s", e.getMessage()));
+      logger.warning(
+        String.format(
+          "Could not read proxy Geyser/Floodgate heartbeat from SQL: %s",
+          e.getMessage()
+        )
+      );
       return false;
     }
   }
 
   private Connection openConnection() throws SQLException {
-    return username.isBlank() ? DriverManager.getConnection(jdbcUrl) : DriverManager.getConnection(jdbcUrl, username, password);
+    ensureSqliteParentDirectoryExists();
+    return username.isBlank()
+      ? DriverManager.getConnection(jdbcUrl)
+      : DriverManager.getConnection(jdbcUrl, username, password);
+  }
+
+  private void ensureSqliteParentDirectoryExists() throws SQLException {
+    if (!sqliteDialect) {
+      return;
+    }
+
+    String path = jdbcUrl.substring("jdbc:sqlite:".length());
+    if (path.isBlank() || path.startsWith(":memory:")) {
+      return;
+    }
+
+    Path dbPath = Paths.get(path);
+    Path parent = dbPath.getParent();
+    if (parent == null) {
+      return;
+    }
+
+    try {
+      Files.createDirectories(parent);
+    } catch (Exception e) {
+      throw new SQLException(
+        "Could not create SQLite database directory: " + parent,
+        e
+      );
+    }
   }
 
   private void executeStatement(String sql) throws SQLException {
-    try (Connection connection = openConnection(); Statement statement = connection.createStatement()) {
+    try (
+      Connection connection = openConnection();
+      Statement statement = connection.createStatement()
+    ) {
       statement.executeUpdate(sql);
     }
   }
@@ -261,7 +466,11 @@ public class SharedSqlStorage {
     } catch (SQLException e) {
       String message = e.getMessage();
       String normalizedMessage = message == null ? "" : message.toLowerCase();
-      if (e.getErrorCode() == 1060 || normalizedMessage.contains("duplicate column") || normalizedMessage.contains("already exists")) {
+      if (
+        e.getErrorCode() == 1060 ||
+        normalizedMessage.contains("duplicate column") ||
+        normalizedMessage.contains("already exists")
+      ) {
         return;
       }
       throw e;
@@ -269,9 +478,32 @@ public class SharedSqlStorage {
   }
 
   private static boolean isSqliteJdbcUrl(String jdbcUrl) {
-    return jdbcUrl != null && jdbcUrl.toLowerCase(Locale.ROOT).startsWith("jdbc:sqlite:");
+    return (
+      jdbcUrl != null &&
+      jdbcUrl.toLowerCase(Locale.ROOT).startsWith("jdbc:sqlite:")
+    );
   }
 
-  public record SqlPlayerPref(boolean enabled, boolean enableDoors, boolean enableFenceGates, boolean enableTrapdoors, boolean enableAutoClose, boolean enableKnockSound, double knockVolume, String locale) {
-  }
+  /**
+   * Immutable snapshot of a player's per-player preference row stored in SQL.
+   *
+   * @param enabled           whether double-door linking is enabled for this player
+   * @param enableDoors       whether doors are enabled
+   * @param enableFenceGates  whether fence gates are enabled
+   * @param enableTrapdoors   whether trapdoors are enabled
+   * @param enableAutoClose   whether auto-close is enabled
+   * @param enableKnockSound  whether the knock sound is enabled
+   * @param knockVolume       knock sound volume (0.0–1.0)
+   * @param locale            preferred locale code, or blank for server default
+   */
+  public record SqlPlayerPref(
+    boolean enabled,
+    boolean enableDoors,
+    boolean enableFenceGates,
+    boolean enableTrapdoors,
+    boolean enableAutoClose,
+    boolean enableKnockSound,
+    double knockVolume,
+    String locale
+  ) {}
 }

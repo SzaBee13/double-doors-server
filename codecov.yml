@@ -1,0 +1,26 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 2%
+    patch:
+      default:
+        target: auto
+        threshold: 2%
+
+comment:
+  layout: "diff, flags, files"
+  behavior: default
+
+flag_management:
+  individual_flags:
+    - name: core
+      paths:
+        - core/src/
+    - name: bukkit
+      paths:
+        - bukkit/src/
+    - name: velocity
+      paths:
+        - velocity/src/

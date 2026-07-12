@@ -1,5 +1,7 @@
 package me.szabee.doubledoors.bukkit.i18n;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -11,11 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.bukkit.plugin.java.JavaPlugin;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 
 /**
  * Bukkit translation catalog adapter.
@@ -25,14 +23,39 @@ public interface TranslationCatalog {
    * Language codes bundled in the plugin jar.
    */
   Set<String> BUNDLED_LANGUAGES = Set.of(
-    "defaults", "en_US", "en_AU", "en_CA", "en_GB", "en_IE", "en_IN", "en_NZ", "en_ZA",
-    "de_DE", "de_AT", "de_CH",
-    "fr_FR", "fr_BE", "fr_CA", "fr_CH", "fr_CI", "fr_CM", "fr_DZ", "fr_GA", "fr_HT",
-    "fr_LU", "fr_MC", "fr_MG", "fr_SN", "fr_TN",
-    "es_ES", "es_409",
-    "pt_PT", "pt_BR",
+    "defaults",
+    "en_US",
+    "en_AU",
+    "en_CA",
+    "en_GB",
+    "en_IE",
+    "en_IN",
+    "en_NZ",
+    "en_ZA",
+    "de_DE",
+    "de_AT",
+    "de_CH",
+    "fr_FR",
+    "fr_BE",
+    "fr_CA",
+    "fr_CH",
+    "fr_CI",
+    "fr_CM",
+    "fr_DZ",
+    "fr_GA",
+    "fr_HT",
+    "fr_LU",
+    "fr_MC",
+    "fr_MG",
+    "fr_SN",
+    "fr_TN",
+    "es_ES",
+    "es_419",
+    "pt_PT",
+    "pt_BR",
     "hu_HU",
-    "uk_UA");
+    "uk_UA"
+  );
 
   /**
    * Lists all available language codes: bundled plus any custom files in the data folder.
@@ -53,6 +76,12 @@ public interface TranslationCatalog {
     return codes;
   }
 
+  /**
+   * Loads translations for the given language code from bundled resources or the data folder.
+   *
+   * @param languageCode the language code to load (e.g. {@code "en_US"})
+   * @return a map of translation keys to localized strings
+   */
   Map<String, String> load(String languageCode);
 
   /**
@@ -64,9 +93,19 @@ public interface TranslationCatalog {
    * @param languageCode language code
    * @return translations map
    */
-  static Map<String, String> loadLanguageFile(JavaPlugin plugin, String languageCode) {
+  static Map<String, String> loadLanguageFile(
+    JavaPlugin plugin,
+    String languageCode
+  ) {
+    if (!isSafeLanguageCode(languageCode)) {
+      return Map.of();
+    }
+
     // Check data folder first (user overrides)
-    File dataFile = new File(plugin.getDataFolder(), "lang" + File.separator + languageCode + ".json");
+    File dataFile = new File(
+      plugin.getDataFolder(),
+      "lang" + File.separator + languageCode + ".json"
+    );
     if (dataFile.isFile()) {
       try (InputStream in = new FileInputStream(dataFile)) {
         return parseJson(in);
@@ -84,6 +123,20 @@ public interface TranslationCatalog {
     return Map.of();
   }
 
+  private static boolean isSafeLanguageCode(String languageCode) {
+    if (languageCode == null || languageCode.isBlank()) {
+      return false;
+    }
+    if (
+      languageCode.contains("/") ||
+      languageCode.contains("\\") ||
+      languageCode.contains("..")
+    ) {
+      return false;
+    }
+    return true;
+  }
+
   /**
    * Loads locale contributor credits from {@code lang/credits.json}.
    * Custom credits in the plugin data folder override bundled credits when present.
@@ -96,7 +149,10 @@ public interface TranslationCatalog {
       return Map.of();
     }
 
-    File dataFile = new File(plugin.getDataFolder(), "lang" + File.separator + "credits.json");
+    File dataFile = new File(
+      plugin.getDataFolder(),
+      "lang" + File.separator + "credits.json"
+    );
     if (dataFile.isFile()) {
       try (InputStream in = new FileInputStream(dataFile)) {
         return parseCreditsJson(in);
@@ -112,9 +168,18 @@ public interface TranslationCatalog {
     return Map.of();
   }
 
-  private static Map<String, String> parseJson(InputStream in) throws IOException {
-    try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-      Map<String, Object> raw = new Gson().fromJson(reader, new TypeToken<Map<String, Object>>() {}.getType());
+  private static Map<String, String> parseJson(InputStream in)
+    throws IOException {
+    try (
+      InputStreamReader reader = new InputStreamReader(
+        in,
+        StandardCharsets.UTF_8
+      )
+    ) {
+      Map<String, Object> raw = new Gson().fromJson(
+        reader,
+        new TypeToken<Map<String, Object>>() {}.getType()
+      );
       Map<String, String> result = new java.util.HashMap<>();
       if (raw != null) {
         for (var entry : raw.entrySet()) {
@@ -127,9 +192,18 @@ public interface TranslationCatalog {
     }
   }
 
-  private static Map<String, List<String>> parseCreditsJson(InputStream in) throws IOException {
-    try (InputStreamReader reader = new InputStreamReader(in, StandardCharsets.UTF_8)) {
-      Map<String, List<String>> raw = new Gson().fromJson(reader, new TypeToken<Map<String, List<String>>>() {}.getType());
+  private static Map<String, List<String>> parseCreditsJson(InputStream in)
+    throws IOException {
+    try (
+      InputStreamReader reader = new InputStreamReader(
+        in,
+        StandardCharsets.UTF_8
+      )
+    ) {
+      Map<String, List<String>> raw = new Gson().fromJson(
+        reader,
+        new TypeToken<Map<String, List<String>>>() {}.getType()
+      );
       return raw == null ? Map.of() : raw;
     }
   }

@@ -1,0 +1,134 @@
+language: en-US
+tone_instructions: ""
+early_access: false
+enable_free_tier: true
+reviews:
+  profile: chill
+  request_changes_workflow: true
+  high_level_summary: true
+  high_level_summary_placeholder: "@coderabbitai summary"
+  auto_title_placeholder: "@coderabbitai"
+  review_status: true
+  commit_status: true
+  poem: false
+  collapse_walkthrough: true
+  sequence_diagrams: true
+  changed_files_summary: true
+  labeling_instructions:
+    - label: "bug"
+      instructions: "Marks a bug in the code"
+    - label: "dependencies"
+      instructions: "Marks a dependency update in the code"
+    - label: "documentation"
+      instructions: "Marks a documentation update in the code"
+    - label: "duplicate"
+      instructions: "Marks a duplicate issue or pull request"
+    - label: "feature request"
+      instructions: "Marks a feature request or addition in the code"
+    - label: "github_actions"
+      instructions: "Marks a GitHub Actions workflow update in the code"
+    - label: "good first issue"
+      instructions: "Marks a good first issue in the code"
+    - label: "java"
+      instructions: "Marks a Java-related issue or pull request"
+    - label: "question"
+      instructions: "Marks a question or need for clarification in the code"
+    - label: "translation"
+      instructions: "Marks a translation update in the code"
+  path_filters:
+    - "!**/target/**"
+    - "!**/build/**"
+    - "!**/.git/**"
+  path_instructions:
+    - path: "/releases/**"
+      instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md"
+    - path: "/core/src/main/resources/lang/**"
+      instructions: "Do not suggest adding missing strings"
+  abort_on_close: true
+  auto_review:
+    enabled: true
+    auto_incremental_review: true
+    ignore_title_keywords: []
+    labels: []
+    drafts: false
+    base_branches:
+      - "main"
+      - "dev"
+  tools:
+    shellcheck:
+      enabled: true
+    ruff:
+      enabled: false
+    markdownlint:
+      enabled: true
+    github-checks:
+      enabled: true
+      timeout_ms: 90000
+    languagetool:
+      enabled: true
+      enabled_only: false
+      level: default
+      enabled_rules: []
+      disabled_rules:
+        - EN_UNPAIRED_BRACKETS
+      enabled_categories: []
+      disabled_categories:
+        - TYPOS
+        - TYPOGRAPHY
+        - CASING
+    biome:
+      enabled: true
+    hadolint:
+      enabled: false
+    swiftlint:
+      enabled: true
+    phpstan:
+      enabled: false
+      level: default
+    golangci-lint:
+      enabled: false
+    yamllint:
+      enabled: true
+    gitleaks:
+      enabled: true
+    checkov:
+      enabled: false
+    detekt:
+      enabled: false
+    eslint:
+      enabled: true
+    rubocop:
+      enabled: false
+    buf:
+      enabled: false
+    regal:
+      enabled: false
+    actionlint:
+      enabled: true
+    pmd:
+      enabled: true
+    cppcheck:
+      enabled: false
+    semgrep:
+      enabled: true
+    circleci:
+      enabled: true
+    ast-grep:
+      packages: []
+      rule_dirs: []
+      util_dirs: []
+      essential_rules: true
+chat:
+  auto_reply: true
+knowledge_base:
+  opt_out: false
+  learnings:
+    scope: auto
+  issues:
+    scope: auto
+  jira:
+    project_keys: []
+  linear:
+    team_keys: []
+  pull_requests:
+    scope: auto

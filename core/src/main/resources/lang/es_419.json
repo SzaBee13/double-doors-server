@@ -48,14 +48,15 @@
   "cmd.preview.found": "Socio vinculado: %s (%s, %s, %s), orientado hacia %s.",
   "cmd.locale.available": "Idiomas disponibles: %s",
   "cmd.only_players.locale": "Solo los jugadores pueden usar /%s locale.",
-  "cmd.locale.disabled": "La seleccion de idioma por jugador esta desactivada en este servidor.",
+  "cmd.locale.disabled": "La selección de idioma por jugador está desactivada en este servidor.",
   "cmd.locale.current_default": "Tu idioma: predeterminado del servidor (%s)",
   "cmd.locale.current": "Tu idioma: %s",
   "cmd.locale.cleared": "Preferencia de idioma borrada, usando el idioma predeterminado del servidor.",
   "cmd.locale.set": "Idioma establecido en %s.",
   "cmd.usage.locale": "Uso: /%s locale [code|credits|credit <code>]",
-  "cmd.locale.credits.title": "Creditos de idioma:",
+  "cmd.locale.credits.title": "Créditos de idioma:",
   "cmd.locale.credit.entry": "%s (%s): %s",
-  "cmd.locale.credit.none": "No se encontraron creditos para %s.",
+  "cmd.locale.credit.unknown": "Código de idioma desconocido: %s.",
+  "cmd.locale.credit.none": "No se encontraron créditos para %s.",
   "cmd.usage.locale.credit": "Uso: /%s locale credit <code>"
 }

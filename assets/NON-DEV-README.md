@@ -13,7 +13,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Features
 
-- Same-tick partner door sync (no scheduled 1-tick delay)
+- Same-tick partner door sync
 - Strict mirrored pair matching for doors:
   - same door type
   - same facing direction
@@ -35,7 +35,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.X`, `26.1.X` and `26.2.X`.
+- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, and `26.2.x`.
 ### Geyser / Floodgate
 
 - Plugin declares soft-depends on `Geyser-Spigot` and `floodgate`.
@@ -64,7 +64,7 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 
 ### Proxy Installation
 
-1. Download the proxy JAR from the releases page (`doubledoors-proxy-<version>.jar`)
+1. Download the proxy JAR from the releases page (`doubledoors-velocity-<version>.jar`)
 2. Place it in your Velocity `plugins/` directory
 3. Restart the proxy
 4. A `plugins/DoubleDoors/proxy-config.properties` file will be generated
@@ -94,7 +94,7 @@ Check out more permissions at the [wiki](https://github.com/SzaBee13/double-door
 
 ## Config
 
-`src/main/resources/config.yml`
+`bukkit/src/main/resources/config.yml`
 
 - `enableRecursiveOpening` (default: `true`)
 - `recursiveOpeningMaxBlocksDistance` (default: `10`)
@@ -103,6 +103,7 @@ Check out more permissions at the [wiki](https://github.com/SzaBee13/double-door
 - `enableTrapdoors` (default: `true`)
 - `enableVillagerLinkedDoors` (default: `true`)
 - `serverWideEnabled` (default: `true`)
+- `perPlayerLocaleEnabled` (default: `true`)
 - `language` (default: `en_US`)
 
 ## Language

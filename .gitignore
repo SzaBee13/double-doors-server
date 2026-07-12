@@ -1,8 +1,10 @@
-# Build & Maven
-target/
+# Build outputs
 dist/
+target/
 build/
+bin/
 .m2/
+.gradle/
 
 # IDEs
 .idea/

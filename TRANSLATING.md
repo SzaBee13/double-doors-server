@@ -21,6 +21,7 @@ If you want to contribute to an existing translation, go to the [Crowdin project
 
 - DO NOT translate variables in the translation strings, they will be replaced with the correct values at runtime.
 - DO NOT change the meaning of the translation strings, they should be clear and accurate.
+- Preserve language-specific characters instead of replacing them with English/ASCII characters. Example: use é, è, à, ñ, etc. where the language requires them.
 - You may use a dictionary.
 - You may use machine translation, but you MUST review it or mention it.
 

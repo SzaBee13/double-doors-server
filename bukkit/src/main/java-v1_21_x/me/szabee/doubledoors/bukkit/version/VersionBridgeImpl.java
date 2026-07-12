@@ -1,13 +1,14 @@
 package me.szabee.doubledoors.bukkit.version;
 
+import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
-import java.util.Optional;
 
 /**
  * Version bridge for Minecraft 1.21.x API.
  */
 public final class VersionBridgeImpl implements VersionBridge {
+
   /**
    * Gets the server API version string for diagnostics.
    *
@@ -16,7 +17,7 @@ public final class VersionBridgeImpl implements VersionBridge {
   @Override
   public String getServerApiVersion() {
     final String version = Bukkit.getBukkitVersion();
-      return version == null || version.isBlank() ? "unknown" : version;
+    return version == null || version.isBlank() ? "unknown" : version;
   }
 
   /**

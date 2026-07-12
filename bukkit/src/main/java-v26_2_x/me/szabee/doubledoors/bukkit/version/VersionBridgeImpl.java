@@ -1,13 +1,14 @@
 package me.szabee.doubledoors.bukkit.version;
 
+import java.util.Optional;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Listener;
-import java.util.Optional;
 
 /**
  * Version bridge for Minecraft 26.2.x API.
  */
 public final class VersionBridgeImpl implements VersionBridge {
+
   /**
    * Gets the server API version string for diagnostics.
    *

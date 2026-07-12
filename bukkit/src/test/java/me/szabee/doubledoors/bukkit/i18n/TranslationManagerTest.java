@@ -1,10 +1,11 @@
 package me.szabee.doubledoors.bukkit.i18n;
 
-import org.junit.jupiter.api.Test;
-import java.util.Map;
-import java.util.HashMap;
-import java.lang.reflect.Field;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+import org.junit.jupiter.api.Test;
 
 class TranslationManagerTest {
 
@@ -14,7 +15,10 @@ class TranslationManagerTest {
     TranslationManager tm = new TranslationManager();
     Field field = TranslationManager.class.getDeclaredField("translations");
     field.setAccessible(true);
-    Map<String, Map<String, String>> translations = (Map<String, Map<String, String>>) field.get(tm);
+    Map<String, Map<String, String>> translations = (Map<
+      String,
+      Map<String, String>
+    >) field.get(tm);
 
     Map<String, String> en = new HashMap<>();
     en.put("test.simple", "Hello World");
