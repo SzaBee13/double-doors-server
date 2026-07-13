@@ -47,12 +47,12 @@ When releasing a new version:
 
 1. Update `version` in `gradle.properties`.
 2. Update `version:` in `bukkit/src/main/resources/plugin.yml`.
-3. Create `releases/v<version>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
+3. Create `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
 4. If `javaRelease` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 
 ### Release notes
 
-You should update `releases/v<version>/RELEASE-NOTE.md` with any changes from `FOR-LATER.md` before releasing.
+You should update `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` with any changes from `FOR-LATER.md` before releasing.
 If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated.
 
 ## Dangerous areas
@@ -70,5 +70,5 @@ If the release date is in the past, instead of updating the file with the releas
 
 ## Documentation
 
-EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<version>/RELEASE-NOTE.md`.
+EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md`.
 If necessary, update the GitHub Wiki at `wiki/`.
