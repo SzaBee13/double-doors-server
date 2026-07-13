@@ -1,0 +1,21 @@
+{
+  "lsp": {
+    "jdtls": {
+      "settings": {
+        "java": {
+          "build": {
+            "gradle": {
+              "enabled": true,
+              "wrapper": {
+                "enabled": true
+              }
+            },
+            "maven": {
+              "enabled": false
+            }
+          }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "baseBranches": ["dev"],
+  "extends": [
+    "config:recommended"
+  ],
+  "timezone": "UTC",
+  "schedule": ["earlyMondays"],
+  "ignoreUnstable": true,
+  "prHourlyLimit": 0,
+  "prConcurrentLimit": 10,
+  "labels": ["dependencies", "renovate"],
+  "semanticCommits": "enabled",
+
+  "packageRules": [
+    {
+      "matchPackageNames": [
+        "org.jetbrains.kotlin**",
+        "com.google.code.gson:gson",
+        "com.zaxxer:HikariCP",
+        "org.xerial:sqlite-jdbc",
+        "com.mysql:mysql-connector-j"
+      ],
+      "groupName": "core libraries"
+    },
+    {
+      "matchPackagePatterns": ["^io.papermc.paperweight", "^com.gradleup.shadow"],
+      "groupName": "build tools"
+    },
+    {
+      "matchPackageNames": ["dev.faststats.metrics:**"],
+      "groupName": "faststats"
+    }
+  ],
+
+  "enabledManagers": [
+    "gradle",
+    "github-actions",
+    "github-tags"
+  ]
+}
