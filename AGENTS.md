@@ -6,8 +6,8 @@ This file tells AI coding agents how to work effectively in this repository.
 
 | Item | Value |
 | --- | --- |
-| Language | Java 25 |
-| Framework | Paper/Spigot 1.21.x + 26.2 plugin API |
+| Language | Java 25+ |
+| Framework | Bukkit/Spigot 1.21-26.2 |
 | Build | Gradle (`./gradlew build`) |
 | Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
 
@@ -32,7 +32,7 @@ This file tells AI coding agents how to work effectively in this repository.
 
 ## Coding conventions
 
-- Java 26 features are expected (records, switch expressions, pattern-matching `instanceof`).
+- Java 25+ features are expected (records, switch expressions, pattern-matching `instanceof`).
 - All public methods require Javadoc.
 - `final` on classes/fields unless mutability is necessary.
 - No wildcard imports.
