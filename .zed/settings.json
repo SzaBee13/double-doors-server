@@ -2,20 +2,16 @@
   "lsp": {
     "jdtls": {
       "settings": {
-        "initialization_options": {
-          "settings": {
-            "java": {
-              "import": {
-                "gradle": {
-                  "enabled": true,
-                  "wrapper": {
-                    "enabled": true
-                  }
-                },
-                "maven": {
-                  "enabled": false
-                }
+        "java": {
+          "build": {
+            "gradle": {
+              "enabled": true,
+              "wrapper": {
+                "enabled": true
               }
+            },
+            "maven": {
+              "enabled": false
             }
           }
         }

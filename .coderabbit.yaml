@@ -36,9 +36,9 @@ reviews:
     - label: "translation"
       instructions: "Marks a translation update in the code"
   path_filters:
-    - "!**/target/**"
     - "!**/build/**"
     - "!**/.git/**"
+    - "!**/.zed/**"
   path_instructions:
     - path: "/releases/**"
       instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md"
