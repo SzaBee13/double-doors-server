@@ -1,5 +1,4 @@
 {
-  "language.name": "Français (Madagascar)",
   "log.luckperms_detected": "LuckPerms détecté : les permissions sont gérées via les nœuds doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention détecté : les ouvertures de portes liées respecteront les vérifications de construction des claims.",
   "log.worldguard_detected": "WorldGuard détecté : les ouvertures de portes liées respecteront les règles de région et les flags personnalisés.",
@@ -20,7 +19,7 @@
   "cmd.toggle.autoclose.disabled": "Fermeture automatique désactivée pour vos interactions liées.",
   "cmd.toggle.knock.enabled": "Son de cognement activé pour vous.",
   "cmd.toggle.knock.disabled": "Son de cognement désactivé pour vous.",
-  "cmd.usage.toggle": "Utilisation : /%s toggle [doors|gates|trapdoors|autoclose|knock]",
+  "cmd.usage.toggle": "Utilisation : /%s toggle [doors|gates|trapdoors|autoclose|knock|all]",
   "cmd.only_players.knock_volume": "Seuls les joueurs peuvent utiliser /%s knock-volume.",
   "cmd.usage.knock_volume": "Utilisation : /%s knock-volume <0-1>",
   "cmd.knock_volume.invalid": "Volume de cognement invalide : %s. Utilisez une valeur entre 0 et 1.",
@@ -47,7 +46,7 @@
   "cmd.preview.not_found": "Aucun partenaire lié trouvé (%s).",
   "cmd.preview.found": "Partenaire lié : %s (%s, %s, %s), orientation %s.",
   "cmd.usage.locale": "Utilisation : /%s locale [code|credits|credit <code>]",
-  "cmd.locale.available": "Langues disponibles : %s",
+  "cmd.locale.available": "Langues disponibles :",
   "cmd.only_players.locale": "Seuls les joueurs peuvent utiliser /%s locale.",
   "cmd.locale.disabled": "La sélection de langue par joueur est désactivée sur ce serveur.",
   "cmd.locale.current_default": "Votre langue : langue du serveur par défaut (%s)",
@@ -58,5 +57,6 @@
   "cmd.locale.credit.entry": "%s (%s) : %s",
   "cmd.locale.credit.unknown": "Code de langue inconnu : %s.",
   "cmd.locale.credit.none": "Aucun crédit trouvé pour %s.",
-  "cmd.usage.locale.credit": "Utilisation : /%s locale credit <code>"
+  "cmd.usage.locale.credit": "Utilisation : /%s locale credit <code>",
+  "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% traduit"
 }

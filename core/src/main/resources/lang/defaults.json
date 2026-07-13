@@ -1,119 +1,271 @@
 {
-  "language.name": "Default (Fallback)",
-  "languageAliases": {
-    "en": "en_US",
-    "en_us": "en_US",
-    "en_gb": "en_GB",
-    "en_au": "en_AU",
-    "en_ca": "en_CA",
-    "en_ie": "en_IE",
-    "en_in": "en_IN",
-    "en_nz": "en_NZ",
-    "en_za": "en_ZA",
-    "fr": "fr_FR",
-    "fr_fr": "fr_FR",
-    "fr_be": "fr_BE",
-    "fr_ca": "fr_CA",
-    "fr_ch": "fr_CH",
-    "fr_ci": "fr_CI",
-    "fr_cm": "fr_CM",
-    "fr_dz": "fr_DZ",
-    "fr_ga": "fr_GA",
-    "fr_ht": "fr_HT",
-    "fr_lu": "fr_LU",
-    "fr_mc": "fr_MC",
-    "fr_mg": "fr_MG",
-    "fr_sn": "fr_SN",
-    "fr_tn": "fr_TN",
-    "de": "de_DE",
-    "de_de": "de_DE",
-    "de_at": "de_AT",
-    "de_ch": "de_CH",
-    "pt": "pt_PT",
-    "pt_pt": "pt_PT",
-    "pt_br": "pt_BR",
-    "es": "es_ES",
-    "es_es": "es_ES",
-    "es_409": "es_419",
-    "es_419": "es_419",
-    "es_ar": "es_419",
-    "es_bo": "es_419",
-    "es_cl": "es_419",
-    "es_co": "es_419",
-    "es_cr": "es_419",
-    "es_cu": "es_419",
-    "es_do": "es_419",
-    "es_ec": "es_419",
-    "es_gt": "es_419",
-    "es_hn": "es_419",
-    "es_mx": "es_419",
-    "es_ni": "es_419",
-    "es_pa": "es_419",
-    "es_pe": "es_419",
-    "es_pr": "es_419",
-    "es_py": "es_419",
-    "es_uy": "es_419",
-    "es_ve": "es_419",
-    "hu": "hu_HU",
-    "hu_hu": "hu_HU"
+  "languages": {
+    "de": {
+      "de_AT": {
+        "name": "Deutsch (Österreich)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "de_CH": {
+        "name": "Deutsch (Schweiz)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "de_DE": {
+        "name": "Deutsch (Deutschland)",
+        "credits": ["SzaBee13"],
+        "default": true
+      }
+    },
+    "en": {
+      "en_AU": {
+        "name": "English (Australia)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "en_CA": {
+        "name": "English (Canada)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "en_GB": {
+        "name": "English (United Kingdom)",
+        "credits": ["SzaBee13"]
+      },
+      "en_IE": {
+        "name": "English (Ireland)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "en_IN": {
+        "name": "English (India)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "en_NZ": {
+        "name": "English (New Zealand)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      },
+      "en_US": {
+        "name": "English (United States)",
+        "credits": ["SzaBee13"],
+        "default": true
+      },
+      "en_ZA": {
+        "name": "English (South Africa)",
+        "credits": ["SzaBee13", "Machine Translation"]
+      }
+    },
+    "es": {
+      "es_ES": {
+        "name": "Spanish (Spain)",
+        "credits": ["Machine Translation"],
+        "default": true
+      },
+      "es_419": {
+        "name": "Spanish (Latin America)",
+        "credits": ["Machine Translation"]
+      }
+    },
+    "fr": {
+      "fr_BE": {
+        "name": "Français (Belgique)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_CA": {
+        "name": "Français (Canada)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_CH": {
+        "name": "Français (Switzerland)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_CI": {
+        "name": "Français (Ivory Coast)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_CM": {
+        "name": "Français (Cameroon)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_DZ": {
+        "name": "Français (Algeria)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_FR": {
+        "name": "Français (France)",
+        "credits": ["Machine Translation"],
+        "default": true
+      },
+      "fr_GA": {
+        "name": "Français (Gabon)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_HT": {
+        "name": "Français (Haïti)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_LU": {
+        "name": "Français (Luxembourg)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_MC": {
+        "name": "Français (Monaco)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_MG": {
+        "name": "Français (Martinique)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_SN": {
+        "name": "Français (Sénégal)",
+        "credits": ["Machine Translation"]
+      },
+      "fr_TN": {
+        "name": "Français (Tunisie)",
+        "credits": ["Machine Translation"]
+      }
+    },
+    "hu": {
+      "hu_HU": {
+        "name": "Magyar (Magyarország)",
+        "credits": ["SzaBee13"],
+        "default": true
+      }
+    },
+    "id": {
+      "id_ID": {
+        "name": "Bahasa Indonesia (Indonesia)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "it": {
+      "it_IT": {
+        "name": "Italiano (Italia)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "ja": {
+      "ja_JP": {
+        "name": "日本語 (日本)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "ko": {
+      "ko_KR": {
+        "name": "한국어 (한국)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "nl": {
+      "nl_NL": {
+        "name": "Nederlands (Nederland)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "pl": {
+      "pl_PL": {
+        "name": "Polski (Polska)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "pt": {
+      "pt_PT": {
+        "name": "Português (Portugal)",
+        "credits": ["Machine Translation"],
+        "default": true
+      },
+      "pt_BR": {
+        "name": "Português (Brasil)",
+        "credits": ["Machine Translation"]
+      }
+    },
+    "ru": {
+      "ru_RU": {
+        "name": "Русский (Россия)",
+        "credits": ["Machine Translation"],
+        "default": true
+      }
+    },
+    "uk": {
+      "uk_UA": {
+        "name": "Українська (Україна)",
+        "credits": ["Usia"],
+        "default": true
+      }
+    },
+    "zh": {
+      "zh_CN": {
+        "name": "中文 (中国)",
+        "credits": ["Machine Translation"],
+        "default": true
+      },
+      "zh_TW": {
+        "name": "中文 (台灣)",
+        "credits": ["Machine Translation"]
+      }
+    }
   },
-  "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
-  "log.griefprevention_detected": "GriefPrevention detected: linked door opens will respect claim build checks.",
-  "log.worldguard_detected": "WorldGuard detected: linked door opens will respect region rules and custom flags.",
-  "log.geyser_detected": "Geyser/Floodgate detected: duplicate interaction debounce is active.",
-  "log.enabled": "DoubleDoors enabled.",
-  "log.disabled": "DoubleDoors disabled.",
-  "cmd.usage.main": "Usage: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
-  "cmd.no_permission": "You do not have permission to use this command.",
-  "cmd.reload.success": "DoubleDoors config, preferences, and language reloaded (active: %s).",
-  "cmd.only_players.toggle": "Only players can use /%s toggle.",
-  "cmd.toggle.doors.enabled": "Door linking enabled for you.",
-  "cmd.toggle.doors.disabled": "Door linking disabled for you.",
-  "cmd.toggle.gates.enabled": "Fence-gate linking enabled for you.",
-  "cmd.toggle.gates.disabled": "Fence-gate linking disabled for you.",
-  "cmd.toggle.trapdoors.enabled": "Trapdoor linking enabled for you.",
-  "cmd.toggle.trapdoors.disabled": "Trapdoor linking disabled for you.",
-  "cmd.toggle.autoclose.enabled": "Auto-close enabled for your linked interactions.",
-  "cmd.toggle.autoclose.disabled": "Auto-close disabled for your linked interactions.",
-  "cmd.toggle.knock.enabled": "Knock sound enabled for you.",
-  "cmd.toggle.knock.disabled": "Knock sound disabled for you.",
-  "cmd.usage.toggle": "Usage: /%s toggle [doors|gates|trapdoors|autoclose|knock|all]",
-  "cmd.only_players.knock_volume": "Only players can use /%s knock-volume.",
-  "cmd.usage.knock_volume": "Usage: /%s knock-volume <0-1>",
-  "cmd.knock_volume.invalid": "Invalid knock volume: %s. Use a value between 0 and 1.",
-  "cmd.knock_volume.set": "Knock volume set to %.2f.",
-  "cmd.toggle.all.enabled": "DoubleDoors enabled for you.",
-  "cmd.toggle.all.disabled": "DoubleDoors disabled for you.",
-  "cmd.server_toggle.enabled": "DoubleDoors server-wide behavior enabled.",
-  "cmd.server_toggle.disabled": "DoubleDoors server-wide behavior disabled.",
-  "cmd.only_players.grief": "Only players can use /%s grief.",
-  "cmd.usage.grief": "Usage: /%s grief villagers",
-  "cmd.grief.no_claim": "You are not standing in a GriefPrevention claim, or GriefPrevention is not enabled.",
-  "cmd.grief.no_manage_permission": "You do not have permission to manage this claim.",
-  "cmd.grief.villagers.blocked": "Villager linked-door access blocked for this claim.",
-  "cmd.grief.villagers.allowed": "Villager linked-door access allowed for this claim.",
-  "cmd.only_players.debug": "Only players can use /%s debug.",
-  "cmd.debug.enabled": "DoubleDoors debug mode enabled.",
-  "cmd.debug.disabled": "DoubleDoors debug mode disabled.",
-  "cmd.debug.skip": "[DoubleDoors Debug] Link skipped: %s",
-  "cmd.debug.partner_missing": "[DoubleDoors Debug] Partner not found: %s",
-  "cmd.debug.partner_blocked": "[DoubleDoors Debug] Partner blocked: %s",
-  "cmd.only_players.preview": "Only players can use /%s preview.",
-  "cmd.preview.no_target": "Look at a door, fence gate, or trapdoor first.",
-  "cmd.preview.unsupported": "This block type is not supported: %s",
-  "cmd.preview.not_found": "No linked partner found (%s).",
-  "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s.",
-  "cmd.usage.locale": "Usage: /%s locale [code|credits|credit <code>]",
-  "cmd.locale.available": "Available languages: %s",
-  "cmd.only_players.locale": "Only players can use /%s locale.",
-  "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
-  "cmd.locale.current_default": "Your locale: server default (%s)",
-  "cmd.locale.current": "Your locale: %s",
-  "cmd.locale.cleared": "Locale preference cleared, using server default.",
-  "cmd.locale.set": "Locale set to %s.",
-  "cmd.locale.credits.title": "Locale credits:",
-  "cmd.locale.credit.entry": "%s (%s): %s",
-  "cmd.locale.credit.unknown": "Unknown locale code: %s.",
-  "cmd.locale.credit.none": "No credits found for %s.",
-  "cmd.usage.locale.credit": "Usage: /%s locale credit <code>"
+  "strings": {
+    "log.luckperms_detected": "LuckPerms detected: permissions handled via doubledoors.* nodes.",
+    "log.griefprevention_detected": "GriefPrevention detected: linked door opens will respect claim build checks.",
+    "log.worldguard_detected": "WorldGuard detected: linked door opens will respect region rules and custom flags.",
+    "log.geyser_detected": "Geyser/Floodgate detected: duplicate interaction debounce is active.",
+    "log.enabled": "DoubleDoors enabled.",
+    "log.disabled": "DoubleDoors disabled.",
+    "cmd.usage.main": "Usage: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+    "cmd.no_permission": "You do not have permission to use this command.",
+    "cmd.reload.success": "DoubleDoors config, preferences, and language reloaded (active: %s).",
+    "cmd.only_players.toggle": "Only players can use /%s toggle.",
+    "cmd.toggle.doors.enabled": "Door linking enabled for you.",
+    "cmd.toggle.doors.disabled": "Door linking disabled for you.",
+    "cmd.toggle.gates.enabled": "Fence-gate linking enabled for you.",
+    "cmd.toggle.gates.disabled": "Fence-gate linking disabled for you.",
+    "cmd.toggle.trapdoors.enabled": "Trapdoor linking enabled for you.",
+    "cmd.toggle.trapdoors.disabled": "Trapdoor linking disabled for you.",
+    "cmd.toggle.autoclose.enabled": "Auto-close enabled for your linked interactions.",
+    "cmd.toggle.autoclose.disabled": "Auto-close disabled for your linked interactions.",
+    "cmd.toggle.knock.enabled": "Knock sound enabled for you.",
+    "cmd.toggle.knock.disabled": "Knock sound disabled for you.",
+    "cmd.usage.toggle": "Usage: /%s toggle [doors|gates|trapdoors|autoclose|knock|all]",
+    "cmd.only_players.knock_volume": "Only players can use /%s knock-volume.",
+    "cmd.usage.knock_volume": "Usage: /%s knock-volume <0-1>",
+    "cmd.knock_volume.invalid": "Invalid knock volume: %s. Use a value between 0 and 1.",
+    "cmd.knock_volume.set": "Knock volume set to %.2f.",
+    "cmd.toggle.all.enabled": "DoubleDoors enabled for you.",
+    "cmd.toggle.all.disabled": "DoubleDoors disabled for you.",
+    "cmd.server_toggle.enabled": "DoubleDoors server-wide behavior enabled.",
+    "cmd.server_toggle.disabled": "DoubleDoors server-wide behavior disabled.",
+    "cmd.only_players.grief": "Only players can use /%s grief.",
+    "cmd.usage.grief": "Usage: /%s grief villagers",
+    "cmd.grief.no_claim": "You are not standing in a GriefPrevention claim, or GriefPrevention is not enabled.",
+    "cmd.grief.no_manage_permission": "You do not have permission to manage this claim.",
+    "cmd.grief.villagers.blocked": "Villager linked-door access blocked for this claim.",
+    "cmd.grief.villagers.allowed": "Villager linked-door access allowed for this claim.",
+    "cmd.only_players.debug": "Only players can use /%s debug.",
+    "cmd.debug.enabled": "DoubleDoors debug mode enabled.",
+    "cmd.debug.disabled": "DoubleDoors debug mode disabled.",
+    "cmd.debug.skip": "[DoubleDoors Debug] Link skipped: %s",
+    "cmd.debug.partner_missing": "[DoubleDoors Debug] Partner not found: %s",
+    "cmd.debug.partner_blocked": "[DoubleDoors Debug] Partner blocked: %s",
+    "cmd.only_players.preview": "Only players can use /%s preview.",
+    "cmd.preview.no_target": "Look at a door, fence gate, or trapdoor first.",
+    "cmd.preview.unsupported": "This block type is not supported: %s",
+    "cmd.preview.not_found": "No linked partner found (%s).",
+    "cmd.preview.found": "Linked partner: %s (%s, %s, %s), facing %s.",
+    "cmd.usage.locale": "Usage: /%s locale [code|credits|credit <code>]",
+    "cmd.locale.available": "Available languages:",
+    "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% complete",
+    "cmd.only_players.locale": "Only players can use /%s locale.",
+    "cmd.locale.disabled": "Per-player locale selection is disabled on this server.",
+    "cmd.locale.current_default": "Your locale: server default (%s)",
+    "cmd.locale.current": "Your locale: %s",
+    "cmd.locale.cleared": "Locale preference cleared, using server default.",
+    "cmd.locale.set": "Locale set to %s.",
+    "cmd.locale.credits.title": "Locale credits:",
+    "cmd.locale.credit.entry": "%s (%s): %s",
+    "cmd.locale.credit.unknown": "Unknown locale code: %s.",
+    "cmd.locale.credit.none": "No credits found for %s.",
+    "cmd.usage.locale.credit": "Usage: /%s locale credit <code>"
+  }
 }

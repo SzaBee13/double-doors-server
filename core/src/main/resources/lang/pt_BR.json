@@ -1,5 +1,4 @@
 {
-  "language.name": "Português (Brasil)",
   "log.luckperms_detected": "LuckPerms detectado: permissoes tratadas via nodes doubledoors.*.",
   "log.griefprevention_detected": "GriefPrevention detectado: aberturas de portas vinculadas respeitarao verificacoes de construcao em claims.",
   "log.worldguard_detected": "WorldGuard detectado: as aberturas de portas vinculadas respeitarao as regras da regiao e os sinalizadores personalizados.",
@@ -20,7 +19,7 @@
   "cmd.toggle.autoclose.disabled": "Fechamento automatico desativado para suas interacoes vinculadas.",
   "cmd.toggle.knock.enabled": "Som de batida ativado para voce.",
   "cmd.toggle.knock.disabled": "Som de batida desativado para voce.",
-  "cmd.usage.toggle": "Uso: /%s toggle [doors|gates|trapdoors|autoclose|knock]",
+  "cmd.usage.toggle": "Uso: /%s toggle [doors|gates|trapdoors|autoclose|knock|all]",
   "cmd.only_players.knock_volume": "Apenas jogadores podem usar /%s knock-volume.",
   "cmd.usage.knock_volume": "Uso: /%s knock-volume <0-1>",
   "cmd.knock_volume.invalid": "Volume de batida invalido: %s. Use um valor entre 0 e 1.",
@@ -47,7 +46,7 @@
   "cmd.preview.not_found": "Nenhum parceiro vinculado encontrado (%s).",
   "cmd.preview.found": "Parceiro vinculado: %s (%s, %s, %s), voltado para %s.",
   "cmd.usage.locale": "Uso: /%s locale [code|credits|credit <code>]",
-  "cmd.locale.available": "Idiomas disponiveis: %s",
+  "cmd.locale.available": "Idiomas disponíveis:",
   "cmd.only_players.locale": "Apenas jogadores podem usar /%s locale.",
   "cmd.locale.disabled": "A selecao de idioma por jogador esta desativada neste servidor.",
   "cmd.locale.current_default": "Seu idioma: idioma padrao do servidor (%s)",
@@ -58,5 +57,6 @@
   "cmd.locale.credit.entry": "%s (%s): %s",
   "cmd.locale.credit.unknown": "Código de localidade desconhecido: %s.",
   "cmd.locale.credit.none": "Nao foram encontrados creditos para %s.",
-  "cmd.usage.locale.credit": "Uso: /%s locale credit <code>"
+  "cmd.usage.locale.credit": "Uso: /%s locale credit <code>",
+  "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% traduzido"
 }

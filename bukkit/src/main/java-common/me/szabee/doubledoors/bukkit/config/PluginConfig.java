@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import me.szabee.doubledoors.bukkit.DoubleDoors;
+import me.szabee.doubledoors.bukkit.i18n.TranslationCatalog;
 import me.szabee.doubledoors.bukkit.util.OpenableType;
 import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import org.bukkit.NamespacedKey;
@@ -257,7 +258,13 @@ public final class PluginConfig {
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
     }
-    String language = configuredLanguage.trim();
+    String language = TranslationCatalog.resolveLanguageCode(
+      plugin,
+      configuredLanguage.trim()
+    );
+    if (language == null || language.isBlank()) {
+      language = "en_US";
+    }
 
     boolean perPlayerLocaleEnabled = plugin
       .getConfig()

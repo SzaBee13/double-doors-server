@@ -19,7 +19,6 @@ public final class TranslationManager {
 
   private final DoubleDoors plugin;
   private final Map<String, Map<String, String>> translations;
-  private Map<String, List<String>> languageCredits;
   private String activeLanguage;
 
   /**
@@ -44,8 +43,11 @@ public final class TranslationManager {
 
   /**
    * (Re)loads translations for the server's configured language.
+   * Also invalidates cached defaults so that {@code defaults.json}
+   * is re-read on next access.
    */
   public void reload() {
+    TranslationCatalog.invalidateDefaults();
     activeLanguage = plugin.getPluginConfig().getLanguage();
     ensureLoaded(activeLanguage);
   }
@@ -70,9 +72,15 @@ public final class TranslationManager {
     if (prefs != null) {
       String playerLocale = prefs.getLocale(player.getUniqueId());
       if (!playerLocale.isBlank()) {
-        ensureLoaded(playerLocale);
-        String raw = lookup(playerLocale, key);
-        return args.length == 0 ? raw : String.format(raw, args);
+        String resolved = TranslationCatalog.resolveLanguageCode(
+          plugin,
+          playerLocale
+        );
+        if (!resolved.isBlank()) {
+          ensureLoaded(resolved);
+          String raw = lookup(resolved, key);
+          return args.length == 0 ? raw : String.format(raw, args);
+        }
       }
     }
     return tr(key, args);
@@ -104,19 +112,44 @@ public final class TranslationManager {
     if (plugin == null || languageCode == null || languageCode.isBlank()) {
       return List.of();
     }
-    ensureCreditsLoaded();
-    List<String> credits = languageCredits.get(languageCode);
-    return credits == null ? List.of() : List.copyOf(credits);
+    return TranslationCatalog.getLanguageCredits(plugin, languageCode);
   }
 
   /**
-   * Returns the display name for a language code (from the {@code language.name} key),
+   * Returns the display name for a language code from {@code defaults.json},
    * falling back to the language code itself if not found.
    */
   public String getLanguageName(String languageCode) {
-    ensureLoaded(languageCode);
-    String name = lookup(languageCode, "language.name");
-    return name != null && !"language.name".equals(name) ? name : languageCode;
+    if (plugin == null || languageCode == null || languageCode.isBlank()) {
+      return languageCode;
+    }
+    return TranslationCatalog.getLanguageName(plugin, languageCode);
+  }
+
+  /**
+   * Calculates the translation completion percentage for a language.
+   *
+   * @param languageCode the canonical language code
+   * @return completion percentage between 0.0 and 100.0
+   */
+  public double getCompletionPercentage(String languageCode) {
+    if (plugin == null || languageCode == null || languageCode.isBlank()) {
+      return 0.0;
+    }
+    return TranslationCatalog.getCompletionPercentage(plugin, languageCode);
+  }
+
+  /**
+   * Resolves a user-supplied language input to a canonical code.
+   *
+   * @param input the user-supplied language code or alias
+   * @return the canonical code, or the original input if no alias matches
+   */
+  public String resolveLanguageCode(String input) {
+    if (plugin == null || input == null || input.isBlank()) {
+      return input;
+    }
+    return TranslationCatalog.resolveLanguageCode(plugin, input);
   }
 
   private void ensureLoaded(String languageCode) {
@@ -126,12 +159,6 @@ public final class TranslationManager {
         languageCode
       );
       translations.put(languageCode, loaded);
-    }
-  }
-
-  private void ensureCreditsLoaded() {
-    if (languageCredits == null) {
-      languageCredits = TranslationCatalog.loadLanguageCredits(plugin);
     }
   }
 

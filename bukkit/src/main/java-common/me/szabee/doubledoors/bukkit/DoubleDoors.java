@@ -1340,13 +1340,23 @@ public final class DoubleDoors extends JavaPlugin {
         )
       );
     }
-    String langs = translationManager
+    player.sendMessage(t(player, "cmd.locale.available"));
+    translationManager
       .getAvailableLanguages()
       .stream()
       .sorted(String::compareToIgnoreCase)
-      .map(translationManager::getLanguageName)
-      .collect(Collectors.joining(", "));
-    player.sendMessage(t(player, "cmd.locale.available", langs));
+      .forEach(code -> {
+        double pct = translationManager.getCompletionPercentage(code);
+        player.sendMessage(
+          t(
+            player,
+            "cmd.locale.available_entry",
+            translationManager.getLanguageName(code),
+            code,
+            pct
+          )
+        );
+      });
   }
 
   private void sendLocaleCredits(Player player) {

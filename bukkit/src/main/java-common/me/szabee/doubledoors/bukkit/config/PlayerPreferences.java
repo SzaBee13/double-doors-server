@@ -13,6 +13,7 @@ import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import me.szabee.doubledoors.bukkit.DoubleDoors;
+import me.szabee.doubledoors.bukkit.i18n.TranslationCatalog;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
 import org.bukkit.configuration.file.YamlConfiguration;
 
@@ -629,12 +630,18 @@ public final class PlayerPreferences {
     return value;
   }
 
-  private static String normalizeLocale(String locale) {
+  private String normalizeLocale(String locale) {
     if (locale == null) {
       return "";
     }
     String trimmed = locale.trim();
-    return trimmed.length() > 32 ? trimmed.substring(0, 32) : trimmed;
+    if (trimmed.length() > 32) {
+      trimmed = trimmed.substring(0, 32);
+    }
+    if (plugin == null || trimmed.isEmpty()) {
+      return trimmed;
+    }
+    return TranslationCatalog.resolveLanguageCode(plugin, trimmed);
   }
 
   /** Immutable snapshot of a single player's preferences. */
