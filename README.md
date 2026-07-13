@@ -183,7 +183,7 @@ Language files:
 
 Requirements:
 
-- Java 26+
+- Java 25+
 - Gradle
 
 Build command:
@@ -197,4 +197,4 @@ Output jars are generated under `bukkit/build/libs/` and `velocity/build/libs/`.
 ## License
 
 Licensed under the GNU General Public License v3.0.
-See `LICENSE`.
+See [LICENSE](LICENSE).

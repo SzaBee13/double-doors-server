@@ -28,14 +28,16 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Official sources
 
-- [GitHub *www.github.com/SzaBee13/double-doors-server*](https://github.com/SzaBee13/double-doors-server)
-- [Modrinth *www.modrinth.com/plugin/double-doors-server*](https://modrinth.com/plugin/double-doors-server)
-- [Hangar *hangar.papermc.io/SzaBee13/double-doors-server*](https://hangar.papermc.io/SzaBee13/double-doors-server)
-- [CurseForge *www.curseforge.com/minecraft/bukkit-plugins/double-doors-server*](https://www.curseforge.com/minecraft/bukkit-plugins/double-doors-server)
+- [GitHub](https://github.com/SzaBee13/double-doors-server)
+- [Modrinth](https://modrinth.com/plugin/double-doors-server)
+- [Hangar](https://hangar.papermc.io/SzaBee13/double-doors-server)
+- [CurseForge](https://www.curseforge.com/minecraft/bukkit-plugins/double-doors-server)
 
 ## Compatibility
 
 - Supports Minecraft Java Edition `1.21.x`, `26.1.x`, and `26.2.x`.
+- Java 25+ Runtime
+
 ### Geyser / Floodgate
 
 - Plugin declares soft-depends on `Geyser-Spigot` and `floodgate`.
@@ -113,4 +115,4 @@ See supported languages and contribute on [Crowdin](https://crowdin.com/project/
 ## License
 
 Licensed under the GNU General Public License v3.0.
-See `LICENSE`.
+See [LICENSE](https://github.com/SzaBee13/double-doors-server/blob/main/LICENSE).

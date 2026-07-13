@@ -14,7 +14,7 @@ final class VelocityShadeConfigurationTest {
 
   @Test
   void testSlf4jIsNotRelocated() throws Exception {
-    String buildScript = Files.readString(Path.of("build.gradle"));
+    String buildScript = Files.readString(Path.of("build.gradle.kts"));
 
     assertFalse(
       buildScript.contains("relocate \"org.slf4j\""),

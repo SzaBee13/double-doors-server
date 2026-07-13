@@ -6,12 +6,6 @@ bin/
 .m2/
 .gradle/
 
-# IDEs
-.idea/
-.vscode/
-!.vscode/extensions.json
-.codex/
-
 # OS files
 .DS_Store
 Thumbs.db
@@ -19,10 +13,6 @@ Thumbs.db
 # Logs 
 logs/
 *.log
-
-# WIKI
-wiki/ 
-# its a separate repo but just in case
 
 # Environment files
 .env
