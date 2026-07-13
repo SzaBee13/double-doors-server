@@ -6,6 +6,7 @@ Describe what this pull request changes and why.
 
 ## Type of change
 
+- [ ] Release
 - [ ] Bug fix
 - [ ] New feature
 - [ ] Documentation update
@@ -21,7 +22,7 @@ Describe what this pull request changes and why.
 
 - [ ] Linked issue (if applicable)
 - [ ] No unrelated changes included
-- [ ] I have read `CONTRIBUTING.md`
+- [ ] I have read `CONTRIBUTING.md` and `CODE_OF_CONDUCT.md`
 
 ## Notes for reviewers
 

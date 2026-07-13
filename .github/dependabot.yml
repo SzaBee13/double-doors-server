@@ -2,6 +2,9 @@ version: 2
 updates:
   - package-ecosystem: "gradle"
     directory: "/"
+    labels:
+      - dependencies
+      - java
     schedule:
       interval: "weekly"
       day: "monday"
@@ -14,6 +17,9 @@ updates:
 
   - package-ecosystem: "github-actions"
     directory: "/"
+    labels:
+      - dependencies
+      - github actions
     schedule:
       interval: "weekly"
       day: "monday"
