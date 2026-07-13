@@ -94,17 +94,21 @@ jobs:
           echo "changed=$CHANGED" >> $GITHUB_OUTPUT
 
       - name: Edit Pull Request description with changed languages
-        if: steps.diff.outputs.changed != ''
+        if: steps.diff.outputs.changed != '' && steps.download.outputs.pull_request_number != ''
         uses: actions/github-script@v9
         with:
           script: |
-            const pr = context.payload.pull_request;
-            if (!pr) return;
+            const prNumber = parseInt('${{ steps.download.outputs.pull_request_number }}', 10);
             const changed = '${{ steps.diff.outputs.changed }}';
+            const { data: pr } = await github.rest.pulls.get({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: prNumber
+            });
             const newBody = (pr.body || '') + `\n\nUpdated translations for: ${changed}`;
             await github.rest.pulls.update({
               owner: context.repo.owner,
               repo: context.repo.repo,
-              pull_number: pr.number,
+              pull_number: prNumber,
               body: newBody
             });

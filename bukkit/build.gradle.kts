@@ -7,7 +7,7 @@ base {
   archivesName.set("doubledoors-bukkit")
 }
 
-val minecraftVersionId = (findProperty("minecraftVersionId") ?: "v26_2_x").toString()
+val minecraftVersionId = property("minecraftVersionId").toString()
 
 sourceSets {
   main {
@@ -31,24 +31,24 @@ sourceSets {
 dependencies {
   implementation(project(":core"))
 
-  paperweight.paperDevBundle(findProperty("paperDevBundleVersion") as String)
+  paperweight.paperDevBundle(property("paperDevBundleVersion") as String)
 
-  implementation("org.lushplugins.pluginupdater:PluginUpdater-API:${findProperty("pluginUpdaterVersion")}") {
+  implementation("org.lushplugins.pluginupdater:PluginUpdater-API:${property("pluginUpdaterVersion")}") {
     exclude(group = "org.lushplugins", module = "ChatColorHandler")
   }
 
-  implementation("dev.faststats.metrics:bukkit:${findProperty("faststatsVersion")}")
-  implementation("com.google.code.gson:gson:${findProperty("gsonVersion")}") {
+  implementation("dev.faststats.metrics:bukkit:${property("faststatsVersion")}")
+  implementation("com.google.code.gson:gson:${property("gsonVersion")}") {
     exclude(group = "com.google.errorprone", module = "error_prone_annotations")
   }
-  implementation("org.xerial:sqlite-jdbc:${findProperty("sqliteVersion")}")
-  implementation("com.mysql:mysql-connector-j:${findProperty("mysqlConnectorVersion")}")
+  implementation("org.xerial:sqlite-jdbc:${property("sqliteVersion")}")
+  implementation("com.mysql:mysql-connector-j:${property("mysqlConnectorVersion")}")
 
-  testImplementation(platform("org.junit:junit-bom:${findProperty("junitVersion")}"))
+  testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
   testImplementation("org.junit.jupiter:junit-jupiter")
-  testImplementation("org.mockito:mockito-core:${findProperty("mockitoVersion")}")
-  testImplementation("org.mockito:mockito-junit-jupiter:${findProperty("mockitoVersion")}")
-  testRuntimeOnly(platform("org.junit:junit-bom:${findProperty("junitVersion")}"))
+  testImplementation("org.mockito:mockito-core:${property("mockitoVersion")}")
+  testImplementation("org.mockito:mockito-junit-jupiter:${property("mockitoVersion")}")
+  testRuntimeOnly(platform("org.junit:junit-bom:${property("junitVersion")}"))
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
 }
 

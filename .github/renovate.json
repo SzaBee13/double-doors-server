@@ -35,7 +35,6 @@
 
   "enabledManagers": [
     "gradle",
-    "github-actions",
-    "github-tags"
+    "github-actions"
   ]
 }
