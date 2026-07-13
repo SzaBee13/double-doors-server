@@ -5,7 +5,7 @@
   "log.geyser_detected": "Обнаружен Geyser/Floodgate: подавление двойных взаимодействий активно.",
   "log.enabled": "DoubleDoors включено.",
   "log.disabled": "DoubleDoors отключено.",
-  "cmd.usage.main": "Использование: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "У вас нет прав для использования этой команды.",
   "cmd.reload.success": "Конфигурация, настройки и язык DoubleDoors перезагружены (активный: %s).",
   "cmd.only_players.toggle": "Только игроки могут использовать /%s toggle.",

@@ -936,7 +936,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 0) {
-      sender.sendMessage(t("cmd.usage.main", label));
+      sender.sendMessage(t("cmd.usage.main", label, getDescription().getVersion()));
       return true;
     }
 
@@ -1231,7 +1231,7 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
-    sender.sendMessage(t("cmd.usage.main", label));
+    sender.sendMessage(t("cmd.usage.main", label, getDescription().getVersion()));
     return true;
   }
 

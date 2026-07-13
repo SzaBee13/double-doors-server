@@ -12,7 +12,7 @@ Thanks for your interest in contributing to DoubleDoors.
 
 Requirements:
 
-- Java 25
+- Java 25+
 - Gradle
 
 Build locally:

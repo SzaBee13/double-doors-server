@@ -19,7 +19,7 @@ dependencyResolutionManagement {
       url = uri("https://hub.spigotmc.org/nexus/content/repositories/snapshots/")
     }
     maven {
-      url = uri("https://repo.faststats.dev/releases")
+      url = uri("https://repo.faststats.dev/releases/")
     }
     maven {
       url = uri("https://repo.lushplugins.org/releases/")

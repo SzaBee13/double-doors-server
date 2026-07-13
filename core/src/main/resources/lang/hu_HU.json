@@ -5,7 +5,7 @@
   "log.geyser_detected": "Geyser/Floodgate észlelve: dupla interakciók elkerülése aktív.",
   "log.enabled": "DoubleDoors engedélyezve.",
   "log.disabled": "DoubleDoors letiltva.",
-  "cmd.usage.main": "Hasznalat: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "Nincs jogosultságod a parancs használatára.",
   "cmd.reload.success": "DoubleDoors konfiguráció, preferenciák, és nyelvek újratöltve (aktív: %s).",
   "cmd.only_players.toggle": "Csak játékosok használhatják a /%s toggle parancsot",

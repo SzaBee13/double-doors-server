@@ -5,7 +5,7 @@
   "log.geyser_detected": "Geyser/Floodgate terdeteksi: penon-aktifan interaksi ganda aktif.",
   "log.enabled": "DoubleDoors diaktifkan.",
   "log.disabled": "DoubleDoors dinonaktifkan.",
-  "cmd.usage.main": "Penggunaan: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "Anda tidak memiliki izin untuk menggunakan perintah ini.",
   "cmd.reload.success": "Konfigurasi, preferensi, dan bahasa DoubleDoors dimuat ulang (aktif: %s).",
   "cmd.only_players.toggle": "Hanya pemain yang dapat menggunakan /%s toggle.",

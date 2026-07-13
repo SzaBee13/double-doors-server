@@ -67,7 +67,7 @@ tasks.shadowJar {
   exclude("module-info.class")
   exclude("META-INF/MANIFEST.MF")
   exclude("META-INF/versions/**/module-info.class")
-  exclude("META-INF/faststats.properties")
+
 }
 
 tasks.jar {

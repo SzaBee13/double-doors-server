@@ -260,6 +260,14 @@ public final class RedstoneListener implements Listener {
             return;
           }
 
+          // When closing, skip the partner if it still has its own redstone power.
+          if (
+            !openState &&
+            (partner.isBlockPowered() || partner.isBlockIndirectlyPowered())
+          ) {
+            return;
+          }
+
           linked.setOpen(openState);
           partner.setBlockData(linked, false);
           plugin.playLinkedFeedback(partner, OpenableType.DOOR);
@@ -303,6 +311,14 @@ public final class RedstoneListener implements Listener {
           }
 
           if (!plugin.isLocationAllowed(block)) {
+            continue;
+          }
+
+          // When closing, skip blocks that still have their own redstone power.
+          if (
+            !openState &&
+            (block.isBlockPowered() || block.isBlockIndirectlyPowered())
+          ) {
             continue;
           }
 

@@ -5,7 +5,7 @@
   "log.geyser_detected": "偵測到 Geyser/Floodgate：重複互動去抖動已啟用。",
   "log.enabled": "DoubleDoors 已啟用。",
   "log.disabled": "DoubleDoors 已停用。",
-  "cmd.usage.main": "用法: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "你沒有權限使用此指令。",
   "cmd.reload.success": "DoubleDoors 設定、個人設定與語言已重新載入（目前: %s）。",
   "cmd.only_players.toggle": "只有玩家可以使用 /%s toggle。",

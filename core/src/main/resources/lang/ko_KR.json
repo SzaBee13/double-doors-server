@@ -5,7 +5,7 @@
   "log.geyser_detected": "Geyser/Floodgate 감지됨: 중복 상호작용 디바운스가 활성화되었습니다.",
   "log.enabled": "DoubleDoors가 활성화되었습니다.",
   "log.disabled": "DoubleDoors가 비활성화되었습니다.",
-  "cmd.usage.main": "사용법: /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "이 명령어를 사용할 권한이 없습니다.",
   "cmd.reload.success": "DoubleDoors 설정, 개인 설정, 언어가 새로고침되었습니다 (현재: %s).",
   "cmd.only_players.toggle": "플레이어만 /%s toggle을 사용할 수 있습니다.",

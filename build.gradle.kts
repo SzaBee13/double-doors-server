@@ -6,7 +6,7 @@ val javaRelease = (findProperty("javaRelease") ?: "25").toString().toInt()
 
 allprojects {
   group = findProperty("group") ?: "me.szabee.doubledoors"
-  version = findProperty("version") ?: "1.4.6"
+  version = findProperty("version") ?: "0.0.0-UNSET"
 }
 
 subprojects {

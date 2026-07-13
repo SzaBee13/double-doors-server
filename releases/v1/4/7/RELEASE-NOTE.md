@@ -1,5 +1,7 @@
 # DoubleDoors v1.4.7 Release Notes
 
+Release date: 
+
 ## Highlights
 
 - Translation credit commands for locale contributors.
@@ -17,12 +19,14 @@
 - Ensured SQL schema migrations add newer preference and proxy columns on existing SQLite databases as well as other SQL dialects.
 - Bypassed WorldGuard region allow/deny filtering when region lookup is unavailable instead of treating it as an empty region set.
 - Preserved custom openable handling in API-triggered linked openings.
+- Updated help command output to look cleaner.
 
 ## Fixed
 
 - Ensured YAML-to-SQL migration success is reported only after the migration marker is persisted.
 - Preserved newer queued YAML player-preference saves when an older asynchronous save batch completes.
 - Kept redstone-triggered double-door synchronization active for ordinary doors when recursive opening is disabled.
+- Prevented redstone signal loss on one source from closing doors and fence gates that are still independently powered by another signal.
 
 ## Breaking Changes
 

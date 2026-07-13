@@ -5,7 +5,7 @@
   "log.geyser_detected": "Geyser/Floodgate detecte : l'anti-rebond des interactions en double est actif.",
   "log.enabled": "DoubleDoors active.",
   "log.disabled": "DoubleDoors desactive.",
-  "cmd.usage.main": "Utilisation : /%s <reload|toggle [doors|gates|trapdoors|autoclose|knock]|knock-volume <0-1>|server-toggle|grief villagers|debug|preview|locale [code|credits|credit <code>]>",
+  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "Vous n'avez pas la permission d'utiliser cette commande.",
   "cmd.reload.success": "Configuration, preferences et langue de DoubleDoors rechargees (active : %s).",
   "cmd.only_players.toggle": "Seuls les joueurs peuvent utiliser /%s toggle.",
