@@ -6,7 +6,7 @@ This file tells AI coding agents how to work effectively in this repository.
 
 | Item | Value |
 | --- | --- |
-| Language | Java 26 |
+| Language | Java 25 |
 | Framework | Paper/Spigot 1.21.x + 26.2 plugin API |
 | Build | Gradle (`./gradlew build`) |
 | Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
