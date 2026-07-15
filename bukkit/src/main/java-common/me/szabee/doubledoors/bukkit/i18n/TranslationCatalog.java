@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -84,11 +85,15 @@ public final class TranslationCatalog {
     if (input == null || input.isBlank()) {
       return "";
     }
+    String trimmed = input.trim();
+    if ("custom".equalsIgnoreCase(trimmed)) {
+      return "custom";
+    }
     DefaultsData defaults = loadDefaults(plugin);
     String canonical = defaults
       .aliasToCode()
-      .get(input.trim().toLowerCase(Locale.ROOT));
-    return canonical != null ? canonical : input.trim();
+      .get(trimmed.toLowerCase(Locale.ROOT));
+    return canonical != null ? canonical : trimmed;
   }
 
   /**
@@ -101,6 +106,10 @@ public final class TranslationCatalog {
   static Set<String> getAvailableLanguages(JavaPlugin plugin) {
     DefaultsData defaults = loadDefaults(plugin);
     Set<String> codes = new HashSet<>(defaults.canonicalCodes());
+
+    if (isCustomLanguageFilePresent(plugin)) {
+      codes.add("custom");
+    }
 
     File langDir = new File(plugin.getDataFolder(), "lang");
     if (langDir.isDirectory()) {
@@ -121,6 +130,13 @@ public final class TranslationCatalog {
   }
 
   /**
+   * Checks whether the custom translation file exists in the data folder.
+   */
+  public static boolean isCustomLanguageFilePresent(JavaPlugin plugin) {
+    return new File(plugin.getDataFolder(), "custom_lang.json").isFile();
+  }
+
+  /**
    * Returns the display name for a language code from {@code defaults.json},
    * falling back to the code itself when not found.
    *
@@ -129,6 +145,9 @@ public final class TranslationCatalog {
    * @return the display name
    */
   static String getLanguageName(JavaPlugin plugin, String languageCode) {
+    if ("custom".equalsIgnoreCase(languageCode)) {
+      return "Custom";
+    }
     DefaultsData defaults = loadDefaults(plugin);
     String name = defaults.languageNames().get(languageCode);
     return name != null ? name : languageCode;
@@ -169,7 +188,12 @@ public final class TranslationCatalog {
       return 100.0;
     }
 
-    Map<String, String> langStrings = loadLanguageFileRaw(plugin, languageCode);
+    Map<String, String> langStrings;
+    if ("custom".equalsIgnoreCase(languageCode)) {
+      langStrings = loadCustomLanguageFile(plugin);
+    } else {
+      langStrings = loadLanguageFileRaw(plugin, languageCode);
+    }
     int total = referenceStrings.size();
     if (total == 0) {
       return 100.0;
@@ -207,6 +231,53 @@ public final class TranslationCatalog {
       return merged;
     }
     return result;
+  }
+
+  /**
+   * Loads the custom translation file ({@code custom_lang.json}) from the
+   * plugin data folder. If the file does not exist, the bundled
+   * {@code lang/en_US.json} is copied there as a starting template.
+   * <p>
+   * The returned map has {@code defaults.json} strings as the base, overlaid
+   * with the custom file's values.
+   *
+   * @param plugin the plugin instance
+   * @return the merged translation map
+   */
+  public static Map<String, String> loadCustomLanguageFile(JavaPlugin plugin) {
+    File customFile = new File(
+      plugin.getDataFolder(),
+      "custom_lang.json"
+    );
+    if (!customFile.isFile()) {
+      writeDefaultCustomFile(plugin, customFile);
+    }
+    Map<String, String> result = Map.of();
+    if (customFile.isFile()) {
+      try (InputStream in = new FileInputStream(customFile)) {
+        result = parseJson(in);
+      } catch (IOException ignored) {}
+    }
+    DefaultsData defaults = loadDefaults(plugin);
+    if (!defaults.strings().isEmpty()) {
+      Map<String, String> merged = new HashMap<>(defaults.strings());
+      merged.putAll(result);
+      return merged;
+    }
+    return result;
+  }
+
+  private static void writeDefaultCustomFile(
+    JavaPlugin plugin,
+    File customFile
+  ) {
+    try (InputStream in = plugin.getResource("lang/en_US.json")) {
+      if (in == null) {
+        return;
+      }
+      Files.createDirectories(customFile.getParentFile().toPath());
+      Files.copy(in, customFile.toPath());
+    } catch (IOException ignored) {}
   }
 
   /**

@@ -257,12 +257,15 @@ public final class PluginConfig {
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
     }
-    String language = TranslationCatalog.resolveLanguageCode(
-      plugin,
-      configuredLanguage.trim()
-    );
-    if (language == null || language.isBlank()) {
-      language = "en_US";
+    String trimmed = configuredLanguage.trim();
+    String language;
+    if ("custom".equalsIgnoreCase(trimmed)) {
+      language = "custom";
+    } else {
+      language = TranslationCatalog.resolveLanguageCode(plugin, trimmed);
+      if (language == null || language.isBlank()) {
+        language = "en_US";
+      }
     }
 
     boolean perPlayerLocaleEnabled = plugin
@@ -626,6 +629,15 @@ public final class PluginConfig {
    */
   public String getLanguage() {
     return snapshot.language();
+  }
+
+  /**
+   * Returns whether the server is using a custom translation file.
+   *
+   * @return {@code true} when {@code language: custom} is set in config.yml
+   */
+  public boolean isCustomLanguage() {
+    return "custom".equalsIgnoreCase(snapshot.language());
   }
 
   /**

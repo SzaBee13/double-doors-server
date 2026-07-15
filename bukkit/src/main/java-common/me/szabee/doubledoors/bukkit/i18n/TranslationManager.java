@@ -155,10 +155,12 @@ public final class TranslationManager {
 
   private void ensureLoaded(String languageCode) {
     if (!translations.containsKey(languageCode)) {
-      Map<String, String> loaded = TranslationCatalog.loadLanguageFile(
-        plugin,
-        languageCode
-      );
+      Map<String, String> loaded;
+      if ("custom".equalsIgnoreCase(languageCode)) {
+        loaded = TranslationCatalog.loadCustomLanguageFile(plugin);
+      } else {
+        loaded = TranslationCatalog.loadLanguageFile(plugin, languageCode);
+      }
       translations.put(languageCode, loaded);
     }
   }

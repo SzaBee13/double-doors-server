@@ -12,6 +12,7 @@ Release date:
 
 - `/dd locale credits` and `/dd locale credit <code>` for listing translation credits.
 - Expanded FastStats metcis with anonymous server configuration, feature-use, integration, capacity, and uptime metrics, plus automatic error tracking.
+- Custom translation file support — set `language: custom` in config.yml, then edit `plugins/DoubleDoors/custom_lang.json` (auto-generated from en_US on first use). Re-reads on `/dd reload`.
 
 ## Changed
 
@@ -45,6 +46,7 @@ None.
   <li>Changed the language structure (see [defaults.json](https://github.com/SzaBee13
     /double-doors-server/tree/v1.4.7/core/src/main/resources/lang/defaults.json))</li>
   <li>Added a compact Paper/Purpur/Folia artifact that downloads SQL libraries through Paper at startup; the Bukkit/Spigot artifact remains self-contained.</li>
+  <li>Refactored translation loading to support a custom file path independent of the locale system.</li>
 </ul>
 </details>
 

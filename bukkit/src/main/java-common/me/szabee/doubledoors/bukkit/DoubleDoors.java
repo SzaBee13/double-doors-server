@@ -3,7 +3,6 @@ package me.szabee.doubledoors.bukkit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
@@ -574,10 +573,6 @@ public final class DoubleDoors extends JavaPlugin {
       Class<?> cssClass = Class.forName(
         "io.papermc.paper.command.brigadier.CommandSourceStack"
       );
-      Class<?> senderClass = Class.forName(
-        "org.bukkit.command.CommandSender"
-      );
-
       java.lang.reflect.Method getSender = cssClass.getMethod("getSender");
 
       Object basicCommand = java.lang.reflect.Proxy.newProxyInstance(
@@ -1160,6 +1155,18 @@ public final class DoubleDoors extends JavaPlugin {
     java.util.Objects.requireNonNull(alias, "alias");
     java.util.Objects.requireNonNull(args, "args");
     List<String> completions = new ArrayList<>();
+
+    if (args.length == 0) {
+      completions.add("reload");
+      completions.add("toggle");
+      completions.add("knock-volume");
+      completions.add("locale");
+      completions.add("server-toggle");
+      completions.add("grief");
+      completions.add("debug");
+      completions.add("preview");
+      return completions;
+    }
 
     if (args.length == 1) {
       for (String sub : List.of(
