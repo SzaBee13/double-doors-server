@@ -58,12 +58,12 @@
   "cmd.locale.credit.none": "Aucun crédit trouvé pour %s.",
   "cmd.usage.locale.credit": "Utilisation : /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% traduit",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "Recharger la configuration, les preferences et les traductions.",
+  "cmd.usage.main.toggle": "Activer ou desactiver les portes, barrieres ou trappes liees.",
+  "cmd.usage.main.knock_volume": "Regler le volume du son de coupement de 0 a 1.",
+  "cmd.usage.main.server_toggle": "Activer ou desactiver le comportement des portes liees sur tout le serveur.",
+  "cmd.usage.main.locale": "Gerer votre langue personnelle.",
+  "cmd.usage.main.grief": "Bloquer ou autoriser l acces des villageois aux portes liees dans un claim.",
+  "cmd.usage.main.debug": "Activer ou desactiver le mode debogage.",
+  "cmd.usage.main.preview": "Apercu du partenaire lie du bloc vise."
 }

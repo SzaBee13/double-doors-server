@@ -58,12 +58,12 @@
   "cmd.locale.credit.unknown": "Неизвестный код языка: %s.",
   "cmd.locale.credit.none": "Авторы для %s не найдены.",
   "cmd.usage.locale.credit": "Использование: /%s locale credit <code>",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "Перезагрузить конфигурацию, настройки и переводы.",
+  "cmd.usage.main.toggle": "Переключить связанные двери, ворота или люки.",
+  "cmd.usage.main.knock_volume": "Установить громкость звука стука от 0 до 1.",
+  "cmd.usage.main.server_toggle": "Переключить поведение связанных дверей на всем сервере.",
+  "cmd.usage.main.locale": "Управление вашим личным языком.",
+  "cmd.usage.main.grief": "Запретить или разрешить доступ жителей к связанным дверям в клейме.",
+  "cmd.usage.main.debug": "Переключить режим отладки.",
+  "cmd.usage.main.preview": "Просмотреть связанный партнёр целевого блока."
 }

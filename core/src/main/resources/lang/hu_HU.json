@@ -58,12 +58,12 @@
   "cmd.locale.credit.none": "Nem található hozzájárulás ehhez: %s.",
   "cmd.usage.locale.credit": "Használat: /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% lefordítva",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "Konfiguracio, preferenciak es forditasok ujratoltese.",
+  "cmd.usage.main.toggle": "Osszekapcsolt ajtok, kapuk vagy csapoajtok atkapcsolasa.",
+  "cmd.usage.main.knock_volume": "Kopogas hangerejenek beallitasa 0 es 1 kozott.",
+  "cmd.usage.main.server_toggle": "Osszekapcsolt ajtok viselkedesenek atkapcsolasa a szerveren.",
+  "cmd.usage.main.locale": "Szemelyes nyelved kezelese.",
+  "cmd.usage.main.grief": "Falusiak hozzaferesenek blokkolasa vagy engedelyezese osszekapcsolt ajtokhoz egy claimben.",
+  "cmd.usage.main.debug": "Hibakeresi mod atkapcsolasa.",
+  "cmd.usage.main.preview": "A celzott blokk osszekapcsolt partnerenek elonezete."
 }

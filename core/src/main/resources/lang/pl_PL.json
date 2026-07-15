@@ -58,12 +58,12 @@
   "cmd.locale.credit.unknown": "Nieznany kod języka: %s.",
   "cmd.locale.credit.none": "Nie znaleziono zasług dla %s.",
   "cmd.usage.locale.credit": "Użycie: /%s locale credit <code>",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "Przeladuj konfiguracje, ustawienia i tlumaczenia.",
+  "cmd.usage.main.toggle": "Przelacz polaczone drzwi, bramy lub furtek.",
+  "cmd.usage.main.knock_volume": "Ustaw glosnosc dzwieku pukania od 0 do 1.",
+  "cmd.usage.main.server_toggle": "Przelacz zachowanie polaczonych drzwi na calym serwerze.",
+  "cmd.usage.main.locale": "Zarzadzaj swoim jezykiem osobistym.",
+  "cmd.usage.main.grief": "Zablokuj lub zezwol na dostep wioskow do polaczonych drzwi w claimie.",
+  "cmd.usage.main.debug": "Przelacz tryb debugowania.",
+  "cmd.usage.main.preview": "Podglad polaczonego partnera docelowego bloku."
 }

@@ -58,12 +58,12 @@
   "cmd.locale.credit.none": "Keine Credits fuer %s gefunden.",
   "cmd.usage.locale.credit": "Verwendung: /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% übersetzt",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "Konfiguration, Einstellungen und Uebersetzungen neu laden.",
+  "cmd.usage.main.toggle": "Verknuepfte Tueren, Zauntoere oder Falltueren umschalten.",
+  "cmd.usage.main.knock_volume": "Klopflautstaerke von 0 bis 1 einstellen.",
+  "cmd.usage.main.server_toggle": "Serverweites Verhalten fuer verknuepfte Tueren umschalten.",
+  "cmd.usage.main.locale": "Persoenliche Sprache verwalten.",
+  "cmd.usage.main.grief": "Dorfbewohner-Zugriff auf verknuepfte Tueren in einem Claim blockieren oder erlauben.",
+  "cmd.usage.main.debug": "Debug-Modus umschalten.",
+  "cmd.usage.main.preview": "Verknuepften Partner des markierten Blocks anzeigen."
 }

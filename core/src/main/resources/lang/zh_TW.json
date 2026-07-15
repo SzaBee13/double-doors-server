@@ -58,12 +58,12 @@
   "cmd.locale.credit.unknown": "未知語言代碼: %s。",
   "cmd.locale.credit.none": "找不到 %s 的貢獻者。",
   "cmd.usage.locale.credit": "用法: /%s locale credit <code>",
-  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
-  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
-  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
-  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
-  "cmd.usage.main.locale": "Manage your personal language.",
-  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
-  "cmd.usage.main.debug": "Toggle debug mode.",
-  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
+  "cmd.usage.main.reload": "重新載入設定、個人設定和翻譯。",
+  "cmd.usage.main.toggle": "切換連結的門、柵欄門或活板門。",
+  "cmd.usage.main.knock_volume": "設定敲擊音量，範圍為0到1。",
+  "cmd.usage.main.server_toggle": "切換伺服器範圍內的連結門行為。",
+  "cmd.usage.main.locale": "管理你的個人語言。",
+  "cmd.usage.main.grief": "在領地中阻止或允許村民連結門存取。",
+  "cmd.usage.main.debug": "切換除錯模式。",
+  "cmd.usage.main.preview": "預覽目標方塊的連結配對。"
 }
