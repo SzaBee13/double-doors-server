@@ -33,6 +33,20 @@ Release date:
 
 None.
 
+## Extended Release Notes
+
+<details>
+<summary>Developer Notes</summary>
+<ul>
+  <li>Removed unused dependencies.</li>
+  <li>Moved from Gradle Groovy to Gradle Kotlin DSL.</li>
+  <li>Refactored Release Notes structure</li>
+  <li>Moved from Dependabot to Renovate</li>
+  <li>Changed the language structure (see [defaults.json](https://github.com/SzaBee13
+    /double-doors-server/tree/v1.4.7/core/src/main/resources/lang/defaults.json))</li>
+</ul>
+</details>
+
 ## Upgrade Guide
 
 1. Back up your server folder and existing plugin data.

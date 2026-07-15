@@ -14,7 +14,6 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import me.szabee.doubledoors.bukkit.api.DoubleDoorsAPI;
 import me.szabee.doubledoors.bukkit.config.ClaimSettings;
 import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
@@ -33,7 +32,6 @@ import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import me.szabee.doubledoors.bukkit.version.VersionBridge;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
 import me.szabee.doubledoors.util.TaskToken;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -45,7 +43,6 @@ import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -984,7 +981,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 0) {
-      sender.sendMessage(t("cmd.usage.main", label, getDescription().getVersion()));
+      sender.sendMessage(t("cmd.usage.main", label, getPluginMeta().getVersion()));
       return true;
     }
 
@@ -1279,7 +1276,7 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
-    sender.sendMessage(t("cmd.usage.main", label, getDescription().getVersion()));
+    sender.sendMessage(t("cmd.usage.main", label, getPluginMeta().getVersion()));
     return true;
   }
 

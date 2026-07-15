@@ -55,6 +55,20 @@ When releasing a new version:
 You should update `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` with any changes from `FOR-LATER.md` before releasing.
 If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated.
 
+What you should add to the release notes:
+
+- Fixed hook for xy plugin
+- Enhanced performance
+- Added new feature
+
+What you should add to the developer notes (in release notes dropdown): 
+
+- Refactoring
+- Internal code changes
+- Updates to testing infrastructure
+- Updated 3rd party configuration (eg. editor, build tools)
+- Updates to dependencies
+
 ## Dangerous areas
 
 - `ProtectionCompat` uses unchecked reflection — changes here need careful null/exception handling.
