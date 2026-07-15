@@ -67,6 +67,9 @@ tasks.shadowJar {
   exclude("module-info.class")
   exclude("META-INF/MANIFEST.MF")
   exclude("META-INF/versions/**/module-info.class")
+  exclude("META-INF/maven/**")
+  exclude("META-INF/native-image/**")
+  exclude("META-INF/versions/9/org/sqlite/nativeimage/**")
 
 }
 

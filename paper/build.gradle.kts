@@ -4,7 +4,7 @@ plugins {
 }
 
 base {
-  archivesName.set("doubledoors-bukkit")
+  archivesName.set("doubledoors-paper")
 }
 
 val minecraftVersionId = property("minecraftVersionId").toString()
@@ -13,17 +13,17 @@ sourceSets {
   main {
     java {
       srcDirs(
-        "src/main/java-common",
-        "src/main/java-$minecraftVersionId"
+        "../bukkit/src/main/java-common",
+        "../bukkit/src/main/java-$minecraftVersionId"
       )
     }
     resources {
-      setSrcDirs(listOf("src/main/resources"))
+      setSrcDirs(listOf("src/main/resources", "../bukkit/src/main/resources"))
     }
   }
   test {
     java {
-      srcDir("src/test/java")
+      srcDir("../bukkit/src/test/java")
     }
   }
 }
@@ -36,13 +36,11 @@ dependencies {
   implementation("org.lushplugins.pluginupdater:PluginUpdater-API:${property("pluginUpdaterVersion")}") {
     exclude(group = "org.lushplugins", module = "ChatColorHandler")
   }
-
   implementation("dev.faststats.metrics:bukkit:${property("faststatsVersion")}")
-  implementation("com.google.code.gson:gson:${property("gsonVersion")}") {
-    exclude(group = "com.google.errorprone", module = "error_prone_annotations")
-  }
-  implementation("org.xerial:sqlite-jdbc:${property("sqliteVersion")}")
-  implementation("com.mysql:mysql-connector-j:${property("mysqlConnectorVersion")}")
+
+  compileOnly("com.google.code.gson:gson:${property("gsonVersion")}")
+  compileOnly("org.xerial:sqlite-jdbc:${property("sqliteVersion")}")
+  compileOnly("com.mysql:mysql-connector-j:${property("mysqlConnectorVersion")}")
 
   testImplementation(platform("org.junit:junit-bom:${property("junitVersion")}"))
   testImplementation("org.junit.jupiter:junit-jupiter")
@@ -54,14 +52,22 @@ dependencies {
 
 tasks.processResources {
   inputs.property("projectVersion", project.version)
-  filesMatching("plugin.yml") {
-    expand(mapOf("project" to mapOf("version" to project.version)))
+  exclude("plugin.yml")
+  filesMatching("paper-plugin.yml") {
+    expand(
+      mapOf(
+        "project" to mapOf("version" to project.version),
+        "gsonVersion" to project.property("gsonVersion"),
+        "sqliteVersion" to project.property("sqliteVersion"),
+        "mysqlConnectorVersion" to project.property("mysqlConnectorVersion")
+      )
+    )
   }
 }
 
 tasks.shadowJar {
   archiveClassifier.set("")
-  duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.INCLUDE
+  duplicatesStrategy = org.gradle.api.file.DuplicatesStrategy.EXCLUDE
   mergeServiceFiles()
   exclude("module-info.class")
   exclude("META-INF/MANIFEST.MF")
@@ -70,7 +76,6 @@ tasks.shadowJar {
   exclude("META-INF/proguard/**")
   exclude("META-INF/native-image/**")
   exclude("META-INF/versions/9/org/sqlite/nativeimage/**")
-
 }
 
 tasks.jar {
@@ -81,7 +86,7 @@ publishing {
   publications {
     create<MavenPublication>("mavenJava") {
       from(components["shadow"])
-      artifactId = "doubledoors-bukkit"
+      artifactId = "doubledoors-paper"
     }
   }
 }

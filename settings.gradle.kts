@@ -45,4 +45,4 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "doubledoors-parent"
-include("core", "bukkit", "velocity")
+include("core", "bukkit", "paper", "velocity")

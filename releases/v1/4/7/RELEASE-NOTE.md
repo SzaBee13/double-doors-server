@@ -15,6 +15,7 @@ Release date:
 
 ## Changed
 
+- Added a compact Paper/Purpur/Folia artifact that downloads SQL libraries through Paper at startup; the Bukkit/Spigot artifact remains self-contained.
 - Added a GitHub Actions CI workflow that builds the project on pushes and pull requests.
 - Ensured SQL schema migrations add newer preference and proxy columns on existing SQLite databases as well as other SQL dialects.
 - Bypassed WorldGuard region allow/deny filtering when region lookup is unavailable instead of treating it as an empty region set.
@@ -56,5 +57,6 @@ None.
 
 ## Artifacts
 
-- Bukkit/Spigot/Paper/Purpur: doubledoors-bukkit-1.4.7.jar
+- Bukkit/Spigot: doubledoors-bukkit-1.4.7.jar
+- Paper/Purpur/Folia: doubledoors-paper-1.4.7.jar
 - Velocity: doubledoors-velocity-1.4.7.jar

@@ -46,7 +46,8 @@ Release date: YYYY-MM-DD
 
 ## Artifacts
 
-- Bukkit/Spigot/Paper/Purpur: doubledoors-bukkit-X.Y.Z.jar
+- Bukkit/Spigot: doubledoors-bukkit-X.Y.Z.jar
+- Paper/Purpur/Folia: doubledoors-paper-X.Y.Z.jar
 - Velocity: doubledoors-velocity-X.Y.Z.jar
 
 ## Notes

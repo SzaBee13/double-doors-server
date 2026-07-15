@@ -53,6 +53,11 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 - Plugin declares a soft-depend on `GriefPrevention`.
 - When present, linked-door interaction is checked against claim build permission before toggling the partner door.
 
+### Platform Artifacts
+
+- Use `doubledoors-paper-<version>.jar` on Paper, Purpur, or Folia. Paper downloads its SQL libraries when the plugin starts.
+- Use `doubledoors-bukkit-<version>.jar` on Bukkit or Spigot. It includes all runtime libraries.
+
 ## Proxy Setup (Multi-Server)
 
 DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate environments with multiple backend servers.
