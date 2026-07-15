@@ -1,13 +1,7 @@
 package me.szabee.doubledoors.bukkit;
 
-import dev.faststats.bukkit.BukkitContext;
-import dev.faststats.bukkit.BukkitMetrics;
-import dev.faststats.ErrorTracker;
-import dev.faststats.data.Metric;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -26,7 +20,9 @@ import me.szabee.doubledoors.bukkit.listeners.RedstoneListener;
 import me.szabee.doubledoors.bukkit.migration.YamlToSqlMigrator;
 import me.szabee.doubledoors.bukkit.storage.BukkitSharedSqlStorage;
 import me.szabee.doubledoors.bukkit.util.DoorUtil;
+import me.szabee.doubledoors.bukkit.util.FastStatsManager;
 import me.szabee.doubledoors.bukkit.util.OpenableType;
+import me.szabee.doubledoors.bukkit.util.PluginUpdaterManager;
 import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
 import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import me.szabee.doubledoors.bukkit.version.VersionBridge;
@@ -46,33 +42,21 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.lushplugins.pluginupdater.api.updater.PluginData;
-import org.lushplugins.pluginupdater.api.updater.Updater;
 
 /**
  * Main plugin class for DoubleDoors.
  */
 public final class DoubleDoors extends JavaPlugin {
 
-  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
-  private static final String FASTSTATS_PROJECT_TOKEN =
-    "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
-  private static final String MODRINTH_PROJECT_ID = "Fdj5mcgC";
-  private static final String UPDATE_NOTIFY_PERMISSION =
-    "doubledoors.update.notify";
-  private static final String UPDATE_DELEGATED_LOG =
-    "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
   private static final String LOCALE_PERMISSION = "doubledoors.locale";
-  private final long startedAtNanos = System.nanoTime();
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
   private volatile ClaimSettings claimSettings;
   private volatile TranslationManager translationManager;
   private volatile SharedSqlStorage sqlStorage;
-  private volatile BukkitContext metricsContext;
-  private volatile Updater updater;
-  private volatile TaskToken updaterCheckTask;
+  private final FastStatsManager fastStats = new FastStatsManager(this);
+  private final PluginUpdaterManager pluginUpdater = new PluginUpdaterManager(this);
   private volatile TaskToken proxyBridgePollTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
@@ -465,8 +449,8 @@ public final class DoubleDoors extends JavaPlugin {
 
     versionBridge = loadVersionBridge();
 
-    restartFastStats();
-    initializeUpdater();
+    fastStats.restart(pluginConfig, geyserBridgeAvailable);
+    pluginUpdater.initialize(pluginConfig);
 
     sqlStorage = null;
     translationManager = new TranslationManager(this);
@@ -486,10 +470,12 @@ public final class DoubleDoors extends JavaPlugin {
       .registerEvents(new RedstoneListener(this), this);
     registerVersionListener();
 
-    var doubledoorsCommand = getCommand("doubledoors");
-    if (doubledoorsCommand != null) {
-      doubledoorsCommand.setExecutor(this);
-      doubledoorsCommand.setTabCompleter(this);
+    if (!registerPaperCommand()) {
+      var doubledoorsCommand = getCommand("doubledoors");
+      if (doubledoorsCommand != null) {
+        doubledoorsCommand.setExecutor(this);
+        doubledoorsCommand.setTabCompleter(this);
+      }
     }
 
     PluginManager pluginManager = getServer().getPluginManager();
@@ -532,22 +518,10 @@ public final class DoubleDoors extends JavaPlugin {
   public void onDisable() {
     initGeneration++;
     try {
-      if (metricsContext != null) {
-        try {
-          metricsContext.shutdown();
-        } catch (RuntimeException e) {
-          getLogger().log(
-            Level.WARNING,
-            "FastStats could not be shut down cleanly.",
-            e
-          );
-        } finally {
-          metricsContext = null;
-        }
-      }
+      fastStats.shutdown();
     } finally {
       stopProxyBridgePolling();
-      disableUpdater();
+      pluginUpdater.disable();
       versionBridge = null;
       closePlayerPreferences();
       getLogger().info(t("log.disabled"));
@@ -585,6 +559,78 @@ public final class DoubleDoors extends JavaPlugin {
     localBridge
       .createVersionListener()
       .ifPresent(l -> getServer().getPluginManager().registerEvents(l, this));
+  }
+
+  /**
+   * Attempts to register the {@code /doubledoors} command using Paper's
+   * {@code BasicCommand} API via reflection. Returns {@code true} on success
+   * (Paper server), {@code false} if the Bukkit fallback should be used.
+   */
+  private boolean registerPaperCommand() {
+    try {
+      Class<?> basicCmdClass = Class.forName(
+        "io.papermc.paper.command.brigadier.BasicCommand"
+      );
+      Class<?> cssClass = Class.forName(
+        "io.papermc.paper.command.brigadier.CommandSourceStack"
+      );
+      Class<?> senderClass = Class.forName(
+        "org.bukkit.command.CommandSender"
+      );
+
+      java.lang.reflect.Method getSender = cssClass.getMethod("getSender");
+
+      Object basicCommand = java.lang.reflect.Proxy.newProxyInstance(
+        basicCmdClass.getClassLoader(),
+        new Class<?>[]{ basicCmdClass },
+        (proxy, method, args) -> {
+          String name = method.getName();
+          return switch (name) {
+            case "execute" -> {
+              Object source = args[0];
+              String[] cmdArgs = (String[]) args[1];
+              CommandSender sender = (CommandSender) getSender.invoke(source);
+              handleCommand(sender, "doubledoors", cmdArgs);
+              yield null;
+            }
+            case "suggest" -> {
+              Object source = args[0];
+              String[] cmdArgs = (String[]) args[1];
+              CommandSender sender = (CommandSender) getSender.invoke(source);
+              yield handleTabComplete(sender, "doubledoors", cmdArgs);
+            }
+            case "permission" -> null;
+            case "canUse" -> true;
+            default -> {
+              try {
+                yield method.invoke(proxy, args);
+              } catch (java.lang.reflect.InvocationTargetException e) {
+                throw e.getCause();
+              }
+            }
+          };
+        }
+      );
+
+      Class<?> javaPluginClass = Class.forName(
+        "org.bukkit.plugin.java.JavaPlugin"
+      );
+      java.lang.reflect.Method registerCmd = javaPluginClass.getMethod(
+        "registerCommand",
+        String.class,
+        java.util.Collection.class,
+        basicCmdClass
+      );
+      registerCmd.invoke(
+        this,
+        "doubledoors",
+        java.util.List.of("dd"),
+        basicCommand
+      );
+      return true;
+    } catch (Throwable ignored) {
+      return false;
+    }
   }
 
   private String t(String key, Object... args) {
@@ -730,88 +776,6 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
-  private void initializeFastStats() {
-    if (!pluginConfig.isEnableAnonymousTracking()) {
-      metricsContext = null;
-      getLogger().info("Anonymous tracking is disabled by config.");
-      return;
-    }
-
-    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
-    if (token == null) {
-      metricsContext = null;
-      getLogger().warning(
-        "Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled."
-      );
-      return;
-    }
-
-    try {
-      BukkitContext context = new BukkitContext.Factory(this, token)
-        .metrics(factory -> {
-          BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
-          addFastStatsMetrics(bFactory);
-          return bFactory.create();
-        })
-        .errorTrackerService(ErrorTracker.contextAware(getClass().getClassLoader()))
-        .create();
-      context.getLoggerFactory().setDebug(pluginConfig.isDebug());
-      context.ready();
-      metricsContext = context;
-    } catch (RuntimeException e) {
-      metricsContext = null;
-      getLogger().log(
-        Level.WARNING,
-        "FastStats could not be initialized; continuing without metrics.",
-        e
-      );
-    }
-  }
-
-  private void addFastStatsMetrics(BukkitMetrics.Factory factory) {
-    factory
-      .addMetric(Metric.string("server_language", pluginConfig::getLanguage))
-      .addMetric(Metric.bool("sql_enabled", pluginConfig::isSqlEnabled))
-      .addMetric(Metric.number("server_max_players", () -> getServer().getMaxPlayers()))
-      .addMetric(
-        Metric.number(
-          "plugin_uptime_minutes",
-          () -> (System.nanoTime() - startedAtNanos) / 60_000_000_000L
-        )
-      )
-      .addMetric(Metric.bool("auto_close_enabled", pluginConfig::isEnableAutoClose))
-      .addMetric(Metric.bool("knocking_enabled", pluginConfig::isEnableKnockFeature))
-      .addMetric(
-        Metric.bool("update_checker_enabled", pluginConfig::isUpdateCheckerEnabled)
-      )
-      .addMetric(Metric.bool("debug_enabled", pluginConfig::isDebug))
-      .addMetric(
-        Metric.bool("recursive_opening_enabled", pluginConfig::isEnableRecursiveOpening)
-      )
-      .addMetric(Metric.bool("doors_enabled", pluginConfig::isEnableDoors))
-      .addMetric(Metric.bool("fence_gates_enabled", pluginConfig::isEnableFenceGates))
-      .addMetric(Metric.bool("trapdoors_enabled", pluginConfig::isEnableTrapdoors))
-      .addMetric(
-        Metric.bool(
-          "villager_linked_doors_enabled",
-          pluginConfig::isEnableVillagerLinkedDoors
-        )
-      )
-      .addMetric(Metric.bool("geyser_detected", () -> geyserBridgeAvailable))
-      .addMetric(
-        Metric.bool(
-          "worldguard_detected",
-          () -> getServer().getPluginManager().isPluginEnabled("WorldGuard")
-        )
-      )
-      .addMetric(
-        Metric.bool(
-          "griefprevention_detected",
-          () -> getServer().getPluginManager().isPluginEnabled("GriefPrevention")
-        )
-      );
-  }
-
   private void closePlayerPreferences() {
     PlayerPreferences preferences = playerPreferences;
     if (preferences != null) {
@@ -820,151 +784,6 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
-  private void restartFastStats() {
-    if (metricsContext != null) {
-      try {
-        metricsContext.shutdown();
-      } catch (RuntimeException e) {
-        getLogger().log(
-          Level.WARNING,
-          "FastStats could not be shut down cleanly during restart.",
-          e
-        );
-      } finally {
-        metricsContext = null;
-      }
-    }
-    initializeFastStats();
-  }
-
-  private void initializeUpdater() {
-    disableUpdater();
-    if (!pluginConfig.isUpdateCheckerEnabled()) {
-      getLogger().info(
-        "Built-in updater checks are disabled by config (updateChecker.enabled=false)."
-      );
-      return;
-    }
-
-    if (isPluginUpdaterPluginPresent()) {
-      // Delegate update checks to the standalone plugin to avoid duplicate checks/notices.
-      getLogger().info(UPDATE_DELEGATED_LOG);
-      getLogger().info(
-        "Ensure the external PluginUpdater plugin is configured to include DoubleDoors update checks."
-      );
-      return;
-    }
-
-    try {
-      Updater.Builder builder = Updater.builder(this);
-      injectMutablePluginData(builder);
-      updater = builder
-        .modrinth(MODRINTH_PROJECT_ID)
-        .notify(pluginConfig.isUpdateCheckerNotify())
-        .notificationPermission(UPDATE_NOTIFY_PERMISSION)
-        .build();
-      scheduleUpdaterChecks();
-      getLogger().info("Built-in updater checks are enabled for DoubleDoors.");
-    } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
-      getLogger().log(
-        Level.WARNING,
-        "Plugin updater could not be initialized; continuing without update checks.",
-        e
-      );
-    }
-  }
-
-  private boolean isPluginUpdaterPluginPresent() {
-    return hasAnyPluginEnabled(
-      getServer().getPluginManager(),
-      "PluginUpdater",
-      "PluginUpdaterPlugin"
-    );
-  }
-
-  private void injectMutablePluginData(Updater.Builder builder)
-    throws ReflectiveOperationException {
-    Objects.requireNonNull(builder, "builder");
-    PluginData pluginData = PluginData.builder(this)
-      .platformData(new ArrayList<>())
-      .build();
-
-    // Upstream API request tracker (open when authenticated): https://github.com/OakLoaf/PluginUpdater/issues/new?title=Expose%20Builder%20API%20for%20platformData%20injection
-    Field pluginDataField = Updater.Builder.class.getDeclaredField(
-      "pluginData"
-    );
-    pluginDataField.setAccessible(true);
-    if (!pluginDataField.getType().isAssignableFrom(pluginData.getClass())) {
-      throw new ReflectiveOperationException(
-        "Unexpected Updater.Builder#pluginData type: " +
-          pluginDataField.getType().getName()
-      );
-    }
-    pluginDataField.set(builder, pluginData);
-  }
-
-  private void scheduleUpdaterChecks() {
-    if (updater == null) {
-      return;
-    }
-    long checkFrequencySeconds = pluginConfig.getUpdateCheckerScheduleSeconds();
-    if (checkFrequencySeconds <= 0L) {
-      return;
-    }
-    long periodTicks = checkFrequencySeconds * 20L;
-    updaterCheckTask = SchedulerBridge.runTimerAsync(
-      this,
-      0L,
-      periodTicks,
-      () -> {
-        Updater localUpdater = updater;
-        if (localUpdater != null) {
-          localUpdater.checkForUpdate();
-        }
-      }
-    );
-  }
-
-  private void disableUpdater() {
-    TaskToken localTask = updaterCheckTask;
-    updaterCheckTask = null;
-    if (localTask != null) {
-      localTask.cancel();
-    }
-
-    Updater localUpdater = updater;
-    if (localUpdater == null) {
-      return;
-    }
-
-    PluginData pluginData = localUpdater.getPluginData();
-    if (pluginData != null) {
-      pluginData.setEnabled(false);
-    }
-    updater = null;
-  }
-
-  private String normalizeFastStatsToken(String rawToken) {
-    if (rawToken == null || rawToken.isBlank()) {
-      return null;
-    }
-
-    String normalized = rawToken.trim().toLowerCase(Locale.ROOT).replace("-", "");
-    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
-      return null;
-    }
-    return normalized;
-  }
-
-  /**
-   * Handles the {@code /doubledoors} command tree.
-   *
-   * @param sender the command sender
-   * @param command the command being executed
-   * @param label the alias used to execute the command
-   * @param args command arguments
-   * @return {@code true} when the command was handled by this plugin
-   */
   @Override
   public boolean onCommand(
     CommandSender sender,
@@ -972,13 +791,25 @@ public final class DoubleDoors extends JavaPlugin {
     String label,
     String[] args
   ) {
+    return handleCommand(sender, label, args);
+  }
+
+  /**
+   * Handles the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param label the alias used to execute the command
+   * @param args command arguments
+   * @return {@code true} when the command was handled by this plugin
+   */
+  public boolean handleCommand(
+    CommandSender sender,
+    String label,
+    String[] args
+  ) {
     java.util.Objects.requireNonNull(sender, "sender");
-    java.util.Objects.requireNonNull(command, "command");
     java.util.Objects.requireNonNull(label, "label");
     java.util.Objects.requireNonNull(args, "args");
-    if (!command.getName().equalsIgnoreCase("doubledoors")) {
-      return false;
-    }
 
     if (args.length == 0) {
       sender.sendMessage(mainUsage(label));
@@ -995,8 +826,8 @@ public final class DoubleDoors extends JavaPlugin {
       closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
-      restartFastStats();
-      initializeUpdater();
+      fastStats.restart(pluginConfig, geyserBridgeAvailable);
+      pluginUpdater.initialize(pluginConfig);
       stopProxyBridgePolling();
       sqlStorage = null;
       localGeyserBridgeAvailable = hasAnyPluginEnabled(
@@ -1302,15 +1133,6 @@ public final class DoubleDoors extends JavaPlugin {
     return " §e/" + label + " " + syntax + " §7" + description;
   }
 
-  /**
-   * Provides tab completions for the {@code /doubledoors} command tree.
-   *
-   * @param sender the command sender
-   * @param command the command being completed
-   * @param alias the alias used for completion
-   * @param args current command arguments
-   * @return matching completion candidates
-   */
   @Override
   public List<String> onTabComplete(
     CommandSender sender,
@@ -1318,14 +1140,26 @@ public final class DoubleDoors extends JavaPlugin {
     String alias,
     String[] args
   ) {
+    return handleTabComplete(sender, alias, args);
+  }
+
+  /**
+   * Provides tab completions for the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param alias the alias used for completion
+   * @param args current command arguments
+   * @return matching completion candidates
+   */
+  public List<String> handleTabComplete(
+    CommandSender sender,
+    String alias,
+    String[] args
+  ) {
     java.util.Objects.requireNonNull(sender, "sender");
-    java.util.Objects.requireNonNull(command, "command");
     java.util.Objects.requireNonNull(alias, "alias");
     java.util.Objects.requireNonNull(args, "args");
     List<String> completions = new ArrayList<>();
-    if (!command.getName().equalsIgnoreCase("doubledoors")) {
-      return completions;
-    }
 
     if (args.length == 1) {
       for (String sub : List.of(
