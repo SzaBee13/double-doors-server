@@ -5,7 +5,6 @@
   "log.geyser_detected": "检测到 Geyser/Floodgate：重复交互去抖已激活。",
   "log.enabled": "DoubleDoors 已启用。",
   "log.disabled": "DoubleDoors 已禁用。",
-  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "你没有权限使用此命令。",
   "cmd.reload.success": "DoubleDoors 配置、个人设置和语言已重新加载（当前: %s）。",
   "cmd.only_players.toggle": "只有玩家可以使用 /%s toggle。",
@@ -58,5 +57,13 @@
   "cmd.locale.credit.entry": "%s（%s）: %s",
   "cmd.locale.credit.unknown": "未知语言代码: %s。",
   "cmd.locale.credit.none": "未找到 %s 的贡献者。",
-  "cmd.usage.locale.credit": "用法: /%s locale credit <code>"
+  "cmd.usage.locale.credit": "用法: /%s locale credit <code>",
+  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
+  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
+  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
+  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
+  "cmd.usage.main.locale": "Manage your personal language.",
+  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
+  "cmd.usage.main.debug": "Toggle debug mode.",
+  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
 }

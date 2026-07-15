@@ -5,7 +5,6 @@
   "log.geyser_detected": "Geyser/Floodgate észlelve: dupla interakciók elkerülése aktív.",
   "log.enabled": "DoubleDoors engedélyezve.",
   "log.disabled": "DoubleDoors letiltva.",
-  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "Nincs jogosultságod a parancs használatára.",
   "cmd.reload.success": "DoubleDoors konfiguráció, preferenciák, és nyelvek újratöltve (aktív: %s).",
   "cmd.only_players.toggle": "Csak játékosok használhatják a /%s toggle parancsot",
@@ -58,5 +57,13 @@
   "cmd.locale.credit.unknown": "Ismeretlen nyelvi kód: %s.",
   "cmd.locale.credit.none": "Nem található hozzájárulás ehhez: %s.",
   "cmd.usage.locale.credit": "Használat: /%s locale credit <code>",
-  "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% lefordítva"
+  "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% lefordítva",
+  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
+  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
+  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
+  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
+  "cmd.usage.main.locale": "Manage your personal language.",
+  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
+  "cmd.usage.main.debug": "Toggle debug mode.",
+  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
 }

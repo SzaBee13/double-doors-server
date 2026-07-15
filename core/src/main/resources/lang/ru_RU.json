@@ -5,7 +5,6 @@
   "log.geyser_detected": "Обнаружен Geyser/Floodgate: подавление двойных взаимодействий активно.",
   "log.enabled": "DoubleDoors включено.",
   "log.disabled": "DoubleDoors отключено.",
-  "cmd.usage.main": "§6§l DoubleDoors §7v%2$s\n§7-----------------------------------\n §e/%1$s reload\n §e/%1$s toggle §7[doors|gates|trapdoors|autoclose|knock]\n §e/%1$s knock-volume §7<0-1>\n §e/%1$s server-toggle\n §e/%1$s locale §7[code|credits|credit <code>]\n §e/%1$s grief villagers\n §e/%1$s debug\n §e/%1$s preview\n§7-----------------------------------",
   "cmd.no_permission": "У вас нет прав для использования этой команды.",
   "cmd.reload.success": "Конфигурация, настройки и язык DoubleDoors перезагружены (активный: %s).",
   "cmd.only_players.toggle": "Только игроки могут использовать /%s toggle.",
@@ -58,5 +57,13 @@
   "cmd.locale.credit.entry": "%s (%s): %s",
   "cmd.locale.credit.unknown": "Неизвестный код языка: %s.",
   "cmd.locale.credit.none": "Авторы для %s не найдены.",
-  "cmd.usage.locale.credit": "Использование: /%s locale credit <code>"
+  "cmd.usage.locale.credit": "Использование: /%s locale credit <code>",
+  "cmd.usage.main.reload": "Reload configuration, preferences, and translations.",
+  "cmd.usage.main.toggle": "Toggle linked doors, gates, or trapdoors.",
+  "cmd.usage.main.knock_volume": "Set the knock sound volume from 0 to 1.",
+  "cmd.usage.main.server_toggle": "Toggle linked-door behavior server-wide.",
+  "cmd.usage.main.locale": "Manage your personal language.",
+  "cmd.usage.main.grief": "Block or allow villager linked-door access in a claim.",
+  "cmd.usage.main.debug": "Toggle debug mode.",
+  "cmd.usage.main.preview": "Preview the linked partner of the targeted block."
 }

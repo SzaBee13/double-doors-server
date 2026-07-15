@@ -5,6 +5,7 @@ import dev.faststats.bukkit.BukkitContext;
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.data.Metric;
 import java.util.Locale;
+import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import me.szabee.doubledoors.bukkit.config.PluginConfig;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -27,7 +28,7 @@ public final class FastStatsManager {
   }
 
   /** Starts or restarts FastStats. Safe to call multiple times. */
-  public void restart(PluginConfig config, boolean geyserBridgeAvailable) {
+  public void restart(PluginConfig config, BooleanSupplier geyserBridgeAvailable) {
     shutdown();
     if (!config.isEnableAnonymousTracking()) {
       metricsContext = null;
@@ -87,7 +88,7 @@ public final class FastStatsManager {
   private void addMetrics(
     BukkitMetrics.Factory factory,
     PluginConfig config,
-    boolean geyserBridgeAvailable
+    BooleanSupplier geyserBridgeAvailable
   ) {
     factory
       .addMetric(Metric.string("server_language", config::getLanguage))
@@ -112,7 +113,7 @@ public final class FastStatsManager {
       .addMetric(
         Metric.bool("villager_linked_doors_enabled", config::isEnableVillagerLinkedDoors)
       )
-      .addMetric(Metric.bool("geyser_detected", () -> geyserBridgeAvailable))
+      .addMetric(Metric.bool("geyser_detected", geyserBridgeAvailable::getAsBoolean))
       .addMetric(
         Metric.bool(
           "worldguard_detected",
