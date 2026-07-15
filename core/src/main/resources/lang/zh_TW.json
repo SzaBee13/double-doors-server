@@ -46,7 +46,7 @@
   "cmd.preview.not_found": "找不到連結的配對（%s）。",
   "cmd.preview.found": "連結的配對: %s（%s, %s, %s），朝向: %s。",
   "cmd.usage.locale": "用法: /%s locale [code|credits|credit <code>]",
-  "cmd.locale.available": "可用语言：",
+  "cmd.locale.available": "可用語言：",
   "cmd.locale.available_entry": "%1$s（%2$s）— %3$.0f%% 已翻譯",
   "cmd.only_players.locale": "只有玩家可以使用 /%s locale。",
   "cmd.locale.disabled": "此伺服器已停用個人語言選擇。",

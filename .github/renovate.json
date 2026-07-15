@@ -1,6 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "baseBranches": ["dev"],
+  "baseBranchPatterns": ["dev"],
   "extends": [
     "config:recommended"
   ],
@@ -24,7 +24,7 @@
       "groupName": "core libraries"
     },
     {
-      "matchPackagePatterns": ["^io.papermc.paperweight", "^com.gradleup.shadow"],
+      "matchPackageNames": ["io.papermc.paperweight.userdev", "com.gradleup.shadow"],
       "groupName": "build tools"
     },
     {

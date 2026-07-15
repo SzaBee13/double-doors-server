@@ -63,7 +63,7 @@ public final class DoubleDoors extends JavaPlugin {
   private static final String UPDATE_DELEGATED_LOG =
     "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
   private static final String LOCALE_PERMISSION = "doubledoors.locale";
-  private final long startedAtMillis = System.currentTimeMillis();
+  private final long startedAtNanos = System.nanoTime();
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -776,7 +776,7 @@ public final class DoubleDoors extends JavaPlugin {
       .addMetric(
         Metric.number(
           "plugin_uptime_minutes",
-          () -> (System.currentTimeMillis() - startedAtMillis) / 60_000L
+          () -> (System.nanoTime() - startedAtNanos) / 60_000_000_000L
         )
       )
       .addMetric(Metric.bool("auto_close_enabled", pluginConfig::isEnableAutoClose))
@@ -981,7 +981,7 @@ public final class DoubleDoors extends JavaPlugin {
     }
 
     if (args.length == 0) {
-      sender.sendMessage(t("cmd.usage.main", label, getPluginMeta().getVersion()));
+      sender.sendMessage(mainUsage(label));
       return true;
     }
 
@@ -1276,8 +1276,30 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
-    sender.sendMessage(t("cmd.usage.main", label, getPluginMeta().getVersion()));
+    sender.sendMessage(mainUsage(label));
     return true;
+  }
+
+  private String mainUsage(String label) {
+    String version = getPluginMeta().getVersion();
+    return String.join(
+      "\n",
+      "§6§l DoubleDoors §7v" + version,
+      "§7-----------------------------------",
+      usageLine(label, "reload", t("cmd.usage.main.reload")),
+      usageLine(label, "toggle", t("cmd.usage.main.toggle")),
+      usageLine(label, "knock-volume <0-1>", t("cmd.usage.main.knock_volume")),
+      usageLine(label, "server-toggle", t("cmd.usage.main.server_toggle")),
+      usageLine(label, "locale [code|credits|credit <code>]", t("cmd.usage.main.locale")),
+      usageLine(label, "grief villagers", t("cmd.usage.main.grief")),
+      usageLine(label, "debug", t("cmd.usage.main.debug")),
+      usageLine(label, "preview", t("cmd.usage.main.preview")),
+      "§7-----------------------------------"
+    );
+  }
+
+  private String usageLine(String label, String syntax, String description) {
+    return " §e/" + label + " " + syntax + " §7" + description;
   }
 
   /**

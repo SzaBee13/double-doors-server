@@ -104,12 +104,17 @@ jobs:
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
         run: |
           VERSION="${{ steps.version.outputs.version }}"
-          VERSION="${VERSION%%-*}"
-          MAJOR="${VERSION%%.*}"
-          REST="${VERSION#*.}"
+          VERSION_BASE="${VERSION%%-*}"
+          VERSION_SUFFIX="${VERSION#"$VERSION_BASE"}"
+          VERSION_SUFFIX="${VERSION_SUFFIX#-}"
+          MAJOR="${VERSION_BASE%%.*}"
+          REST="${VERSION_BASE#*.}"
           MINOR="${REST%%.*}"
           PATCH="${REST#*.}"
           RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/RELEASE-NOTE.md"
+          if [ -n "$VERSION_SUFFIX" ] && [ -f "releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md" ]; then
+            RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md"
+          fi
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
           if [ -f "$RELEASE_NOTE_FILE" ] && [ -s "$RELEASE_NOTE_FILE" ]; then

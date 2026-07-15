@@ -5,3 +5,5 @@
 files:
   - source: "/core/src/main/resources/lang/en_US.json"
     translation: "/core/src/main/resources/lang/%locale_with_underscore%.json"
+  - source: "/assets/NON-DEV/README.md"
+    translation: "/assets/NON-DEV/README_%locale_with_underscore%.md"

@@ -52,7 +52,7 @@
   "cmd.locale.disabled": "La selezione della lingua personale è disabilitata su questo server.",
   "cmd.locale.current_default": "La tua lingua: predefinita del server (%s)",
   "cmd.locale.current": "La tua lingua: %s",
-  "cmd.locale.cleared": "Preferenza lingua cancellata, using predefinita del server.",
+  "cmd.locale.cleared": "Preferenza lingua cancellata, usando la predefinita del server.",
   "cmd.locale.set": "Lingua impostata a %s.",
   "cmd.locale.credits.title": "Crediti lingue:",
   "cmd.locale.credit.entry": "%s (%s): %s",

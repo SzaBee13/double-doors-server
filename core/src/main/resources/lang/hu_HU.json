@@ -55,8 +55,8 @@
   "cmd.locale.set": "Nyelv beállítva: %s.",
   "cmd.locale.credits.title": "Nyelvi hozzájárulások:",
   "cmd.locale.credit.entry": "%s (%s): %s",
-  "cmd.locale.credit.unknown": "Unknown locale code: %s.",
+  "cmd.locale.credit.unknown": "Ismeretlen nyelvi kód: %s.",
   "cmd.locale.credit.none": "Nem található hozzájárulás ehhez: %s.",
-  "cmd.usage.locale.credit": "Hasznalat: /%s locale credit <code>",
+  "cmd.usage.locale.credit": "Használat: /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% lefordítva"
 }

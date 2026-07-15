@@ -6,6 +6,8 @@ on:
       - main
     paths:
       - core/src/main/resources/lang/en_US.json
+      - core/src/main/resources/lang/defaults.json
+      - assets/NON-DEV/README.md
       - .crowdin.yml
   workflow_dispatch:
     inputs:
@@ -71,7 +73,7 @@ jobs:
           download_translations: true
           skip_untranslated_strings: false
           create_pull_request: true
-          localization_branch_name: crowdin_translations_${{ github.run_number }}
+          localization_branch_name: crowdin_translations
           pull_request_title: 'Crowdin Translations #${{ github.run_number }}'
           pull_request_body: 'Crowdin translations by Crowdin GitHub Action'
           pull_request_base_branch_name: 'dev'
@@ -86,12 +88,13 @@ jobs:
       - name: Check diff for translations
         id: diff
         run: |
-          git fetch origin dev
-          CHANGED=$(git diff --name-only origin/dev...HEAD -- core/src/main/resources/lang/*.json |
-            grep -oE '[a-z]{2}_[A-Z]{2}' |
+          git fetch origin dev crowdin_translations
+          CHANGED=$(git diff --name-only origin/dev...origin/crowdin_translations -- core/src/main/resources/lang/*.json |
+            xargs -r -n1 basename |
+            sed 's/\.json$//' |
             sort -u |
             paste -sd "," -)
-          echo "changed=$CHANGED" >> $GITHUB_OUTPUT
+          printf 'changed=%s\n' "$CHANGED" >> "$GITHUB_OUTPUT"
 
       - name: Edit Pull Request description with changed languages
         if: steps.diff.outputs.changed != '' && steps.download.outputs.pull_request_number != ''
@@ -99,7 +102,7 @@ jobs:
         with:
           script: |
             const prNumber = parseInt('${{ steps.download.outputs.pull_request_number }}', 10);
-            const changed = '${{ steps.diff.outputs.changed }}';
+            const changed = process.env.CHANGED;
             const { data: pr } = await github.rest.pulls.get({
               owner: context.repo.owner,
               repo: context.repo.repo,
@@ -112,3 +115,5 @@ jobs:
               pull_number: prNumber,
               body: newBody
             });
+        env:
+          CHANGED: "${{ steps.diff.outputs.changed }}"

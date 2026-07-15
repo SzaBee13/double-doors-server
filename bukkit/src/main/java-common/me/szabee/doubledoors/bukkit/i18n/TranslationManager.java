@@ -49,6 +49,7 @@ public final class TranslationManager {
   public void reload() {
     TranslationCatalog.invalidateDefaults();
     activeLanguage = plugin.getPluginConfig().getLanguage();
+    translations.remove(activeLanguage);
     ensureLoaded(activeLanguage);
   }
 

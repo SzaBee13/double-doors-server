@@ -169,7 +169,7 @@ public final class TranslationCatalog {
       return 100.0;
     }
 
-    Map<String, String> langStrings = loadLanguageFile(plugin, languageCode);
+    Map<String, String> langStrings = loadLanguageFileRaw(plugin, languageCode);
     int total = referenceStrings.size();
     if (total == 0) {
       return 100.0;
