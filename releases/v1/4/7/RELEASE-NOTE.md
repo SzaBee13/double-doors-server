@@ -11,6 +11,7 @@ Release date:
 ## Added
 
 - `/dd locale credits` and `/dd locale credit <code>` for listing translation credits.
+- Expanded FastStats metcis with anonymous server configuration, feature-use, integration, capacity, and uptime metrics, plus automatic error tracking.
 
 ## Changed
 

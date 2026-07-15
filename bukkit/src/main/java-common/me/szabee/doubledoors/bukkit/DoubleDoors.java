@@ -2,6 +2,7 @@ package me.szabee.doubledoors.bukkit;
 
 import dev.faststats.bukkit.BukkitContext;
 import dev.faststats.bukkit.BukkitMetrics;
+import dev.faststats.ErrorTracker;
 import dev.faststats.data.Metric;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -65,6 +66,7 @@ public final class DoubleDoors extends JavaPlugin {
   private static final String UPDATE_DELEGATED_LOG =
     "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
   private static final String LOCALE_PERMISSION = "doubledoors.locale";
+  private final long startedAtMillis = System.currentTimeMillis();
 
   private volatile PluginConfig pluginConfig;
   private volatile PlayerPreferences playerPreferences;
@@ -751,8 +753,10 @@ public final class DoubleDoors extends JavaPlugin {
       BukkitContext context = new BukkitContext.Factory(this, token)
         .metrics(factory -> {
           BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
+          addFastStatsMetrics(bFactory);
           return bFactory.create();
         })
+        .errorTrackerService(ErrorTracker.contextAware(getClass().getClassLoader()))
         .create();
       context.getLoggerFactory().setDebug(pluginConfig.isDebug());
       context.ready();
@@ -765,6 +769,50 @@ public final class DoubleDoors extends JavaPlugin {
         e
       );
     }
+  }
+
+  private void addFastStatsMetrics(BukkitMetrics.Factory factory) {
+    factory
+      .addMetric(Metric.string("server_language", pluginConfig::getLanguage))
+      .addMetric(Metric.bool("sql_enabled", pluginConfig::isSqlEnabled))
+      .addMetric(Metric.number("server_max_players", () -> getServer().getMaxPlayers()))
+      .addMetric(
+        Metric.number(
+          "plugin_uptime_minutes",
+          () -> (System.currentTimeMillis() - startedAtMillis) / 60_000L
+        )
+      )
+      .addMetric(Metric.bool("auto_close_enabled", pluginConfig::isEnableAutoClose))
+      .addMetric(Metric.bool("knocking_enabled", pluginConfig::isEnableKnockFeature))
+      .addMetric(
+        Metric.bool("update_checker_enabled", pluginConfig::isUpdateCheckerEnabled)
+      )
+      .addMetric(Metric.bool("debug_enabled", pluginConfig::isDebug))
+      .addMetric(
+        Metric.bool("recursive_opening_enabled", pluginConfig::isEnableRecursiveOpening)
+      )
+      .addMetric(Metric.bool("doors_enabled", pluginConfig::isEnableDoors))
+      .addMetric(Metric.bool("fence_gates_enabled", pluginConfig::isEnableFenceGates))
+      .addMetric(Metric.bool("trapdoors_enabled", pluginConfig::isEnableTrapdoors))
+      .addMetric(
+        Metric.bool(
+          "villager_linked_doors_enabled",
+          pluginConfig::isEnableVillagerLinkedDoors
+        )
+      )
+      .addMetric(Metric.bool("geyser_detected", () -> geyserBridgeAvailable))
+      .addMetric(
+        Metric.bool(
+          "worldguard_detected",
+          () -> getServer().getPluginManager().isPluginEnabled("WorldGuard")
+        )
+      )
+      .addMetric(
+        Metric.bool(
+          "griefprevention_detected",
+          () -> getServer().getPluginManager().isPluginEnabled("GriefPrevention")
+        )
+      );
   }
 
   private void closePlayerPreferences() {
