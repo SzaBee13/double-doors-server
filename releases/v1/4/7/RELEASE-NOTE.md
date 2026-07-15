@@ -15,7 +15,7 @@ Release date:
 
 ## Changed
 
-- Added a compact Paper/Purpur/Folia artifact that downloads SQL libraries through Paper at startup; the Bukkit/Spigot artifact remains self-contained.
+- Separated Paper/Purpur/Folia artifacts from Bukkit/Spigot artifacts.
 - Added a GitHub Actions CI workflow that builds the project on pushes and pull requests.
 - Ensured SQL schema migrations add newer preference and proxy columns on existing SQLite databases as well as other SQL dialects.
 - Bypassed WorldGuard region allow/deny filtering when region lookup is unavailable instead of treating it as an empty region set.
@@ -44,6 +44,7 @@ None.
   <li>Moved from Dependabot to Renovate</li>
   <li>Changed the language structure (see [defaults.json](https://github.com/SzaBee13
     /double-doors-server/tree/v1.4.7/core/src/main/resources/lang/defaults.json))</li>
+  <li>Added a compact Paper/Purpur/Folia artifact that downloads SQL libraries through Paper at startup; the Bukkit/Spigot artifact remains self-contained.</li>
 </ul>
 </details>
 
