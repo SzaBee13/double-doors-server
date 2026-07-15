@@ -11,7 +11,7 @@ Release date:
 ## Added
 
 - `/dd locale credits` and `/dd locale credit <code>` for listing translation credits.
-- Expanded FastStats metcis with anonymous server configuration, feature-use, integration, capacity, and uptime metrics, plus automatic error tracking.
+- Expanded FastStats metrics with anonymous server configuration, feature-use, integration, capacity, and uptime metrics, plus automatic error tracking.
 - Custom translation file support — set `language: custom` in config.yml, then edit `plugins/DoubleDoors/custom_lang.json` (auto-generated from en_US on first use). Re-reads on `/dd reload`.
 
 ## Changed
@@ -53,7 +53,8 @@ None.
 ## Upgrade Guide
 
 1. Back up your server folder and existing plugin data.
-2. Replace the old jar(s) with the new release artifact(s).
+2. Ensure your server runs Java 25 or later.
+3. Replace the old jar(s) with the new release artifact(s).
 3. Start the server once to generate or update configuration files.
 4. Review and adjust new config keys.
 5. Validate expected behavior in-game.

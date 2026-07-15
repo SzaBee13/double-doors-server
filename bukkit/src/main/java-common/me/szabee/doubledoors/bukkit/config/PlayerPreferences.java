@@ -638,7 +638,7 @@ public final class PlayerPreferences {
     if (trimmed.length() > 32) {
       trimmed = trimmed.substring(0, 32);
     }
-    if (plugin == null || trimmed.isEmpty()) {
+    if (trimmed.isEmpty()) {
       return trimmed;
     }
     return TranslationCatalog.resolveLanguageCode(plugin, trimmed);

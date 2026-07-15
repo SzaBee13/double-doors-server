@@ -1,9 +1,9 @@
 package me.szabee.doubledoors.bukkit.i18n;
 
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import me.szabee.doubledoors.bukkit.DoubleDoors;
 import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
 import org.bukkit.entity.Player;
@@ -29,7 +29,7 @@ public final class TranslationManager {
    */
   public TranslationManager(DoubleDoors plugin) {
     this.plugin = plugin;
-    this.translations = new HashMap<>();
+    this.translations = new ConcurrentHashMap<>();
     this.activeLanguage = plugin.getPluginConfig().getLanguage();
     ensureLoaded(activeLanguage);
   }
@@ -37,7 +37,7 @@ public final class TranslationManager {
   // Package-private for unit testing
   TranslationManager() {
     this.plugin = null;
-    this.translations = new HashMap<>();
+    this.translations = new ConcurrentHashMap<>();
     this.activeLanguage = "en_US";
   }
 
@@ -48,8 +48,8 @@ public final class TranslationManager {
    */
   public void reload() {
     TranslationCatalog.invalidateDefaults();
+    translations.clear();
     activeLanguage = plugin.getPluginConfig().getLanguage();
-    translations.remove(activeLanguage);
     ensureLoaded(activeLanguage);
   }
 
@@ -154,15 +154,15 @@ public final class TranslationManager {
   }
 
   private void ensureLoaded(String languageCode) {
-    if (!translations.containsKey(languageCode)) {
-      Map<String, String> loaded;
-      if ("custom".equalsIgnoreCase(languageCode)) {
-        loaded = TranslationCatalog.loadCustomLanguageFile(plugin);
-      } else {
-        loaded = TranslationCatalog.loadLanguageFile(plugin, languageCode);
+    translations.computeIfAbsent(
+      languageCode,
+      code -> {
+        if ("custom".equalsIgnoreCase(code)) {
+          return TranslationCatalog.loadCustomLanguageFile(plugin);
+        }
+        return TranslationCatalog.loadLanguageFile(plugin, code);
       }
-      translations.put(languageCode, loaded);
-    }
+    );
   }
 
   private String lookup(String languageCode, String key) {

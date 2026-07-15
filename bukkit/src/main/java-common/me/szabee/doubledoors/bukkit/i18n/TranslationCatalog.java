@@ -1,6 +1,7 @@
 package me.szabee.doubledoors.bukkit.i18n;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
+import java.util.logging.Level;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -190,7 +192,7 @@ public final class TranslationCatalog {
 
     Map<String, String> langStrings;
     if ("custom".equalsIgnoreCase(languageCode)) {
-      langStrings = loadCustomLanguageFile(plugin);
+      langStrings = loadCustomLanguageFileRaw(plugin);
     } else {
       langStrings = loadLanguageFileRaw(plugin, languageCode);
     }
@@ -256,7 +258,11 @@ public final class TranslationCatalog {
     if (customFile.isFile()) {
       try (InputStream in = new FileInputStream(customFile)) {
         result = parseJson(in);
-      } catch (IOException ignored) {}
+      } catch (IOException | JsonSyntaxException e) {
+        plugin
+          .getLogger()
+          .log(Level.WARNING, "Failed to parse custom_lang.json, using defaults", e);
+      }
     }
     DefaultsData defaults = loadDefaults(plugin);
     if (!defaults.strings().isEmpty()) {
@@ -265,6 +271,33 @@ public final class TranslationCatalog {
       return merged;
     }
     return result;
+  }
+
+  /**
+   * Loads only the raw entries from {@code custom_lang.json} without merging
+   * defaults. Returns only the strings defined in the custom file itself.
+   *
+   * @param plugin the plugin instance
+   * @return the raw custom translation map
+   */
+  private static Map<String, String> loadCustomLanguageFileRaw(
+    JavaPlugin plugin
+  ) {
+    File customFile = new File(
+      plugin.getDataFolder(),
+      "custom_lang.json"
+    );
+    if (!customFile.isFile()) {
+      return Map.of();
+    }
+    try (InputStream in = new FileInputStream(customFile)) {
+      return parseJson(in);
+    } catch (IOException | JsonSyntaxException e) {
+      plugin
+        .getLogger()
+        .log(Level.WARNING, "Failed to parse custom_lang.json", e);
+      return Map.of();
+    }
   }
 
   private static void writeDefaultCustomFile(
@@ -418,14 +451,22 @@ public final class TranslationCatalog {
     if (dataFile.isFile()) {
       try (InputStream in = new FileInputStream(dataFile)) {
         return parseRawJson(in);
-      } catch (IOException ignored) {}
+      } catch (IOException | JsonSyntaxException e) {
+        plugin
+          .getLogger()
+          .log(Level.WARNING, "Failed to parse custom defaults.json, using bundled", e);
+      }
     }
 
     try (InputStream in = plugin.getResource("lang/defaults.json")) {
       if (in != null) {
         return parseRawJson(in);
       }
-    } catch (IOException ignored) {}
+    } catch (IOException | JsonSyntaxException e) {
+      plugin
+        .getLogger()
+        .log(Level.WARNING, "Failed to parse bundled defaults.json", e);
+    }
 
     return null;
   }

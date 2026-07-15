@@ -58,12 +58,12 @@
   "cmd.locale.credit.none": "Aucun crédit trouvé pour %s.",
   "cmd.usage.locale.credit": "Utilisation : /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% traduit",
-  "cmd.usage.main.reload": "Recharger la configuration, les preferences et les traductions.",
-  "cmd.usage.main.toggle": "Activer ou desactiver les portes, barrieres ou trappes liees.",
-  "cmd.usage.main.knock_volume": "Regler le volume du son de coupement de 0 a 1.",
-  "cmd.usage.main.server_toggle": "Activer ou desactiver le comportement des portes liees sur tout le serveur.",
-  "cmd.usage.main.locale": "Gerer votre langue personnelle.",
-  "cmd.usage.main.grief": "Bloquer ou autoriser l acces des villageois aux portes liees dans un claim.",
-  "cmd.usage.main.debug": "Activer ou desactiver le mode debogage.",
-  "cmd.usage.main.preview": "Apercu du partenaire lie du bloc vise."
+  "cmd.usage.main.reload": "Recharger la configuration, les préférences et les traductions.",
+  "cmd.usage.main.toggle": "Activer ou désactiver les portes, barrières ou trappes liées.",
+  "cmd.usage.main.knock_volume": "Régler le volume du son de coupement de 0 a 1.",
+  "cmd.usage.main.server_toggle": "Activer ou désactiver le comportement des portes liées sur tout le serveur.",
+  "cmd.usage.main.locale": "Gérer votre langue personnelle.",
+  "cmd.usage.main.grief": "Bloquer ou autoriser l'accès des villageois aux portes liées dans un claim.",
+  "cmd.usage.main.debug": "Activer ou désactiver le mode débogage.",
+  "cmd.usage.main.preview": "Aperçu du partenaire lié du bloc visé."
 }

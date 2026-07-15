@@ -318,11 +318,18 @@ public final class RedstoneListener implements Listener {
           }
 
           // When closing, skip blocks that still have their own redstone power.
-          if (
-            !openState &&
-            (block.isBlockPowered() || block.isBlockIndirectlyPowered())
-          ) {
-            continue;
+          if (!openState) {
+            Block upper = data instanceof Door
+              ? block.getRelative(BlockFace.UP)
+              : block;
+            if (
+              block.isBlockPowered() ||
+              block.isBlockIndirectlyPowered() ||
+              upper.isBlockPowered() ||
+              upper.isBlockIndirectlyPowered()
+            ) {
+              continue;
+            }
           }
 
           if (

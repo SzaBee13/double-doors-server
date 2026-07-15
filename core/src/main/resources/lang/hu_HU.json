@@ -58,12 +58,12 @@
   "cmd.locale.credit.none": "Nem található hozzájárulás ehhez: %s.",
   "cmd.usage.locale.credit": "Használat: /%s locale credit <code>",
   "cmd.locale.available_entry": "%1$s (%2$s) — %3$.0f%% lefordítva",
-  "cmd.usage.main.reload": "Konfiguracio, preferenciak es forditasok ujratoltese.",
-  "cmd.usage.main.toggle": "Osszekapcsolt ajtok, kapuk vagy csapoajtok atkapcsolasa.",
-  "cmd.usage.main.knock_volume": "Kopogas hangerejenek beallitasa 0 es 1 kozott.",
-  "cmd.usage.main.server_toggle": "Osszekapcsolt ajtok viselkedesenek atkapcsolasa a szerveren.",
-  "cmd.usage.main.locale": "Szemelyes nyelved kezelese.",
-  "cmd.usage.main.grief": "Falusiak hozzaferesenek blokkolasa vagy engedelyezese osszekapcsolt ajtokhoz egy claimben.",
-  "cmd.usage.main.debug": "Hibakeresi mod atkapcsolasa.",
-  "cmd.usage.main.preview": "A celzott blokk osszekapcsolt partnerenek elonezete."
+  "cmd.usage.main.reload": "Konfiguráció, preferenciák és fordítások újratöltése.",
+  "cmd.usage.main.toggle": "Összekapcsolt ajtók, kapuk vagy csapóajtók átkapcsolása.",
+  "cmd.usage.main.knock_volume": "Kopogás hangerejének beállítása 0 és 1 között.",
+  "cmd.usage.main.server_toggle": "Összekapcsolt ajtók viselkedésének átkapcsolása a szerveren.",
+  "cmd.usage.main.locale": "Személyes nyelved kezelése.",
+  "cmd.usage.main.grief": "Falusiak hozzáférésének blokkolása vagy engedélyezése összekapcsolt ajtókhoz egy claimben.",
+  "cmd.usage.main.debug": "Hibakereső mód átkapcsolása.",
+  "cmd.usage.main.preview": "A célzott blokk összekapcsolt partnerének előnézete."
 }

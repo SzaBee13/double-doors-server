@@ -117,8 +117,9 @@ jobs:
         env:
           RELEASE_BODY: ${{ github.event.release.body }}
           RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.tag || github.event.release.tag_name }}
+          VERSION: ${{ steps.version.outputs.version }}
         run: |
-          VERSION="${{ steps.version.outputs.version }}"
+          VERSION="$VERSION"
           VERSION_BASE="${VERSION%%-*}"
           VERSION_SUFFIX="${VERSION#"$VERSION_BASE"}"
           VERSION_SUFFIX="${VERSION_SUFFIX#-}"

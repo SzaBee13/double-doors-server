@@ -474,6 +474,8 @@ public final class DoubleDoors extends JavaPlugin {
       if (doubledoorsCommand != null) {
         doubledoorsCommand.setExecutor(this);
         doubledoorsCommand.setTabCompleter(this);
+      } else {
+        getLogger().warning("Command registration failed: no Paper brigadier and no Bukkit fallback available.");
       }
     }
 
@@ -810,7 +812,7 @@ public final class DoubleDoors extends JavaPlugin {
     java.util.Objects.requireNonNull(args, "args");
 
     if (args.length == 0) {
-      sender.sendMessage(mainUsage(label));
+      sender.sendMessage(mainUsage(sender, label));
       return true;
     }
 
@@ -1105,24 +1107,25 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
-    sender.sendMessage(mainUsage(label));
+    sender.sendMessage(mainUsage(sender, label));
     return true;
   }
 
-  private String mainUsage(String label) {
+  private String mainUsage(CommandSender sender, String label) {
+    Player player = sender instanceof Player p ? p : null;
     String version = getPluginMeta().getVersion();
     return String.join(
       "\n",
       "§6§l DoubleDoors §7v" + version,
       "§7-----------------------------------",
-      usageLine(label, "reload", t("cmd.usage.main.reload")),
-      usageLine(label, "toggle", t("cmd.usage.main.toggle")),
-      usageLine(label, "knock-volume <0-1>", t("cmd.usage.main.knock_volume")),
-      usageLine(label, "server-toggle", t("cmd.usage.main.server_toggle")),
-      usageLine(label, "locale [code|credits|credit <code>]", t("cmd.usage.main.locale")),
-      usageLine(label, "grief villagers", t("cmd.usage.main.grief")),
-      usageLine(label, "debug", t("cmd.usage.main.debug")),
-      usageLine(label, "preview", t("cmd.usage.main.preview")),
+      usageLine(label, "reload", t(player, "cmd.usage.main.reload")),
+      usageLine(label, "toggle", t(player, "cmd.usage.main.toggle")),
+      usageLine(label, "knock-volume <0-1>", t(player, "cmd.usage.main.knock_volume")),
+      usageLine(label, "server-toggle", t(player, "cmd.usage.main.server_toggle")),
+      usageLine(label, "locale [code|credits|credit <code>]", t(player, "cmd.usage.main.locale")),
+      usageLine(label, "grief villagers", t(player, "cmd.usage.main.grief")),
+      usageLine(label, "debug", t(player, "cmd.usage.main.debug")),
+      usageLine(label, "preview", t(player, "cmd.usage.main.preview")),
       "§7-----------------------------------"
     );
   }

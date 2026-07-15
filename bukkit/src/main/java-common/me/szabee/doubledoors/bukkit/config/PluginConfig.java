@@ -257,15 +257,12 @@ public final class PluginConfig {
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
     }
-    String trimmed = configuredLanguage.trim();
-    String language;
-    if ("custom".equalsIgnoreCase(trimmed)) {
-      language = "custom";
-    } else {
-      language = TranslationCatalog.resolveLanguageCode(plugin, trimmed);
-      if (language == null || language.isBlank()) {
-        language = "en_US";
-      }
+    String language = TranslationCatalog.resolveLanguageCode(
+      plugin,
+      configuredLanguage
+    );
+    if (language == null || language.isBlank()) {
+      language = "en_US";
     }
 
     boolean perPlayerLocaleEnabled = plugin

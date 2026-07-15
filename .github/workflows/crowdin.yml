@@ -89,7 +89,7 @@ jobs:
         id: diff
         run: |
           git fetch origin dev crowdin_translations
-          CHANGED=$(git diff --name-only origin/dev...origin/crowdin_translations -- core/src/main/resources/lang/*.json |
+          CHANGED=$(git diff --name-only origin/dev...origin/crowdin_translations -- 'core/src/main/resources/lang/*.json' |
             xargs -r -n1 basename |
             sed 's/\.json$//' |
             sort -u |
