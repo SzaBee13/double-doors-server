@@ -37,13 +37,15 @@ reviews:
       instructions: "Marks a translation update in the code"
   path_filters:
     - "!**/build/**"
+    - "!**/target/**"
     - "!**/.git/**"
     - "!**/.zed/**"
+    - "!**/.coderabbit.yaml"
   path_instructions:
     - path: "/releases/**"
-      instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md"
+      instructions: "If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated. - AGENTS.md\nDO NOT SUGGEST TO UPDATE A PAST RELEASE NOTE. DO NOT SUGGEST TO REMOVE THE RELEASE DATE."
     - path: "/core/src/main/resources/lang/**"
-      instructions: "Do not suggest adding missing strings or updating strings that are not translated, only suggest updating existing translated strings."
+      instructions: "Do not suggest adding missing strings or updating strings that are not translated, only suggest updating existing translated strings. Do not suggest removing translated strings. Do not suggest changing usage strings even when it's the same everywhere."
   abort_on_close: true
   auto_review:
     enabled: true

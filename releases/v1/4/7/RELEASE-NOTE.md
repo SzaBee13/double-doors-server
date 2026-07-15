@@ -15,7 +15,6 @@ Release date:
 
 ## Changed
 
-- Migrated the build and release pipeline from Maven to Gradle, including the Bukkit/Velocity module builds, the Gradle wrapper, and the GitHub Actions `publish` workflow.
 - Added a GitHub Actions CI workflow that builds the project on pushes and pull requests.
 - Ensured SQL schema migrations add newer preference and proxy columns on existing SQLite databases as well as other SQL dialects.
 - Bypassed WorldGuard region allow/deny filtering when region lookup is unavailable instead of treating it as an empty region set.
@@ -39,7 +38,7 @@ None.
 <summary>Developer Notes</summary>
 <ul>
   <li>Removed unused dependencies.</li>
-  <li>Moved from Gradle Groovy to Gradle Kotlin DSL.</li>
+  <li>Moved from Maven to Gradle Kotlin DSL.</li>
   <li>Refactored Release Notes structure</li>
   <li>Moved from Dependabot to Renovate</li>
   <li>Changed the language structure (see [defaults.json](https://github.com/SzaBee13
