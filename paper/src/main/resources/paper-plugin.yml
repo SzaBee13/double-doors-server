@@ -1,0 +1,23 @@
+name: DoubleDoors
+version: ${project.version}
+main: me.szabee.doubledoors.bukkit.DoubleDoors
+api-version: "1.21"
+author: SzaBee13
+description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
+folia-supported: true
+dependencies:
+  server:
+    Geyser-Spigot:
+      required: false
+    floodgate:
+      required: false
+    LuckPerms:
+      required: false
+    GriefPrevention:
+      required: false
+    WorldGuard:
+      required: false
+libraries:
+  - com.google.code.gson:gson:${gsonVersion}
+  - org.xerial:sqlite-jdbc:${sqliteVersion}
+  - com.mysql:mysql-connector-j:${mysqlConnectorVersion}

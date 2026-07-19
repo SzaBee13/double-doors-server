@@ -6,8 +6,8 @@ This file tells AI coding agents how to work effectively in this repository.
 
 | Item | Value |
 | --- | --- |
-| Language | Java 26 |
-| Framework | Paper/Spigot 1.21.x + 26.2 plugin API |
+| Language | Java 25+ |
+| Framework | Bukkit/Spigot 1.21.x, 26.1.x, 26.2.x |
 | Build | Gradle (`./gradlew build`) |
 | Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
 
@@ -32,7 +32,7 @@ This file tells AI coding agents how to work effectively in this repository.
 
 ## Coding conventions
 
-- Java 26 features are expected (records, switch expressions, pattern-matching `instanceof`).
+- Java 25+ features are expected (records, switch expressions, pattern-matching `instanceof`).
 - All public methods require Javadoc.
 - `final` on classes/fields unless mutability is necessary.
 - No wildcard imports.
@@ -47,13 +47,27 @@ When releasing a new version:
 
 1. Update `version` in `gradle.properties`.
 2. Update `version:` in `bukkit/src/main/resources/plugin.yml`.
-3. Create `releases/v<version>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
+3. Create `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` using `releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
 4. If `javaRelease` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 
 ### Release notes
 
-You should update `releases/v<version>/RELEASE-NOTE.md` with any changes from `FOR-LATER.md` before releasing.
+You should update `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` with any changes from `FOR-LATER.md` before releasing.
 If the release date is in the past, instead of updating the file with the release notes, put the changes in `FOR-LATER.md` and update the file with the release notes when the release date is updated.
+
+What you should add to the release notes:
+
+- Fixed hook for xy plugin
+- Enhanced performance
+- Added new feature
+
+What you should add to the developer notes (in release notes dropdown): 
+
+- Refactoring
+- Internal code changes
+- Updates to testing infrastructure
+- Updated 3rd party configuration (eg. editor, build tools)
+- Updates to dependencies
 
 ## Dangerous areas
 
@@ -70,5 +84,5 @@ If the release date is in the past, instead of updating the file with the releas
 
 ## Documentation
 
-EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<version>/RELEASE-NOTE.md`.
+EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md`.
 If necessary, update the GitHub Wiki at `wiki/`.

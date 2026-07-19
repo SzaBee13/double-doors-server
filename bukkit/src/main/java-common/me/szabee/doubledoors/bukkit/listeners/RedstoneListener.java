@@ -260,12 +260,23 @@ public final class RedstoneListener implements Listener {
             return;
           }
 
+          Block partnerTop = partner.getRelative(BlockFace.UP);
+          // When closing, skip the partner if it still has its own redstone power.
+          if (
+            !openState &&
+            (partner.isBlockPowered() ||
+              partner.isBlockIndirectlyPowered() ||
+              partnerTop.isBlockPowered() ||
+              partnerTop.isBlockIndirectlyPowered())
+          ) {
+            return;
+          }
+
           linked.setOpen(openState);
           partner.setBlockData(linked, false);
           plugin.playLinkedFeedback(partner, OpenableType.DOOR);
 
           // Keep the upper half of the partner door in sync too.
-          Block partnerTop = partner.getRelative(BlockFace.UP);
           BlockData topData = partnerTop.getBlockData();
           if (topData instanceof Openable topOpenable) {
             topOpenable.setOpen(openState);
@@ -304,6 +315,21 @@ public final class RedstoneListener implements Listener {
 
           if (!plugin.isLocationAllowed(block)) {
             continue;
+          }
+
+          // When closing, skip blocks that still have their own redstone power.
+          if (!openState) {
+            Block upper = data instanceof Door
+              ? block.getRelative(BlockFace.UP)
+              : block;
+            if (
+              block.isBlockPowered() ||
+              block.isBlockIndirectlyPowered() ||
+              upper.isBlockPowered() ||
+              upper.isBlockIndirectlyPowered()
+            ) {
+              continue;
+            }
           }
 
           if (

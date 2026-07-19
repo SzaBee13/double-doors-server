@@ -27,6 +27,15 @@ Release date: YYYY-MM-DD
 - Describe any compatibility or migration impact.
 - If there are no breaking changes, write: None.
 
+## Extended Release Notes
+
+<details>
+<summary>Developer Notes</summary>
+<ul>
+  <li>Updated dependencies.</li>
+</ul>
+</details>
+
 ## Upgrade Guide
 
 1. Back up your server folder and existing plugin data.
@@ -37,7 +46,8 @@ Release date: YYYY-MM-DD
 
 ## Artifacts
 
-- Bukkit/Spigot/Paper/Purpur: doubledoors-bukkit-X.Y.Z.jar
+- Bukkit/Spigot: doubledoors-bukkit-X.Y.Z.jar
+- Paper/Purpur/Folia: doubledoors-paper-X.Y.Z.jar
 - Velocity: doubledoors-velocity-X.Y.Z.jar
 
 ## Notes

@@ -1,19 +1,12 @@
 package me.szabee.doubledoors.bukkit;
 
-import dev.faststats.bukkit.BukkitContext;
-import dev.faststats.bukkit.BukkitMetrics;
-import dev.faststats.data.Metric;
-import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Level;
-import java.util.stream.Collectors;
 import me.szabee.doubledoors.bukkit.api.DoubleDoorsAPI;
 import me.szabee.doubledoors.bukkit.config.ClaimSettings;
 import me.szabee.doubledoors.bukkit.config.PlayerPreferences;
@@ -26,13 +19,14 @@ import me.szabee.doubledoors.bukkit.listeners.RedstoneListener;
 import me.szabee.doubledoors.bukkit.migration.YamlToSqlMigrator;
 import me.szabee.doubledoors.bukkit.storage.BukkitSharedSqlStorage;
 import me.szabee.doubledoors.bukkit.util.DoorUtil;
+import me.szabee.doubledoors.bukkit.util.FastStatsManager;
 import me.szabee.doubledoors.bukkit.util.OpenableType;
+import me.szabee.doubledoors.bukkit.util.PluginUpdaterManager;
 import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
 import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import me.szabee.doubledoors.bukkit.version.VersionBridge;
 import me.szabee.doubledoors.storage.SharedSqlStorage;
 import me.szabee.doubledoors.util.TaskToken;
-import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Sound;
@@ -44,26 +38,15 @@ import org.bukkit.block.data.type.Door;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.lushplugins.pluginupdater.api.updater.PluginData;
-import org.lushplugins.pluginupdater.api.updater.Updater;
 
 /**
  * Main plugin class for DoubleDoors.
  */
 public final class DoubleDoors extends JavaPlugin {
 
-  private static final String FASTSTATS_TOKEN_PATTERN = "[a-z0-9]{32}";
-  private static final String FASTSTATS_PROJECT_TOKEN =
-    "883c734d766f7078fa4525e9c573c8af"; // This should be public since it only identifies the project, not individual servers.
-  private static final String MODRINTH_PROJECT_ID = "Fdj5mcgC";
-  private static final String UPDATE_NOTIFY_PERMISSION =
-    "doubledoors.update.notify";
-  private static final String UPDATE_DELEGATED_LOG =
-    "PluginUpdater plugin detected; built-in DoubleDoors update checks are disabled to avoid duplicate notifications.";
   private static final String LOCALE_PERMISSION = "doubledoors.locale";
 
   private volatile PluginConfig pluginConfig;
@@ -71,9 +54,8 @@ public final class DoubleDoors extends JavaPlugin {
   private volatile ClaimSettings claimSettings;
   private volatile TranslationManager translationManager;
   private volatile SharedSqlStorage sqlStorage;
-  private volatile BukkitContext metricsContext;
-  private volatile Updater updater;
-  private volatile TaskToken updaterCheckTask;
+  private final FastStatsManager fastStats = new FastStatsManager(this);
+  private final PluginUpdaterManager pluginUpdater = new PluginUpdaterManager(this);
   private volatile TaskToken proxyBridgePollTask;
   private final Set<UUID> debugPlayers = ConcurrentHashMap.newKeySet();
   private final Set<Material> customOpenables = ConcurrentHashMap.newKeySet();
@@ -466,8 +448,8 @@ public final class DoubleDoors extends JavaPlugin {
 
     versionBridge = loadVersionBridge();
 
-    restartFastStats();
-    initializeUpdater();
+    fastStats.restart(pluginConfig, () -> geyserBridgeAvailable);
+    pluginUpdater.initialize(pluginConfig);
 
     sqlStorage = null;
     translationManager = new TranslationManager(this);
@@ -487,10 +469,14 @@ public final class DoubleDoors extends JavaPlugin {
       .registerEvents(new RedstoneListener(this), this);
     registerVersionListener();
 
-    var doubledoorsCommand = getCommand("doubledoors");
-    if (doubledoorsCommand != null) {
-      doubledoorsCommand.setExecutor(this);
-      doubledoorsCommand.setTabCompleter(this);
+    if (!registerPaperCommand()) {
+      var doubledoorsCommand = getCommand("doubledoors");
+      if (doubledoorsCommand != null) {
+        doubledoorsCommand.setExecutor(this);
+        doubledoorsCommand.setTabCompleter(this);
+      } else {
+        getLogger().warning("Command registration failed: no Paper brigadier and no Bukkit fallback available.");
+      }
     }
 
     PluginManager pluginManager = getServer().getPluginManager();
@@ -533,22 +519,10 @@ public final class DoubleDoors extends JavaPlugin {
   public void onDisable() {
     initGeneration++;
     try {
-      if (metricsContext != null) {
-        try {
-          metricsContext.shutdown();
-        } catch (RuntimeException e) {
-          getLogger().log(
-            Level.WARNING,
-            "FastStats could not be shut down cleanly.",
-            e
-          );
-        } finally {
-          metricsContext = null;
-        }
-      }
+      fastStats.shutdown();
     } finally {
       stopProxyBridgePolling();
-      disableUpdater();
+      pluginUpdater.disable();
       versionBridge = null;
       closePlayerPreferences();
       getLogger().info(t("log.disabled"));
@@ -586,6 +560,77 @@ public final class DoubleDoors extends JavaPlugin {
     localBridge
       .createVersionListener()
       .ifPresent(l -> getServer().getPluginManager().registerEvents(l, this));
+  }
+
+  /**
+   * Attempts to register the {@code /doubledoors} command using Paper's
+   * {@code BasicCommand} API via reflection. Returns {@code true} on success
+   * (Paper server), {@code false} if the Bukkit fallback should be used.
+   */
+  private boolean registerPaperCommand() {
+    try {
+      Class<?> basicCmdClass = Class.forName(
+        "io.papermc.paper.command.brigadier.BasicCommand"
+      );
+      Class<?> cssClass = Class.forName(
+        "io.papermc.paper.command.brigadier.CommandSourceStack"
+      );
+      java.lang.reflect.Method getSender = cssClass.getMethod("getSender");
+
+      Object basicCommand = java.lang.reflect.Proxy.newProxyInstance(
+        basicCmdClass.getClassLoader(),
+        new Class<?>[]{ basicCmdClass },
+        (proxy, method, args) -> {
+          String name = method.getName();
+          return switch (name) {
+            case "execute" -> {
+              Object source = args[0];
+              String[] cmdArgs = (String[]) args[1];
+              CommandSender sender = (CommandSender) getSender.invoke(source);
+              handleCommand(sender, "doubledoors", cmdArgs);
+              yield null;
+            }
+            case "suggest" -> {
+              Object source = args[0];
+              String[] cmdArgs = (String[]) args[1];
+              CommandSender sender = (CommandSender) getSender.invoke(source);
+              yield handleTabComplete(sender, "doubledoors", cmdArgs);
+            }
+            case "permission" -> null;
+            case "canUse" -> true;
+            case "toString" -> "DoubleDoors[PaperCommandProxy]";
+            case "equals" -> proxy == args[0];
+            case "hashCode" -> System.identityHashCode(proxy);
+            default -> {
+              try {
+                yield method.invoke(proxy, args);
+              } catch (java.lang.reflect.InvocationTargetException e) {
+                throw e.getCause();
+              }
+            }
+          };
+        }
+      );
+
+      Class<?> javaPluginClass = Class.forName(
+        "org.bukkit.plugin.java.JavaPlugin"
+      );
+      java.lang.reflect.Method registerCmd = javaPluginClass.getMethod(
+        "registerCommand",
+        String.class,
+        java.util.Collection.class,
+        basicCmdClass
+      );
+      registerCmd.invoke(
+        this,
+        "doubledoors",
+        java.util.List.of("dd"),
+        basicCommand
+      );
+      return true;
+    } catch (Throwable ignored) {
+      return false;
+    }
   }
 
   private String t(String key, Object... args) {
@@ -731,42 +776,6 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
-  private void initializeFastStats() {
-    if (!pluginConfig.isEnableAnonymousTracking()) {
-      metricsContext = null;
-      getLogger().info("Anonymous tracking is disabled by config.");
-      return;
-    }
-
-    String token = normalizeFastStatsToken(FASTSTATS_PROJECT_TOKEN);
-    if (token == null) {
-      metricsContext = null;
-      getLogger().warning(
-        "Anonymous tracking is enabled, but the built-in FastStats token is invalid; metrics are disabled."
-      );
-      return;
-    }
-
-    try {
-      BukkitContext context = new BukkitContext.Factory(this, token)
-        .metrics(factory -> {
-          BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
-          return bFactory.create();
-        })
-        .create();
-      context.getLoggerFactory().setDebug(pluginConfig.isDebug());
-      context.ready();
-      metricsContext = context;
-    } catch (RuntimeException e) {
-      metricsContext = null;
-      getLogger().log(
-        Level.WARNING,
-        "FastStats could not be initialized; continuing without metrics.",
-        e
-      );
-    }
-  }
-
   private void closePlayerPreferences() {
     PlayerPreferences preferences = playerPreferences;
     if (preferences != null) {
@@ -775,151 +784,6 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
-  private void restartFastStats() {
-    if (metricsContext != null) {
-      try {
-        metricsContext.shutdown();
-      } catch (RuntimeException e) {
-        getLogger().log(
-          Level.WARNING,
-          "FastStats could not be shut down cleanly during restart.",
-          e
-        );
-      } finally {
-        metricsContext = null;
-      }
-    }
-    initializeFastStats();
-  }
-
-  private void initializeUpdater() {
-    disableUpdater();
-    if (!pluginConfig.isUpdateCheckerEnabled()) {
-      getLogger().info(
-        "Built-in updater checks are disabled by config (updateChecker.enabled=false)."
-      );
-      return;
-    }
-
-    if (isPluginUpdaterPluginPresent()) {
-      // Delegate update checks to the standalone plugin to avoid duplicate checks/notices.
-      getLogger().info(UPDATE_DELEGATED_LOG);
-      getLogger().info(
-        "Ensure the external PluginUpdater plugin is configured to include DoubleDoors update checks."
-      );
-      return;
-    }
-
-    try {
-      Updater.Builder builder = Updater.builder(this);
-      injectMutablePluginData(builder);
-      updater = builder
-        .modrinth(MODRINTH_PROJECT_ID)
-        .notify(pluginConfig.isUpdateCheckerNotify())
-        .notificationPermission(UPDATE_NOTIFY_PERMISSION)
-        .build();
-      scheduleUpdaterChecks();
-      getLogger().info("Built-in updater checks are enabled for DoubleDoors.");
-    } catch (ReflectiveOperationException | RuntimeException | LinkageError e) {
-      getLogger().log(
-        Level.WARNING,
-        "Plugin updater could not be initialized; continuing without update checks.",
-        e
-      );
-    }
-  }
-
-  private boolean isPluginUpdaterPluginPresent() {
-    return hasAnyPluginEnabled(
-      getServer().getPluginManager(),
-      "PluginUpdater",
-      "PluginUpdaterPlugin"
-    );
-  }
-
-  private void injectMutablePluginData(Updater.Builder builder)
-    throws ReflectiveOperationException {
-    Objects.requireNonNull(builder, "builder");
-    PluginData pluginData = PluginData.builder(this)
-      .platformData(new ArrayList<>())
-      .build();
-
-    // Upstream API request tracker (open when authenticated): https://github.com/OakLoaf/PluginUpdater/issues/new?title=Expose%20Builder%20API%20for%20platformData%20injection
-    Field pluginDataField = Updater.Builder.class.getDeclaredField(
-      "pluginData"
-    );
-    pluginDataField.setAccessible(true);
-    if (!pluginDataField.getType().isAssignableFrom(pluginData.getClass())) {
-      throw new ReflectiveOperationException(
-        "Unexpected Updater.Builder#pluginData type: " +
-          pluginDataField.getType().getName()
-      );
-    }
-    pluginDataField.set(builder, pluginData);
-  }
-
-  private void scheduleUpdaterChecks() {
-    if (updater == null) {
-      return;
-    }
-    long checkFrequencySeconds = pluginConfig.getUpdateCheckerScheduleSeconds();
-    if (checkFrequencySeconds <= 0L) {
-      return;
-    }
-    long periodTicks = checkFrequencySeconds * 20L;
-    updaterCheckTask = SchedulerBridge.runTimerAsync(
-      this,
-      0L,
-      periodTicks,
-      () -> {
-        Updater localUpdater = updater;
-        if (localUpdater != null) {
-          localUpdater.checkForUpdate();
-        }
-      }
-    );
-  }
-
-  private void disableUpdater() {
-    TaskToken localTask = updaterCheckTask;
-    updaterCheckTask = null;
-    if (localTask != null) {
-      localTask.cancel();
-    }
-
-    Updater localUpdater = updater;
-    if (localUpdater == null) {
-      return;
-    }
-
-    PluginData pluginData = localUpdater.getPluginData();
-    if (pluginData != null) {
-      pluginData.setEnabled(false);
-    }
-    updater = null;
-  }
-
-  private String normalizeFastStatsToken(String rawToken) {
-    if (rawToken == null || rawToken.isBlank()) {
-      return null;
-    }
-
-    String normalized = rawToken.trim().toLowerCase(Locale.ROOT).replace("-", "");
-    if (!normalized.matches(FASTSTATS_TOKEN_PATTERN)) {
-      return null;
-    }
-    return normalized;
-  }
-
-  /**
-   * Handles the {@code /doubledoors} command tree.
-   *
-   * @param sender the command sender
-   * @param command the command being executed
-   * @param label the alias used to execute the command
-   * @param args command arguments
-   * @return {@code true} when the command was handled by this plugin
-   */
   @Override
   public boolean onCommand(
     CommandSender sender,
@@ -927,16 +791,28 @@ public final class DoubleDoors extends JavaPlugin {
     String label,
     String[] args
   ) {
+    return handleCommand(sender, label, args);
+  }
+
+  /**
+   * Handles the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param label the alias used to execute the command
+   * @param args command arguments
+   * @return {@code true} when the command was handled by this plugin
+   */
+  public boolean handleCommand(
+    CommandSender sender,
+    String label,
+    String[] args
+  ) {
     java.util.Objects.requireNonNull(sender, "sender");
-    java.util.Objects.requireNonNull(command, "command");
     java.util.Objects.requireNonNull(label, "label");
     java.util.Objects.requireNonNull(args, "args");
-    if (!command.getName().equalsIgnoreCase("doubledoors")) {
-      return false;
-    }
 
     if (args.length == 0) {
-      sender.sendMessage(t("cmd.usage.main", label));
+      sender.sendMessage(mainUsage(sender, label));
       return true;
     }
 
@@ -950,8 +826,8 @@ public final class DoubleDoors extends JavaPlugin {
       closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
-      restartFastStats();
-      initializeUpdater();
+    fastStats.restart(pluginConfig, () -> geyserBridgeAvailable);
+      pluginUpdater.initialize(pluginConfig);
       stopProxyBridgePolling();
       sqlStorage = null;
       localGeyserBridgeAvailable = hasAnyPluginEnabled(
@@ -1231,19 +1107,33 @@ public final class DoubleDoors extends JavaPlugin {
       return true;
     }
 
-    sender.sendMessage(t("cmd.usage.main", label));
+    sender.sendMessage(mainUsage(sender, label));
     return true;
   }
 
-  /**
-   * Provides tab completions for the {@code /doubledoors} command tree.
-   *
-   * @param sender the command sender
-   * @param command the command being completed
-   * @param alias the alias used for completion
-   * @param args current command arguments
-   * @return matching completion candidates
-   */
+  private String mainUsage(CommandSender sender, String label) {
+    Player player = sender instanceof Player p ? p : null;
+    String version = getPluginMeta().getVersion();
+    return String.join(
+      "\n",
+      "§6§l DoubleDoors §7v" + version,
+      "§7-----------------------------------",
+      usageLine(label, "reload", t(player, "cmd.usage.main.reload")),
+      usageLine(label, "toggle", t(player, "cmd.usage.main.toggle")),
+      usageLine(label, "knock-volume <0-1>", t(player, "cmd.usage.main.knock_volume")),
+      usageLine(label, "server-toggle", t(player, "cmd.usage.main.server_toggle")),
+      usageLine(label, "locale [code|credits|credit <code>]", t(player, "cmd.usage.main.locale")),
+      usageLine(label, "grief villagers", t(player, "cmd.usage.main.grief")),
+      usageLine(label, "debug", t(player, "cmd.usage.main.debug")),
+      usageLine(label, "preview", t(player, "cmd.usage.main.preview")),
+      "§7-----------------------------------"
+    );
+  }
+
+  private String usageLine(String label, String syntax, String description) {
+    return " §e/" + label + " " + syntax + " §7" + description;
+  }
+
   @Override
   public List<String> onTabComplete(
     CommandSender sender,
@@ -1251,12 +1141,36 @@ public final class DoubleDoors extends JavaPlugin {
     String alias,
     String[] args
   ) {
+    return handleTabComplete(sender, alias, args);
+  }
+
+  /**
+   * Provides tab completions for the {@code /doubledoors} command tree.
+   *
+   * @param sender the command sender
+   * @param alias the alias used for completion
+   * @param args current command arguments
+   * @return matching completion candidates
+   */
+  public List<String> handleTabComplete(
+    CommandSender sender,
+    String alias,
+    String[] args
+  ) {
     java.util.Objects.requireNonNull(sender, "sender");
-    java.util.Objects.requireNonNull(command, "command");
     java.util.Objects.requireNonNull(alias, "alias");
     java.util.Objects.requireNonNull(args, "args");
     List<String> completions = new ArrayList<>();
-    if (!command.getName().equalsIgnoreCase("doubledoors")) {
+
+    if (args.length == 0) {
+      completions.add("reload");
+      completions.add("toggle");
+      completions.add("knock-volume");
+      completions.add("locale");
+      completions.add("server-toggle");
+      completions.add("grief");
+      completions.add("debug");
+      completions.add("preview");
       return completions;
     }
 
@@ -1340,13 +1254,23 @@ public final class DoubleDoors extends JavaPlugin {
         )
       );
     }
-    String langs = translationManager
+    player.sendMessage(t(player, "cmd.locale.available"));
+    translationManager
       .getAvailableLanguages()
       .stream()
       .sorted(String::compareToIgnoreCase)
-      .map(translationManager::getLanguageName)
-      .collect(Collectors.joining(", "));
-    player.sendMessage(t(player, "cmd.locale.available", langs));
+      .forEach(code -> {
+        double pct = translationManager.getCompletionPercentage(code);
+        player.sendMessage(
+          t(
+            player,
+            "cmd.locale.available_entry",
+            translationManager.getLanguageName(code),
+            code,
+            pct
+          )
+        );
+      });
   }
 
   private void sendLocaleCredits(Player player) {

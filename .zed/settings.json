@@ -1,0 +1,27 @@
+{
+  "languages": {
+    "Java": {
+      "language_servers": ["jdtls"]
+    }
+  },
+  "lsp": {
+    "jdtls": {
+      "settings": {
+        "initialization_options": {
+          "settings": {
+            "java": {
+              "import": {
+                "maven": { "enabled": false },
+                "gradle": { "enabled": true, "wrapper": { "enabled": true } }
+              },
+              "build": {
+                "gradle": { "enabled": true, "wrapper": { "enabled": true } },
+                "maven": { "enabled": false }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

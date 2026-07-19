@@ -7,6 +7,7 @@ import com.velocitypowered.api.proxy.ProxyServer;
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.regex.Pattern;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 
@@ -14,10 +15,10 @@ final class VelocityShadeConfigurationTest {
 
   @Test
   void testSlf4jIsNotRelocated() throws Exception {
-    String buildScript = Files.readString(Path.of("build.gradle"));
+    String buildScript = Files.readString(Path.of("build.gradle.kts"));
 
     assertFalse(
-      buildScript.contains("relocate \"org.slf4j\""),
+      Pattern.compile("relocate\\s*\\(\\s*[\"']org\\.slf4j").matcher(buildScript).find(),
       "Velocity injects org.slf4j.Logger; relocating SLF4J breaks plugin creation."
     );
     assertFalse(

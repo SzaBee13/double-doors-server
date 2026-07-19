@@ -1,11 +1,11 @@
 package me.szabee.doubledoors.bukkit.config;
 
-import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import me.szabee.doubledoors.bukkit.DoubleDoors;
+import me.szabee.doubledoors.bukkit.i18n.TranslationCatalog;
 import me.szabee.doubledoors.bukkit.util.OpenableType;
 import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import org.bukkit.NamespacedKey;
@@ -257,7 +257,13 @@ public final class PluginConfig {
     if (configuredLanguage == null || configuredLanguage.isBlank()) {
       configuredLanguage = "en_US";
     }
-    String language = configuredLanguage.trim();
+    String language = TranslationCatalog.resolveLanguageCode(
+      plugin,
+      configuredLanguage
+    );
+    if (language == null || language.isBlank()) {
+      language = "en_US";
+    }
 
     boolean perPlayerLocaleEnabled = plugin
       .getConfig()
@@ -620,6 +626,15 @@ public final class PluginConfig {
    */
   public String getLanguage() {
     return snapshot.language();
+  }
+
+  /**
+   * Returns whether the server is using a custom translation file.
+   *
+   * @return {@code true} when {@code language: custom} is set in config.yml
+   */
+  public boolean isCustomLanguage() {
+    return "custom".equalsIgnoreCase(snapshot.language());
   }
 
   /**
