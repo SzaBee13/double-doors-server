@@ -448,7 +448,7 @@ public final class DoubleDoors extends JavaPlugin {
 
     versionBridge = loadVersionBridge();
 
-    fastStats.restart(pluginConfig, () -> geyserBridgeAvailable);
+    fastStats.restart(pluginConfig);
     pluginUpdater.initialize(pluginConfig);
 
     sqlStorage = null;
@@ -826,7 +826,7 @@ public final class DoubleDoors extends JavaPlugin {
       closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
-    fastStats.restart(pluginConfig, () -> geyserBridgeAvailable);
+    fastStats.restart(pluginConfig);
       pluginUpdater.initialize(pluginConfig);
       stopProxyBridgePolling();
       sqlStorage = null;

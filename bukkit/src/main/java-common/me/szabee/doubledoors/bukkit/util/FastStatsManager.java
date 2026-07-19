@@ -5,7 +5,6 @@ import dev.faststats.bukkit.BukkitContext;
 import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.data.Metric;
 import java.util.Locale;
-import java.util.function.BooleanSupplier;
 import java.util.logging.Level;
 import me.szabee.doubledoors.bukkit.config.PluginConfig;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -20,7 +19,6 @@ public final class FastStatsManager {
     "883c734d766f7078fa4525e9c573c8af";
 
   private final JavaPlugin plugin;
-  private final long startedAtNanos = System.nanoTime();
   private volatile BukkitContext metricsContext;
 
   /**
@@ -33,10 +31,7 @@ public final class FastStatsManager {
   }
 
   /** Starts or restarts FastStats. Safe to call multiple times. */
-  public void restart(
-    PluginConfig config,
-    BooleanSupplier geyserBridgeAvailable
-  ) {
+  public void restart(PluginConfig config) {
     shutdown();
     if (!config.isEnableAnonymousTracking()) {
       plugin.getLogger().info("Anonymous tracking is disabled by config.");
@@ -57,7 +52,7 @@ public final class FastStatsManager {
       BukkitContext context = new BukkitContext.Factory(plugin, token)
         .metrics(factory -> {
           BukkitMetrics.Factory bFactory = (BukkitMetrics.Factory) factory;
-          addMetrics(bFactory, config, geyserBridgeAvailable);
+          addMetrics(bFactory, config);
           return bFactory.create();
         })
         .errorTrackerService(
@@ -96,8 +91,7 @@ public final class FastStatsManager {
 
   private void addMetrics(
     BukkitMetrics.Factory factory,
-    PluginConfig config,
-    BooleanSupplier geyserBridgeAvailable
+    PluginConfig config
   ) {
     factory
       .addMetric(Metric.string("server_language", config::getLanguage))
@@ -107,41 +101,21 @@ public final class FastStatsManager {
           () -> resolveDataStorageType(config)
         )
       )
-      .addMetric(
-        Metric.number("server_max_players", plugin.getServer()::getMaxPlayers)
-      )
-      .addMetric(
-        Metric.number(
-          "plugin_uptime_minutes",
-          () -> (System.nanoTime() - startedAtNanos) / 60_000_000_000L
-        )
-      )
       .addMetric(Metric.bool("auto_close_enabled", config::isEnableAutoClose))
       .addMetric(Metric.bool("knocking_enabled", config::isEnableKnockFeature))
       .addMetric(
-        Metric.bool("update_checker_enabled", config::isUpdateCheckerEnabled)
+        Metric.string(
+          "update_checker",
+          () -> resolveUpdateChecker(config)
+        )
       )
       .addMetric(Metric.bool("debug_enabled", config::isDebug))
       .addMetric(
-        Metric.bool(
-          "recursive_opening_enabled",
-          config::isEnableRecursiveOpening
-        )
-      )
-      .addMetric(
-        Metric.bool("geyser_detected", geyserBridgeAvailable::getAsBoolean)
-      )
-      .addMetric(
-        Metric.bool("worldguard_detected", () ->
-          plugin.getServer().getPluginManager().isPluginEnabled("WorldGuard")
-        )
-      )
-      .addMetric(
-        Metric.bool("griefprevention_detected", () ->
-          plugin
-            .getServer()
-            .getPluginManager()
-            .isPluginEnabled("GriefPrevention")
+        Metric.number(
+          "recursive_opening",
+          () -> config.isEnableRecursiveOpening()
+            ? config.getRecursiveOpeningMaxBlocksDistance()
+            : 0
         )
       );
   }
@@ -162,6 +136,26 @@ public final class FastStatsManager {
       return "mysql";
     }
     return "unknown";
+  }
+
+  private String resolveUpdateChecker(PluginConfig config) {
+    if (!config.isUpdateCheckerEnabled()) {
+      return "off";
+    }
+    org.bukkit.plugin.PluginManager pm = plugin.getServer().getPluginManager();
+    for (org.bukkit.plugin.Plugin p : pm.getPlugins()) {
+      if (!p.isEnabled()) {
+        continue;
+      }
+      String name = p.getName();
+      if (
+        name.equalsIgnoreCase("PluginUpdater") ||
+        name.equalsIgnoreCase("PluginUpdaterPlugin")
+      ) {
+        return "pluginupdater";
+      }
+    }
+    return "on";
   }
 
   private static String normalizeToken(String rawToken) {
