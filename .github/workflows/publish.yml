@@ -264,11 +264,11 @@ jobs:
             [
               {
                 "path": "${{ steps.paper_artifact.outputs.jar_path }}",
-                "platform": ["PAPER", "FOLIA"]
+                "platforms": ["PAPER", "FOLIA"]
               },
               {
                 "path": "${{ steps.proxy_artifact.outputs.jar_path }}",
-                "platform": ["VELOCITY"]
+                "platforms": ["VELOCITY"]
               }
             ]
           description: ${{ steps.release_notes.outputs.body }}
