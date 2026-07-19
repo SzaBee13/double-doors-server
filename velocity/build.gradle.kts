@@ -13,7 +13,15 @@ tasks.register<Copy>("filterVelocityJava") {
   into(filteredJavaDir)
   include("**/*.java")
   filteringCharset = "UTF-8"
-  expand(mapOf("project" to mapOf("version" to project.version)))
+  expand(mapOf(
+    "project" to mapOf("version" to project.version),
+    "sqliteVersion" to findProperty("sqliteVersion"),
+    "sqliteSha256" to findProperty("sqliteSha256"),
+    "mysqlConnectorVersion" to findProperty("mysqlConnectorVersion"),
+    "mysqlConnectorSha256" to findProperty("mysqlConnectorSha256"),
+    "hikariVersion" to findProperty("hikariVersion"),
+    "hikariSha256" to findProperty("hikariSha256"),
+  ))
 }
 
 sourceSets {
@@ -39,15 +47,18 @@ dependencies {
   annotationProcessor("com.velocitypowered:velocity-api:${findProperty("velocityApiVersion")}")
 
   implementation("dev.faststats.metrics:velocity:${findProperty("faststatsVersion")}")
-  implementation("org.xerial:sqlite-jdbc:${findProperty("sqliteVersion")}")
-  implementation("com.mysql:mysql-connector-j:${findProperty("mysqlConnectorVersion")}")
-  implementation("com.zaxxer:HikariCP:${findProperty("hikariVersion")}")
+  compileOnly("org.xerial:sqlite-jdbc:${findProperty("sqliteVersion")}")
+  compileOnly("com.mysql:mysql-connector-j:${findProperty("mysqlConnectorVersion")}")
+  compileOnly("com.zaxxer:HikariCP:${findProperty("hikariVersion")}")
 
   testImplementation(platform("org.junit:junit-bom:${findProperty("junitVersion")}"))
   testImplementation("org.junit.jupiter:junit-jupiter")
   testImplementation("com.velocitypowered:velocity-api:${findProperty("velocityApiVersion")}")
   testRuntimeOnly(platform("org.junit:junit-bom:${findProperty("junitVersion")}"))
   testRuntimeOnly("org.junit.platform:junit-platform-launcher")
+  testRuntimeOnly("org.xerial:sqlite-jdbc:${findProperty("sqliteVersion")}")
+  testRuntimeOnly("com.mysql:mysql-connector-j:${findProperty("mysqlConnectorVersion")}")
+  testRuntimeOnly("com.zaxxer:HikariCP:${findProperty("hikariVersion")}")
 }
 
 tasks.named<JavaCompile>("compileJava") {
@@ -68,9 +79,9 @@ tasks.shadowJar {
   exclude("META-INF/MANIFEST.MF")
   exclude("META-INF/versions/**/module-info.class")
   exclude("META-INF/maven/**")
+  exclude("META-INF/proguard/**")
   exclude("META-INF/native-image/**")
   exclude("META-INF/versions/9/org/sqlite/nativeimage/**")
-
 }
 
 tasks.jar {

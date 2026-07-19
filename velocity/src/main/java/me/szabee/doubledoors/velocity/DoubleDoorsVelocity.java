@@ -127,6 +127,19 @@ public final class DoubleDoorsVelocity {
       return;
     }
 
+    LibraryDownloader downloader = new LibraryDownloader(
+      proxyServer.getPluginManager(),
+      this,
+      dataDirectory,
+      logger
+    );
+    if (!downloader.downloadAndInject()) {
+      logger.warn(
+        "DoubleDoorsVelocity could not load SQL dependencies; heartbeat will be disabled."
+      );
+      return;
+    }
+
     geyserPresent = isPluginPresent("geyser", "geyser-velocity");
     floodgatePresent = isPluginPresent("floodgate", "floodgate-velocity");
     if (!geyserPresent && !floodgatePresent) {
