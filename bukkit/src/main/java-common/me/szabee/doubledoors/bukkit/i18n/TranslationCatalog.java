@@ -254,16 +254,7 @@ public final class TranslationCatalog {
     if (!customFile.isFile()) {
       writeDefaultCustomFile(plugin, customFile);
     }
-    Map<String, String> result = Map.of();
-    if (customFile.isFile()) {
-      try (InputStream in = new FileInputStream(customFile)) {
-        result = parseJson(in);
-      } catch (IOException | JsonSyntaxException e) {
-        plugin
-          .getLogger()
-          .log(Level.WARNING, "Failed to parse custom_lang.json, using defaults", e);
-      }
-    }
+    Map<String, String> result = loadCustomLanguageFileRaw(plugin);
     DefaultsData defaults = loadDefaults(plugin);
     if (!defaults.strings().isEmpty()) {
       Map<String, String> merged = new HashMap<>(defaults.strings());

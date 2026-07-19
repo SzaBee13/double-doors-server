@@ -23,6 +23,11 @@ public final class FastStatsManager {
   private final long startedAtNanos = System.nanoTime();
   private volatile BukkitContext metricsContext;
 
+  /**
+   * Creates a new FastStats manager bound to the given plugin.
+   *
+   * @param plugin the Bukkit plugin instance used for logging and server access
+   */
   public FastStatsManager(JavaPlugin plugin) {
     this.plugin = plugin;
   }
@@ -34,14 +39,12 @@ public final class FastStatsManager {
   ) {
     shutdown();
     if (!config.isEnableAnonymousTracking()) {
-      metricsContext = null;
       plugin.getLogger().info("Anonymous tracking is disabled by config.");
       return;
     }
 
     String token = normalizeToken(PROJECT_TOKEN);
     if (token == null) {
-      metricsContext = null;
       plugin
         .getLogger()
         .warning(
@@ -65,7 +68,6 @@ public final class FastStatsManager {
       context.ready();
       metricsContext = context;
     } catch (RuntimeException e) {
-      metricsContext = null;
       plugin
         .getLogger()
         .log(
