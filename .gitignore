@@ -6,6 +6,9 @@ bin/
 .m2/
 .gradle/
 
+# Submodules
+wiki/
+
 # OS files
 .DS_Store
 Thumbs.db
