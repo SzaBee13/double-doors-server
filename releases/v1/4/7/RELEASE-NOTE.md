@@ -1,6 +1,6 @@
 # DoubleDoors v1.4.7 Release Notes
 
-Release date: 
+Release date: 2026-07-19
 
 ## Highlights
 
