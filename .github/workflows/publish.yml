@@ -264,7 +264,7 @@ jobs:
             [
               {
                 "path": "${{ steps.paper_artifact.outputs.jar_path }}",
-                "platforms": ["PAPER", "FOLIA"]
+                "platforms": ["PAPER"]
               },
               {
                 "path": "${{ steps.proxy_artifact.outputs.jar_path }}",
