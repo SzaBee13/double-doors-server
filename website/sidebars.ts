@@ -2,20 +2,41 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docsSidebar: [
-    'Home',
-    'Installation',
-    'Quick-Start',
-    'Configuration',
-    'Commands-and-Permissions',
-    'Compatibility',
-    'Proxy-Setup',
-    'Troubleshooting',
-    'FAQ',
-    'Admin-Runbook',
-    'How-It-Works',
-    'Performance-and-Safety-Notes',
-    'API',
-    'Development-and-Releases',
+    {
+      type: 'category',
+      label: 'Getting Started',
+      collapsible: true,
+      collapsed: true,
+      items: ['Home', 'Installation', 'Quick-Start'],
+    },
+    {
+      type: 'category',
+      label: 'Configuration',
+      collapsible: true,
+      collapsed: true,
+      items: ['Configuration', 'Commands-and-Permissions', 'Compatibility', 'Proxy-Setup'],
+    },
+    {
+      type: 'category',
+      label: 'Operations & Support',
+      collapsible: true,
+      collapsed: true,
+      items: ['Admin-Runbook', 'Troubleshooting', 'FAQ'],
+    },
+    {
+      type: 'category',
+      label: 'Under the Hood',
+      collapsible: true,
+      collapsed: true,
+      items: ['How-It-Works', 'Performance-and-Safety-Notes', 'API'],
+    },
+    {
+      type: 'category',
+      label: 'Contributing',
+      collapsible: true,
+      collapsed: true,
+      items: ['Development-and-Releases', 'Translating'],
+    },
   ],
 };
 

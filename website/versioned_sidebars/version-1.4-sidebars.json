@@ -30,10 +30,10 @@
     },
     {
       "type": "category",
-      "label": "Development",
+      "label": "Contributing",
       "collapsible": true,
       "collapsed": true,
-      "items": ["Development-and-Releases"]
+      "items": ["Development-and-Releases", "Translating"]
     }
   ]
 }
