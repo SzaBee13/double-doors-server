@@ -1,18 +1,39 @@
 {
   "docsSidebar": [
-    "API",
-    "Admin-Runbook",
-    "Commands-and-Permissions",
-    "Compatibility",
-    "Configuration",
-    "Development-and-Releases",
-    "FAQ",
-    "Home",
-    "How-It-Works",
-    "Installation",
-    "Performance-and-Safety-Notes",
-    "Proxy-Setup",
-    "Quick-Start",
-    "Troubleshooting"
+    {
+      "type": "category",
+      "label": "Getting Started",
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["Home", "Installation", "Quick-Start"]
+    },
+    {
+      "type": "category",
+      "label": "Configuration",
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["Configuration", "Commands-and-Permissions", "Compatibility", "Proxy-Setup"]
+    },
+    {
+      "type": "category",
+      "label": "Operations & Support",
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["Admin-Runbook", "Troubleshooting", "FAQ"]
+    },
+    {
+      "type": "category",
+      "label": "Under the Hood",
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["How-It-Works", "Performance-and-Safety-Notes", "API"]
+    },
+    {
+      "type": "category",
+      "label": "Development",
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["Development-and-Releases"]
+    }
   ]
 }

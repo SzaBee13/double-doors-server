@@ -1,11 +1,26 @@
 // This file is not used by "docusaurus start/build" commands.
 // It is here to improve your IDE experience (type-checking, autocompletion...),
 // and can also run the package.json "typecheck" script manually.
+//
+// Options are inlined instead of extending "@docusaurus/tsconfig" so the
+// deprecated "baseUrl" option is not inherited: it triggers TS5101 on
+// TypeScript 6 and there is no "ignoreDeprecations" value that is valid on
+// both TypeScript 5 and 6. "paths" entries resolve relative to this file
+// without a baseUrl on TypeScript 5.1+.
 {
-  "extends": "@docusaurus/tsconfig",
   "compilerOptions": {
-    "baseUrl": ".",
-    "ignoreDeprecations": "6.0",
+    "allowJs": true,
+    "esModuleInterop": true,
+    "jsx": "preserve",
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM"],
+    "moduleResolution": "bundler",
+    "module": "esnext",
+    "noEmit": true,
+    "paths": {
+      "@site/*": ["./*"]
+    },
+    "skipLibCheck": true,
     "strict": true
   },
   "exclude": [".docusaurus", "build"]
