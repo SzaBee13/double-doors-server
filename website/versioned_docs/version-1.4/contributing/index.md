@@ -1,6 +1,5 @@
 ---
 title: Contributing
-sidebar_position: 1
 ---
 
 Development workflows and localization guidance for contributors.

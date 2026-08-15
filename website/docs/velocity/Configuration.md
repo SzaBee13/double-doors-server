@@ -1,5 +1,5 @@
 ---
-title: Velocity Configuration
+title: Configuration
 ---
 
 Configuration is stored in `plugins/DoubleDoors/proxy-config.properties`.

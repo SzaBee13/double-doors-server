@@ -1,6 +1,5 @@
 ---
-title: Concepts & Internals
-sidebar_position: 1
+title: Concepts
 ---
 
 Understand how DoubleDoors finds linked blocks, schedules state changes, and exposes integration points.

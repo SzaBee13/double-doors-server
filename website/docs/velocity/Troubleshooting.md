@@ -1,5 +1,5 @@
 ---
-title: Velocity Troubleshooting
+title: Troubleshooting
 ---
 
 ## Plugin Does Not Load

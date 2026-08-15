@@ -1,5 +1,5 @@
 ---
-title: Proxy Setup
+title: Setup
 ---
 
 This page explains how to set up the **DoubleDoors Velocity plugin** for multi-server environments with Geyser/Floodgate.

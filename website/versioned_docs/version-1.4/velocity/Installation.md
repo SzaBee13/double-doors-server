@@ -1,5 +1,5 @@
 ---
-title: Velocity Installation
+title: Installation
 ---
 
 ## Requirements

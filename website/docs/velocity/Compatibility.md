@@ -1,5 +1,5 @@
 ---
-title: Velocity Compatibility
+title: Compatibility
 ---
 
 ## Supported Stack

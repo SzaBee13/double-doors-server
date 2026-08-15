@@ -1,6 +1,5 @@
 ---
 title: Velocity
-sidebar_position: 1
 ---
 
 The Velocity integration supports proxy-side health and presence tracking for networks that use Geyser or Floodgate.

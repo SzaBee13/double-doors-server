@@ -1,5 +1,5 @@
 ---
-title: Velocity FAQ
+title: FAQ
 ---
 
 ## Do I need the Velocity plugin for one proxy?
