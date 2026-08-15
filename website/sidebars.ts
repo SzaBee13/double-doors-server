@@ -2,40 +2,56 @@ import type {SidebarsConfig} from '@docusaurus/plugin-content-docs';
 
 const sidebars: SidebarsConfig = {
   docsSidebar: [
+    'index',
     {
       type: 'category',
-      label: 'Getting Started',
+      label: 'Bukkit, Spigot & Paper',
       collapsible: true,
-      collapsed: true,
-      items: ['Home', 'Installation', 'Quick-Start'],
+      collapsed: false,
+      items: [
+        'bukkit-spigot-paper/index',
+        {
+          type: 'category',
+          label: 'Getting Started',
+          items: ['bukkit-spigot-paper/Installation', 'bukkit-spigot-paper/Quick-Start'],
+        },
+        {
+          type: 'category',
+          label: 'Configuration',
+          items: ['bukkit-spigot-paper/Configuration', 'bukkit-spigot-paper/Commands-and-Permissions'],
+        },
+        {
+          type: 'category',
+          label: 'Compatibility',
+          items: ['bukkit-spigot-paper/Compatibility'],
+        },
+        {
+          type: 'category',
+          label: 'Operations & Support',
+          items: ['bukkit-spigot-paper/Admin-Runbook', 'bukkit-spigot-paper/Troubleshooting', 'bukkit-spigot-paper/FAQ'],
+        },
+      ],
     },
     {
       type: 'category',
-      label: 'Configuration',
+      label: 'Velocity',
       collapsible: true,
       collapsed: true,
-      items: ['Configuration', 'Commands-and-Permissions', 'Compatibility', 'Proxy-Setup'],
+      items: ['velocity/index', 'velocity/Proxy-Setup'],
     },
     {
       type: 'category',
-      label: 'Operations & Support',
+      label: 'Concepts & Internals',
       collapsible: true,
       collapsed: true,
-      items: ['Admin-Runbook', 'Troubleshooting', 'FAQ'],
-    },
-    {
-      type: 'category',
-      label: 'Under the Hood',
-      collapsible: true,
-      collapsed: true,
-      items: ['How-It-Works', 'Performance-and-Safety-Notes', 'API'],
+      items: ['concepts/index', 'concepts/How-It-Works', 'concepts/Performance-and-Safety-Notes', 'concepts/API'],
     },
     {
       type: 'category',
       label: 'Contributing',
       collapsible: true,
       collapsed: true,
-      items: ['Development-and-Releases', 'Translating'],
+      items: ['contributing/index', 'contributing/Development-and-Releases', 'contributing/Translating'],
     },
   ],
 };

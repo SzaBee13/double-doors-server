@@ -1,4 +1,5 @@
 ---
+unlisted: true
 title: FAQ
 id: FAQ
 slug: /FAQ

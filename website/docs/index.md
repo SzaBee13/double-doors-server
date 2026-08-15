@@ -1,6 +1,6 @@
 ---
 title: Home
-id: Home
+id: index
 slug: /
 ---
 

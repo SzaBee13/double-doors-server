@@ -1,4 +1,5 @@
 ---
+unlisted: true
 title: Troubleshooting
 id: Troubleshooting
 slug: /Troubleshooting
