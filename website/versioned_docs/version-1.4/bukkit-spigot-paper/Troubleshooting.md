@@ -1,7 +1,5 @@
 ---
 title: Troubleshooting
-id: Troubleshooting
-slug: /Troubleshooting
 ---
 
 ## Linked blocks do not open together

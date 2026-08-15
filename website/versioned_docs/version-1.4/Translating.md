@@ -1,5 +1,4 @@
 ---
-unlisted: true
 title: Translating
 id: Translating
 slug: /TRANSLATING

@@ -1,13 +1,13 @@
 ---
 title: Installation
-id: Installation
-slug: /Installation
 ---
 
 ## Requirements
 
-- Paper or Spigot 1.21+
+- Bukkit-compatible server 1.21+, including Paper, Spigot, Purpur, or Folia
 - Java 25+ runtime on the server
+
+Folia is supported through region-aware scheduling. Do not use a Bukkit-only scheduler wrapper or manually move DoubleDoors tasks between regions.
 
 ## Download
 
@@ -42,3 +42,5 @@ Expected startup info includes lines similar to:
 - Use command: /doubledoors reload
 - Right-click one side of a mirrored double door.
 - Confirm the partner door mirrors the final open/close state.
+
+On Folia, also verify a door in each region where the plugin will be used. If a Folia-specific scheduler error appears, check the server and plugin versions before changing the plugin configuration.

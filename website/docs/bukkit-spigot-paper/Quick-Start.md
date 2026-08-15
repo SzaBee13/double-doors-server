@@ -1,7 +1,5 @@
 ---
 title: Quick Start
-id: Quick-Start
-slug: /Quick-Start
 ---
 
 This page is optimized for first-time setup.

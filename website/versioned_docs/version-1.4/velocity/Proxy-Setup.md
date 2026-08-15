@@ -1,7 +1,5 @@
 ---
 title: Proxy Setup
-id: Proxy-Setup
-slug: /Proxy-Setup
 ---
 
 This page explains how to set up the **DoubleDoors Velocity plugin** for multi-server environments with Geyser/Floodgate.
@@ -219,6 +217,6 @@ WHERE last_seen_epoch_ms &gt; UNIX_TIMESTAMP() * 1000 - 120000;
 
 ## See Also
 
-- [Installation](./Installation) - Bukkit/Spigot plugin setup
-- [Configuration](./Configuration) - Bukkit plugin config options
-- [Compatibility](./Compatibility) - Plugin compatibility matrix
+- [Installation](./Installation) - Velocity plugin setup
+- [Configuration](./Configuration) - Velocity plugin config options
+- [Compatibility](./Compatibility) - Velocity compatibility matrix

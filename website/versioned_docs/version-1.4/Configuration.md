@@ -1,5 +1,4 @@
 ---
-unlisted: true
 title: Configuration
 id: Configuration
 slug: /Configuration

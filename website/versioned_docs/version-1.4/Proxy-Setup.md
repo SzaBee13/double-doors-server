@@ -1,5 +1,4 @@
 ---
-unlisted: true
 title: Proxy Setup
 id: Proxy-Setup
 slug: /Proxy-Setup

@@ -1,7 +1,5 @@
 ---
 title: Compatibility
-id: Compatibility
-slug: /Compatibility
 ---
 
 ## Platform

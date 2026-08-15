@@ -1,7 +1,5 @@
 ---
 title: Configuration
-id: Configuration
-slug: /Configuration
 ---
 
 Main file: `plugins/DoubleDoors/config.yml`

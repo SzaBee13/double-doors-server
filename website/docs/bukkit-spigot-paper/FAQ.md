@@ -1,7 +1,5 @@
 ---
 title: FAQ
-id: FAQ
-slug: /FAQ
 ---
 
 ## Does this support Paper only, or Spigot too?
@@ -65,7 +63,7 @@ DoubleDoors can optionally send anonymous usage metrics via FastStats (e.g., whi
 
 ## Can I use the plugin API from other plugins?
 
-Yes. DoubleDoors exposes a `DoubleDoorsAPI` interface for third-party integration. See [API](./API) for details.
+Yes. DoubleDoors exposes a `DoubleDoorsAPI` interface for third-party integration. See [API](../concepts/API) for details.
 
 ## How do I troubleshoot linked doors not syncing?
 

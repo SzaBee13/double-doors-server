@@ -1,5 +1,4 @@
 ---
-unlisted: true
 title: Commands and Permissions
 id: Commands-and-Permissions
 slug: /Commands-and-Permissions

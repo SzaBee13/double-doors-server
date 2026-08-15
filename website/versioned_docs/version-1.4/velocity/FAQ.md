@@ -1,0 +1,23 @@
+---
+title: Velocity FAQ
+---
+
+## Do I need the Velocity plugin for one proxy?
+
+No. A single proxy or Java-only network can use the Bukkit plugin alone. Install the Velocity plugin when proxy presence reporting or multi-proxy monitoring is needed.
+
+## Does it synchronize doors between backend servers?
+
+No. The Velocity plugin records proxy presence. Door state synchronization happens within each backend server through the Bukkit plugin.
+
+## Is a database required?
+
+Only for proxy heartbeat reporting. SQLite is suitable for one proxy; MySQL is intended for multiple proxies sharing one database.
+
+## Why is heartbeat reporting disabled?
+
+Heartbeat reporting requires `sql.enabled=true` and detection of Geyser or Floodgate on the proxy. Check the proxy log and the SQL connection settings.
+
+## Can multiple proxies use SQLite?
+
+No. Each proxy needs its own SQLite file. Use a shared MySQL database when proxies need to publish presence to the same store.

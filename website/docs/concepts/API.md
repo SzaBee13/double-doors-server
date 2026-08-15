@@ -1,7 +1,5 @@
 ---
 title: API
-id: API
-slug: /API
 ---
 
 DoubleDoors exposes a public API for third-party plugins to integrate with linked-door behavior.
@@ -69,5 +67,5 @@ Custom blocks are not subject to the `enableDoors`, `enableFenceGates`, or `enab
 
 ## See Also
 
-- [Commands and Permissions](./Commands-and-Permissions) - Permission nodes used by the API
+- [Commands and Permissions](../bukkit-spigot-paper/Commands-and-Permissions) - Permission nodes used by the API
 - [How It Works](./How-It-Works) - Underlying event model and matching logic

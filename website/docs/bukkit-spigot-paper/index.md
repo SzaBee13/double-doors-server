@@ -7,14 +7,14 @@ The DoubleDoors server plugin runs on Bukkit-compatible platforms, including Spi
 
 ## Start Here
 
-- [Installation](../Installation)
-- [Quick Start](../Quick-Start)
-- [Configuration](../Configuration)
-- [Commands and Permissions](../Commands-and-Permissions)
+- [Installation](./Installation)
+- [Quick Start](./Quick-Start)
+- [Configuration](./Configuration)
+- [Commands and Permissions](./Commands-and-Permissions)
 
 ## Operations
 
-- [Compatibility](../Compatibility)
-- [Admin Runbook](../Admin-Runbook)
-- [Troubleshooting](../Troubleshooting)
-- [FAQ](../FAQ)
+- [Compatibility](./Compatibility)
+- [Admin Runbook](./Admin-Runbook)
+- [Troubleshooting](./Troubleshooting)
+- [FAQ](./FAQ)

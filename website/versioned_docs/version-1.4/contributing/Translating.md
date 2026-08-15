@@ -1,7 +1,5 @@
 ---
 title: Translating
-id: Translating
-slug: /TRANSLATING
 ---
 
 Thank you for helping translate **DoubleDoors** for your language community.

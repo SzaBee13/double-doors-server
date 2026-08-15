@@ -1,5 +1,4 @@
 ---
-unlisted: true
 title: How It Works
 id: How-It-Works
 slug: /How-It-Works

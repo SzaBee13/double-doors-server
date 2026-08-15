@@ -37,7 +37,15 @@ const sidebars: SidebarsConfig = {
       label: 'Velocity',
       collapsible: true,
       collapsed: true,
-      items: ['velocity/index', 'velocity/Proxy-Setup'],
+      items: [
+        'velocity/index',
+        'velocity/Installation',
+        'velocity/Proxy-Setup',
+        'velocity/Configuration',
+        'velocity/Compatibility',
+        'velocity/Troubleshooting',
+        'velocity/FAQ',
+      ],
     },
     {
       type: 'category',
