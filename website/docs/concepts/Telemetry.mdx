@@ -1,0 +1,75 @@
+---
+title: Telemetry
+id: concepts-telemetry
+slug: /concepts/telemetry
+---
+
+DoubleDoors uses anonymous telemetry to understand how the plugin is configured and to improve reliability. This page explains what is collected, where it is published, and how it is used.
+
+## Your choice
+
+Telemetry is enabled by default, but you can opt out at any time.
+
+- Bukkit: Follow the [Analytics configuration](../bukkit/configuration/configuration#analytics) section in `config.yml`.
+- Velocity: 
+
+All telemetry is anonymous and publicly available on the [DoubleDoors FastStats page](https://faststats.dev/project/double-doors-server/minecraft-plugin).
+
+## How data is collected
+
+The plugin collects configuration and runtime information from the server where DoubleDoors is installed. Configuration values are reported as metrics rather than as a copy of `config.yml`. Error reports are sent when the plugin captures a crash or error and include the diagnostic context needed to investigate it.
+
+## How data is stored and used
+
+FastStats stores the submitted metrics and makes the aggregated project data public. The data is used to understand feature adoption, monitor compatibility across server platforms and versions, measure continued usage, and investigate plugin errors. It is not intended to identify individual players or server owners.
+
+## Collected data
+
+### Custom data specific to DoubleDoors
+
+- The language set in the config
+- How data is stored: YAML, SQLite, MySQL, or unknown
+- Whether auto-close is enabled
+- Whether the knocking feature is enabled
+- Whether the update checker is enabled and whether `PluginUpdater` is installed
+- Whether debug mode is enabled
+- The recursive opening distance, or `0` when the feature is disabled
+
+### Error reports
+
+- Crash and error details, including stack traces
+- Basic server software, Minecraft version, and plugin version information included with the report
+
+Error reports are used to diagnose failures and prioritize fixes.
+
+### Standard FastStats data
+
+FastStats also collects standard project metrics by default:
+
+- Number of players online
+- Number of servers running the plugin
+- Minecraft and server version
+- Server software, such as Paper or Spigot
+- Plugin version
+- Continued plugin usage over time (retention)
+- Download numbers from Modrinth, CurseForge, Hangar, Spigot, and other distribution platforms
+
+### Other technical information
+
+Telemetry may also include:
+
+- Java version
+- Operating system and architecture
+- Whether the server is in online mode
+
+## Opt out
+
+Set the following option in `plugins/DoubleDoors/config.yml`:
+
+```yaml
+enableAnonymousTracking: false
+```
+
+Then run `/doubledoors reload` or restart the server. You can re-enable telemetry at any time by setting the option back to `true`.
+
+For the related configuration reference, see [Analytics](../bukkit/configuration/configuration#analytics). For the public data, visit [FastStats](https://faststats.dev/project/double-doors-server/minecraft-plugin).

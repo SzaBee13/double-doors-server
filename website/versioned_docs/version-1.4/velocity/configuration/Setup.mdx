@@ -1,0 +1,109 @@
+---
+title: Setup
+id: velocity-setup
+slug: /velocity/configuration/setup
+---
+
+This page explains how to configure the DoubleDoors Velocity plugin for proxy presence reporting in single- and multi-proxy networks.
+
+## What the proxy plugin does
+
+The Velocity plugin writes a heartbeat for this proxy when SQL reporting is enabled and Geyser or Floodgate is detected. Backend Bukkit servers can use the shared table to monitor proxy availability.
+
+It does not synchronize door blocks between separate backend servers. Install the Bukkit plugin on every backend where DoubleDoors behavior is required.
+
+## Prerequisites
+
+- Velocity 3.4.0 or newer
+- Java 21 or newer
+- Geyser-Velocity or Floodgate when heartbeat reporting is required
+- SQLite for a single proxy or testing, or MySQL for multiple proxies
+
+## Installation
+
+1. Download `doubledoors-velocity-<version>.jar` from the [releases page](https://github.com/SzaBee13/double-doors-server/releases).
+2. Place the jar in the Velocity `plugins/` directory.
+3. Start the proxy once to generate `plugins/DoubleDoors/proxy-config.properties`.
+4. Edit the properties file and restart Velocity.
+
+## SQLite setup
+
+SQLite is appropriate for one proxy or local testing:
+
+```properties
+sql.enabled=true
+sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+sql.username=
+sql.password=
+sql.proxyId=velocity-main
+sql.heartbeatSeconds=30
+```
+
+The SQLite file is created relative to the proxy working directory. Ensure `plugins/DoubleDoors/` is writable by the proxy process.
+
+## MySQL setup
+
+Use one shared MySQL database when multiple proxies publish presence:
+
+```sql
+CREATE DATABASE IF NOT EXISTS doubledoors;
+CREATE USER IF NOT EXISTS 'dd_user'@'%' IDENTIFIED BY 'replace-this-password';
+GRANT SELECT, INSERT, UPDATE, CREATE ON doubledoors.* TO 'dd_user'@'%';
+FLUSH PRIVILEGES;
+```
+
+Configure each proxy with the same database and a different `sql.proxyId`:
+
+```properties
+sql.enabled=true
+sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
+sql.username=dd_user
+sql.password=replace-this-password
+sql.proxyId=velocity-us-east
+sql.heartbeatSeconds=30
+```
+
+Use a restricted database account and replace the example password. Do not commit real credentials to a configuration file or documentation.
+
+## Configuration options
+
+| Option | Default | Description |
+| --- | --- | --- |
+| `sql.enabled` | `false` | Enables heartbeat reporting when Geyser or Floodgate is detected. |
+| `sql.jdbcUrl` | `jdbc:sqlite:plugins/DoubleDoors/doubledoors.db` | SQLite or MySQL JDBC URL. |
+| `sql.username` | empty | Database username; leave empty for SQLite. |
+| `sql.password` | empty | Database password; leave empty for SQLite. |
+| `sql.proxyId` | `velocity-main` | Unique proxy identifier. |
+| `sql.heartbeatSeconds` | `30` | Heartbeat interval in seconds; minimum 5. |
+
+Restart Velocity after changing the file. See [Configuration](./configuration) for the compact reference.
+
+## Presence table
+
+The plugin creates this table automatically:
+
+```sql
+CREATE TABLE IF NOT EXISTS dd_proxy_presence (
+  proxy_id VARCHAR(128) PRIMARY KEY,
+  platform VARCHAR(32) NOT NULL,
+  last_seen_epoch_ms BIGINT NOT NULL
+);
+```
+
+To find proxies that reported in the last two minutes on MySQL:
+
+```sql
+SELECT proxy_id, platform, last_seen_epoch_ms
+FROM dd_proxy_presence
+WHERE last_seen_epoch_ms > UNIX_TIMESTAMP() * 1000 - 120000;
+```
+
+## Troubleshooting checklist
+
+- Confirm Geyser-Velocity or Floodgate loads on the same proxy before DoubleDoors.
+- Confirm `sql.enabled=true` and that every proxy has a unique `sql.proxyId`.
+- Check the JDBC hostname, port, database name, username, and permissions.
+- Check that the SQLite directory is writable.
+- Read the proxy log for `DoubleDoorsVelocity could not initialize SQL heartbeat`.
+
+See [Installation](../getting-started/installation), [Quick Start](../getting-started/quick-start), and [Troubleshooting](../support/troubleshooting).

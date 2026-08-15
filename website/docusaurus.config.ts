@@ -95,7 +95,7 @@ const config: Config = {
           title: 'Documentation',
           items: [
             {label: 'Latest docs', to: '/docs/1.4'},
-            {label: 'Installation', to: '/docs/1.4/bukkit-spigot-paper/Installation'},
+            {label: 'Installation', to: '/docs/1.4/bukkit/getting-started/installation'},
           ],
         },
         {

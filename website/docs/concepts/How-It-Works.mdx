@@ -1,0 +1,121 @@
+---
+title: How It Works
+id: concepts-how-it-works
+slug: /concepts/how-it-works
+---
+## Event Model
+
+The plugin listens at MONITOR priority with ignoreCancelled true for:
+
+- PlayerInteractEvent
+- BlockRedstoneEvent
+- EntityInteractEvent (villager open path)
+- EntityChangeBlockEvent (villager close path)
+- GenericGameEvent (BLOCK_CLOSE / BLOCK_OPEN for villagers on Paper 1.21+)
+
+## Interaction Filtering
+
+Before processing a player interaction, the plugin applies several filters:
+
+- **Hand slot**: Only main-hand interactions are processed; off-hand interactions are ignored.
+- **Sneaking**: Players who are sneaking (crouching) do not trigger linked behavior, preventing accidental linked-opening when placing blocks or interacting with items on doors.
+- **Permission**: The player must have `doubledoors.use`.
+- **Player preference**: The player must not have disabled the behavior via `/doubledoors toggle`.
+- **Type preference**: The specific block type (doors, gates, trapdoors) must be enabled in both config and player preferences.
+- **Location filter**: The block location must pass active location filters.
+- **Interaction cooldown**: Repeated clicks on the same block within the cooldown window are suppressed.
+
+## Why Delays Exist
+
+At MONITOR priority, reading block state immediately can capture pre-final state.
+To mirror the final vanilla state safely:
+
+- Player path uses next tick scheduling (1 tick + optional animation sync delay).
+- Redstone path uses 1 tick delay + optional animation sync delay.
+- Villager path uses 2 tick delay + optional animation sync delay.
+
+The `animationSyncExtraDelayTicks` config option adds extra ticks to all paths if partner doors appear out of sync due to client animation timing.
+
+## Door Partner Matching
+
+For standard double doors, partner detection requires:
+
+- Same material
+- Same facing direction
+- Opposite hinge
+- Side-by-side left or right
+
+Upper-half clicks are normalized to lower-half door blocks before matching.
+
+### Corner Door Fallback
+
+When a standard mirror partner is not found, the plugin searches all 8 adjacent blocks (including diagonals) for a corner partner:
+
+- Same material
+- Perpendicular facing direction (e.g., one door faces NORTH, the other faces EAST)
+
+This enables linked behavior for doors arranged at right angles to each other.
+
+## Recursive Group Sync
+
+For fence gates and trapdoors, connected same-material blocks are found with BFS using 6-direction adjacency:
+
+- +X, -X, +Y, -Y, +Z, -Z
+
+Depth is limited by `recursiveOpeningMaxBlocksDistance`.
+
+When fence gates are synced, the facing direction of the origin gate is propagated to all connected gates, ensuring they all face the same direction.
+
+## Redstone Behavior
+
+### Neighbor Scanning
+
+When a redstone event fires, the plugin scans not only the source block but also all 6 immediate neighbors for openable blocks. This handles cases where the redstone change is reported on a lever or wire rather than on the door itself.
+
+### Redstone-Powered Skip
+
+When closing blocks (either via auto-close or redstone-off), blocks that are still directly or indirectly powered by redstone are skipped. This prevents linked closing from fighting with active redstone circuits.
+
+## Auto-Close Behavior
+
+When `enableAutoClose` is true, player-triggered linked opens will automatically close after `autoCloseDelaySeconds`. Redstone-powered blocks are skipped when auto-close fires.
+
+## Player Preference Layer
+
+Each player can toggle:
+
+- Global linked behavior
+- Doors only
+- Fence gates only
+- Trapdoors only
+- Auto-close preference
+- Knock-sound preference
+
+Data is cached in memory and persisted asynchronously to players.yml (or SQL when enabled) after each mutation.
+
+## Server-Wide Layer
+
+The `serverWideEnabled` config key acts as a global runtime switch.
+When false, handlers return early.
+
+## Protection Check Layer
+
+When a mirrored partner door is about to be toggled by a player, protection checks are attempted via reflection for:
+
+- **GriefPrevention**: Claim build permission check (Access trust by default, Build trust if configured).
+- **WorldGuard**: Build permission, USE flag, and custom state-flag checks with priority-based resolution.
+- **Location filters**: Exact coordinate-based whitelist/blacklist.
+- **WorldGuard region filters**: Region-based whitelist/blacklist.
+
+If a protection check cannot be resolved, logic fails open to avoid breaking gameplay.
+
+## Cache Invalidation
+
+The mirror-lookup cache is automatically invalidated on:
+
+- BlockPlaceEvent
+- BlockBreakEvent
+- EntityExplodeEvent
+- BlockExplodeEvent
+
+A 3x3x2 region around changed blocks is cleared to prevent stale cache entries after world modifications.
