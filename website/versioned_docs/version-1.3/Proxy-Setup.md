@@ -78,8 +78,8 @@ For multiple proxies sharing a central MySQL database:
 **Database Setup**:
 ```sql
 CREATE DATABASE IF NOT EXISTS doubledoors;
-CREATE USER IF NOT EXISTS 'dd_user'@'localhost' IDENTIFIED BY 'dd_password';
-GRANT ALL PRIVILEGES ON doubledoors.* TO 'dd_user'@'localhost';
+CREATE USER IF NOT EXISTS 'dd_user'@'proxy-private.example' IDENTIFIED BY 'dd_password';
+GRANT SELECT, INSERT, UPDATE, CREATE, ALTER, INDEX ON doubledoors.* TO 'dd_user'@'proxy-private.example';
 FLUSH PRIVILEGES;
 ```
 
@@ -213,8 +213,13 @@ Backend DoubleDoors plugins can query `dd_proxy_presence` table to:
 
 ```sql
 -- Find online proxies (heartbeat in last 2 minutes)
-SELECT proxy_id, platform FROM dd_proxy_presence 
-WHERE last_seen_epoch_ms &gt; UNIX_TIMESTAMP() * 1000 - 120000;
+-- MySQL
+SELECT proxy_id, platform FROM dd_proxy_presence
+WHERE last_seen_epoch_ms > UNIX_TIMESTAMP() * 1000 - 120000;
+
+-- SQLite
+SELECT proxy_id, platform FROM dd_proxy_presence
+WHERE last_seen_epoch_ms > (strftime('%s', 'now') * 1000) - 120000;
 ```
 
 ## See Also

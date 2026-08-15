@@ -32,7 +32,7 @@ SQLite is appropriate for one proxy or local testing:
 
 ```properties
 sql.enabled=true
-sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+sql.jdbcUrl=jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db
 sql.username=
 sql.password=
 sql.proxyId=velocity-main
@@ -47,8 +47,8 @@ Use one shared MySQL database when multiple proxies publish presence:
 
 ```sql
 CREATE DATABASE IF NOT EXISTS doubledoors;
-CREATE USER IF NOT EXISTS 'dd_user'@'%' IDENTIFIED BY 'replace-this-password';
-GRANT SELECT, INSERT, UPDATE, CREATE ON doubledoors.* TO 'dd_user'@'%';
+CREATE USER IF NOT EXISTS 'dd_user'@'proxy-private.example' IDENTIFIED BY 'replace-this-password';
+GRANT SELECT, INSERT, UPDATE, CREATE, ALTER, INDEX ON doubledoors.* TO 'dd_user'@'proxy-private.example';
 FLUSH PRIVILEGES;
 ```
 
@@ -86,7 +86,9 @@ The plugin creates this table automatically:
 CREATE TABLE IF NOT EXISTS dd_proxy_presence (
   proxy_id VARCHAR(128) PRIMARY KEY,
   platform VARCHAR(32) NOT NULL,
-  last_seen_epoch_ms BIGINT NOT NULL
+  last_seen_epoch_ms BIGINT NOT NULL,
+  has_geyser BOOLEAN NOT NULL DEFAULT FALSE,
+  has_floodgate BOOLEAN NOT NULL DEFAULT FALSE
 );
 ```
 

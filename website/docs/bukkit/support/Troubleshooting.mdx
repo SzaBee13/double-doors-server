@@ -45,8 +45,10 @@ Likely permission or preference mismatch:
 
 1. Confirm GriefPrevention is loaded and enabled.
 2. Test in and outside claims.
-3. Temporarily raise plugin logging detail if needed.
-4. Report exact server versions and plugin versions if reproducible.
+3. Set `debug: true` in `plugins/DoubleDoors/config.yml`.
+4. Run `/doubledoors reload`, reproduce the issue, and capture the relevant console output.
+5. Set `debug: false` and run `/doubledoors reload` again.
+6. Report exact server versions and plugin versions if reproducible.
 
 ## Safe Recovery Steps
 

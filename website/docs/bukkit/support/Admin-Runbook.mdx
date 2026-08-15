@@ -49,5 +49,7 @@ If door behavior causes disruption:
 
 ## Backup and Recovery
 
-- Back up plugins/DoubleDoors/config.yml and plugins/DoubleDoors/players.yml.
-- During recovery, restore known-good files and run /doubledoors reload.
+- Always back up `plugins/DoubleDoors/config.yml`.
+- When `sql.enabled: true`, back up and restore the database identified by `sql.jdbcUrl`; it is authoritative for player preferences and claim settings. `players.yml` is not authoritative in SQL mode.
+- When SQL storage is disabled, back up and restore `plugins/DoubleDoors/players.yml`.
+- During recovery, restore the authoritative data source and run `/doubledoors reload`.
