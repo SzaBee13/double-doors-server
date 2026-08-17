@@ -687,4 +687,9 @@ html[data-theme='dark'] .dd-feature {
   .dd-release__header {
     flex-direction: column;
   }
+
+  .dd-release__links {
+    flex-wrap: wrap;
+    width: 100%;
+  }
 }

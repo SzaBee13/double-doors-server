@@ -172,7 +172,7 @@
         "themes": {
           "general": {
             "formats": {
-              "image/webp": {
+              "image/png": {
                 "54x59": {
                   "remote": "https://static.wikia.nocookie.net/minecraft_gamepedia/images/2/24/Bukkit_icon.png"
                 }

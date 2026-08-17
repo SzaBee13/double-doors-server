@@ -23,7 +23,7 @@ slug: /bukkit/support/compatibility
 
 - Optional reflective integration.
 - Linked partner door checks claim build permission before toggling.
-- If reflection fails or API signatures differ, behavior fails open (no hard break).
+- If reflection fails or API signatures differ while GriefPrevention is installed, the linked action is denied and a compatibility error is logged. If GriefPrevention is absent, the integration is bypassed.
 - Per-claim villager blocking: admins can toggle villager linked-door access per claim using `/doubledoors grief villagers`.
 - Config option `griefprevention.requireBuildForLinkedDoors` controls whether Build trust (true) or Access trust (false) is required.
 
@@ -34,7 +34,7 @@ slug: /bukkit/support/compatibility
 - **USE flag check**: When `worldGuardRespectUseFlag` is true, linked door actions require the WorldGuard USE flag to be set to `allow`.
 - **Custom state-flag**: A configurable flag name (default `double-doors-allow`) can be set per-region to `allow` or `deny` DoubleDoors behavior. Resolved with priority-based flag resolution when multiple regions overlap.
 - **Region blacklist/whitelist**: `worldGuardRegionFilter.mode` controls which WorldGuard regions are subject to DoubleDoors linking. Region IDs are collected via WorldGuard's `getApplicableRegions()` API.
-- If reflection fails or API signatures differ, behavior fails open (no hard break).
+- If reflection fails or API signatures differ while WorldGuard is installed, the linked action is denied and a compatibility error is logged. If WorldGuard is absent, the integration is bypassed.
 
 ## Bedrock Bridge
 

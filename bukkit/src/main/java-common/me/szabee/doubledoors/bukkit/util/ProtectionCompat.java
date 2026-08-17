@@ -28,8 +28,8 @@ public final class ProtectionCompat {
   /**
    * Checks whether a player may toggle a linked block according to protection rules.
    *
-   * <p>Currently integrates with GriefPrevention when installed. If integration cannot
-   * be resolved, the check fails open to avoid breaking door interactions.</p>
+   * <p>Installed protection integrations fail closed when their checks cannot be
+   * resolved. Absent integrations are bypassed.</p>
    *
    * @param plugin the plugin instance
    * @param player the interacting player
@@ -71,44 +71,47 @@ public final class ProtectionCompat {
     if (griefPrevention != null && griefPrevention.isEnabled()) {
       try {
         Object dataStore = getDataStore(griefPrevention);
-        if (dataStore != null) {
-          Object claim = findClaimAt(dataStore, linkedBlock);
-          if (claim != null) {
-            Boolean checkPermissionResult = tryCheckPermission(
+        if (dataStore == null) {
+          plugin.getLogger().warning("GriefPrevention compatibility check failed: dataStore is unavailable.");
+          return "griefprevention_unresolved";
+        }
+        Object claim = findClaimAt(dataStore, linkedBlock);
+        if (claim != null) {
+          Boolean checkPermissionResult = tryCheckPermission(
+            claim,
+            player,
+            "Build",
+            "Access",
+            "Inventory"
+          );
+          if (checkPermissionResult == null) {
+            plugin.getLogger().warning("GriefPrevention compatibility check failed: permission API is unavailable.");
+            return "griefprevention_unresolved";
+          }
+          if (!checkPermissionResult) {
+            return "griefprevention_permission_denied";
+          }
+
+          if (plugin.getPluginConfig().isGriefPreventionRequireBuildForLinkedDoors()) {
+            Boolean allowBuildResult = tryAllowBuild(
               claim,
               player,
-              "Build",
-              "Access",
-              "Inventory"
+              linkedBlock.getType()
             );
-            if (checkPermissionResult != null && !checkPermissionResult) {
-              return "griefprevention_permission_denied";
+            if (allowBuildResult == null) {
+              plugin.getLogger().warning("GriefPrevention compatibility check failed: build API is unavailable.");
+              return "griefprevention_unresolved";
             }
-
-            if (
-              plugin
-                .getPluginConfig()
-                .isGriefPreventionRequireBuildForLinkedDoors()
-            ) {
-              Boolean allowBuildResult = tryAllowBuild(
-                claim,
-                player,
-                linkedBlock.getType()
-              );
-              if (allowBuildResult != null && !allowBuildResult) {
-                return "griefprevention_build_denied";
-              }
+            if (!allowBuildResult) {
+              return "griefprevention_build_denied";
             }
           }
         }
       } catch (ReflectiveOperationException ex) {
         plugin
           .getLogger()
-          .fine(
-            "GriefPrevention compatibility check skipped: %s".formatted(
-              ex.getMessage()
-            )
-          );
+          .warning("GriefPrevention compatibility check failed: " + ex.getMessage());
+        return "griefprevention_unresolved";
       }
     }
 
@@ -493,10 +496,10 @@ public final class ProtectionCompat {
           return "worldguard_build_denied";
         }
       } catch (ReflectiveOperationException ex) {
-        // Fail open to keep compatibility resilient.
         plugin
           .getLogger()
-          .fine("WorldGuard build-permission check failed: " + ex.getMessage());
+          .warning("WorldGuard build-permission check failed: " + ex.getMessage());
+        return "worldguard_unresolved";
       }
     }
 
@@ -510,6 +513,9 @@ public final class ProtectionCompat {
     String customFlag = config.getWorldGuardCustomFlag();
     if (!customFlag.isEmpty()) {
       String state = resolveWorldGuardCustomFlagState(block, customFlag);
+      if ("unresolved".equals(state)) {
+        return "worldguard_unresolved";
+      }
       if ("deny".equals(state)) {
         return "worldguard_custom_flag_deny";
       }
@@ -581,7 +587,7 @@ public final class ProtectionCompat {
         break;
       }
       if (testState == null) {
-        return true;
+        return false;
       }
 
       Object result = testState.invoke(
@@ -590,9 +596,9 @@ public final class ProtectionCompat {
         localPlayer,
         stateFlags
       );
-      return !(result instanceof Boolean allowed) || allowed;
+      return result instanceof Boolean allowed && allowed;
     } catch (ReflectiveOperationException | IllegalArgumentException ex) {
-      return true;
+      return false;
     }
   }
 
@@ -659,7 +665,7 @@ public final class ProtectionCompat {
         }
       }
     } catch (ReflectiveOperationException ignored) {
-      // Fail open.
+      return "unresolved";
     }
     return "";
   }

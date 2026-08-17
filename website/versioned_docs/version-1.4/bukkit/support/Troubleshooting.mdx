@@ -52,6 +52,6 @@ Likely permission or preference mismatch:
 
 ## Safe Recovery Steps
 
-1. Run /doubledoors server-toggle to disable behavior server-wide.
+1. Set `serverWideEnabled: false` in `plugins/DoubleDoors/config.yml` and run `/doubledoors reload` to disable behavior server-wide. Alternatively, verify the current state before using `/doubledoors server-toggle`.
 2. Investigate with minimal plugin set.
 3. Re-enable with /doubledoors server-toggle after validation.

@@ -38,4 +38,4 @@ Work in `core/src/main/resources/lang/`:
 
 ## See also
 
-- `website/docs/TRANSLATING.md`
+- `website/docs/contributing/Translating.mdx`

@@ -32,14 +32,14 @@ SQLite is appropriate for one proxy or local testing:
 
 ```properties
 sql.enabled=true
-sql.jdbcUrl=jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db
+sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
 sql.username=
 sql.password=
 sql.proxyId=velocity-main
 sql.heartbeatSeconds=30
 ```
 
-The SQLite file is created relative to the proxy working directory. Ensure `plugins/DoubleDoors/` is writable by the proxy process.
+Relative SQLite paths resolve from the proxy working directory. Use an absolute JDBC path when Bukkit shares the heartbeat database, and use that same absolute path in the Bukkit configuration. Ensure the directory is writable by both processes.
 
 ## MySQL setup
 
@@ -70,7 +70,7 @@ Use a restricted database account and replace the example password. Do not commi
 | Option | Default | Description |
 | --- | --- | --- |
 | `sql.enabled` | `false` | Enables heartbeat reporting when Geyser or Floodgate is detected. |
-| `sql.jdbcUrl` | `jdbc:sqlite:plugins/DoubleDoors/doubledoors.db` | SQLite or MySQL JDBC URL. |
+| `sql.jdbcUrl` | `jdbc:sqlite:plugins/DoubleDoors/doubledoors.db` | SQLite or MySQL JDBC URL. Relative SQLite paths resolve from the proxy working directory; absolute paths resolve directly from the specified location. |
 | `sql.username` | empty | Database username; leave empty for SQLite. |
 | `sql.password` | empty | Database password; leave empty for SQLite. |
 | `sql.proxyId` | `velocity-main` | Unique proxy identifier. |

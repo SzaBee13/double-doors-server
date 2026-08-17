@@ -1,5 +1,4 @@
 import ReactMarkdown from 'react-markdown';
-import rehypeRaw from 'rehype-raw';
 import remarkGfm from 'remark-gfm';
 import type {Components} from 'react-markdown';
 import type {ReactNode} from 'react';
@@ -19,7 +18,6 @@ export default function ReleaseNotes({body}: {body: string}): ReactNode {
     <div className="dd-release-note">
       <ReactMarkdown
         remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeRaw]}
         components={MARKDOWN_COMPONENTS}
       >
         {body}

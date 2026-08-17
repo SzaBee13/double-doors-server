@@ -7,7 +7,7 @@
   "log.disabled": "DoubleDoors uitgeschakeld.",
   "cmd.usage.main.reload": "Configuratie, voorkeuren en vertalingen herladen.",
   "cmd.usage.main.toggle": "Gekoppelde deuren, hekken of valluiken omschakelen.",
-  "cmd.usage.main.knock_volume": "Klokgeluidsvolume instellen van 0 tot 1.",
+  "cmd.usage.main.knock_volume": "Klopgeluidsvolume instellen van 0 tot 1.",
   "cmd.usage.main.server_toggle": "Gedrag van gekoppelde deuren serverwijd omschakelen.",
   "cmd.usage.main.locale": "Je persoonlijke taal beheren.",
   "cmd.usage.main.grief": "Toegang van dorpelingen tot gekoppelde deuren in een claim blokkeren of toestaan.",

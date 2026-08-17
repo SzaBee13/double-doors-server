@@ -107,7 +107,7 @@ When a mirrored partner door is about to be toggled by a player, protection chec
 - **Location filters**: Exact coordinate-based whitelist/blacklist.
 - **WorldGuard region filters**: Region-based whitelist/blacklist.
 
-If a protection check cannot be resolved, logic fails open to avoid breaking gameplay.
+If GriefPrevention or WorldGuard is installed but a protection check cannot be resolved, the linked partner update is denied and an integration error is logged. An absent integration is bypassed normally.
 
 ## Cache Invalidation
 
