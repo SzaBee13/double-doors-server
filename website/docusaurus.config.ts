@@ -37,6 +37,7 @@ const config: Config = {
           editUrl: 'https://github.com/SzaBee13/double-doors-server/edit/dev/website/',
         },
         blog: false,
+        sitemap: {},
         theme: {
           customCss: './src/css/custom.css',
         },
