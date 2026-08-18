@@ -59,7 +59,7 @@
           "link": {
             "type": "generated-index"
           },
-          "items": ["velocity/getting-started/velocity-getting-started-installation", "velocity-quick-start"]
+          "items": ["velocity/getting-started/velocity-getting-started-installation", "velocity/getting-started/velocity-quick-start"]
         },
         {
           "type": "category",
@@ -67,7 +67,7 @@
           "link": {
             "type": "generated-index"
           },
-          "items": ["velocity-support-compatibility", "velocity-support-troubleshooting", "velocity-support-faq"]
+          "items": ["velocity/support/velocity-support-compatibility", "velocity/support/velocity-support-troubleshooting", "velocity/support/velocity-support-faq"]
         }
       ]
     },

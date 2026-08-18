@@ -77,7 +77,7 @@ const sidebars: SidebarsConfig = {
           },
           items: [
             'velocity/getting-started/velocity-getting-started-installation',
-            'velocity-quick-start',
+            'velocity/getting-started/velocity-quick-start',
           ],
         },
         {
@@ -87,9 +87,9 @@ const sidebars: SidebarsConfig = {
             type: 'generated-index',
           },
           items: [
-            'velocity-support-compatibility',
-            'velocity-support-troubleshooting',
-            'velocity-support-faq',
+            'velocity/support/velocity-support-compatibility',
+            'velocity/support/velocity-support-troubleshooting',
+            'velocity/support/velocity-support-faq',
           ],
         },
       ],
