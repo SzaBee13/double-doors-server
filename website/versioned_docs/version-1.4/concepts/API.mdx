@@ -1,0 +1,72 @@
+---
+title: API
+id: concepts-api
+slug: /concepts/api
+---
+DoubleDoors exposes a public API for third-party plugins to integrate with linked-door behavior.
+
+## Accessing the API
+
+Get the API instance from the DoubleDoors plugin:
+
+```java
+DoubleDoors plugin = (DoubleDoors) Bukkit.getPluginManager().getPlugin("DoubleDoors");
+DoubleDoorsAPI api = plugin.getApi();
+```
+
+## API Methods
+
+### isDoubleBehaviorEnabled(Player)
+
+Returns whether linked-door behavior is available to a player. Checks server-wide enable, player preference, and `doubledoors.use` permission.
+
+```java
+boolean enabled = api.isDoubleBehaviorEnabled(player);
+```
+
+### triggerLinkedOpen(Block, Player)
+
+Programmatically triggers linked open/close behavior for all blocks connected to the given origin block. Pass `null` as the actor for environmental triggers (e.g., redstone, villagers).
+
+For doors, toggles the mirrored partner (or corner partner as fallback). For gates and trapdoors, toggles the entire BFS connected set.
+
+Protection checks (GriefPrevention, WorldGuard, location filters) are applied when a non-null actor is provided.
+
+Returns `true` if at least one linked block was toggled.
+
+```java
+boolean changed = api.triggerLinkedOpen(block, player);
+// or for environmental triggers:
+boolean changed = api.triggerLinkedOpen(block, null);
+```
+
+### registerCustomOpenableBlock(Material)
+
+Registers a Bukkit material as a custom openable block type. Registered materials participate in linked behavior for right-click interactions and recursive BFS grouping. This allows other plugins to add custom blocks (e.g., from mod-like addons) to DoubleDoors linking.
+
+```java
+api.registerCustomOpenableBlock(Material.CHEST); // example only
+```
+
+### unregisterCustomOpenableBlock(Material)
+
+Removes a previously registered custom material from the openable block registry.
+
+```java
+api.unregisterCustomOpenableBlock(Material.CHEST);
+```
+
+## Custom Openable Blocks
+
+Custom openable blocks are treated as openable blocks for:
+
+- Right-click interaction triggering linked behavior
+- Recursive BFS grouping (connected same-material blocks)
+- Type-specific player preference checks (uses the global preference toggle)
+
+Custom blocks are not subject to the `enableDoors`, `enableFenceGates`, or `enableTrapdoors` config toggles. They are controlled solely by registration and the player's global preference.
+
+## See Also
+
+- [Commands and Permissions](../bukkit/configuration/commands-and-permissions) - Permission nodes used by the API
+- [How It Works](./how-it-works) - Underlying event model and matching logic

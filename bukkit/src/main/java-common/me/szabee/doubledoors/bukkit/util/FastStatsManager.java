@@ -6,7 +6,9 @@ import dev.faststats.bukkit.BukkitMetrics;
 import dev.faststats.data.Metric;
 import java.util.Locale;
 import java.util.logging.Level;
+import me.szabee.doubledoors.bukkit.DoubleDoors;
 import me.szabee.doubledoors.bukkit.config.PluginConfig;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 /**
@@ -117,7 +119,37 @@ public final class FastStatsManager {
             ? config.getRecursiveOpeningMaxBlocksDistance()
             : 0
         )
+      )
+      .addMetric(
+        Metric.stringArray(
+          "per_player_locales",
+          () -> resolvePerPlayerLocales(config)
+        )
       );
+  }
+
+  private String[] resolvePerPlayerLocales(PluginConfig config) {
+    if (!config.isPerPlayerLocaleEnabled()) {
+      return new String[0];
+    }
+    DoubleDoors dd = (DoubleDoors) plugin;
+    if (dd.getPlayerPreferences() == null) {
+      return new String[0];
+    }
+    Player[] players = plugin
+      .getServer()
+      .getOnlinePlayers()
+      .toArray(new Player[0]);
+    String[] locales = new String[players.length];
+    for (int i = 0; i < players.length; i++) {
+      String locale = dd.getPlayerPreferences().getLocale(
+        players[i].getUniqueId()
+      );
+      locales[i] = locale != null && !locale.isBlank()
+        ? locale
+        : config.getLanguage();
+    }
+    return locales;
   }
 
   private static String resolveDataStorageType(PluginConfig config) {

@@ -1,0 +1,203 @@
+---
+title: Configuration
+id: velocity-configuration-configuration
+slug: /velocity/configuration/configuration
+---
+
+The Velocity plugin reads its settings from `plugins/DoubleDoors/proxy-config.properties`.
+
+This file configures proxy presence reporting and proxy-side FastStats telemetry. Door behavior itself is configured in the Bukkit plugin's `config.yml` on each backend server.
+
+## Configuration File
+
+The generated file contains the following settings:
+
+```properties
+# SQL heartbeat reporting
+sql.enabled=false
+
+# Anonymous FastStats telemetry
+enableAnonymousTracking=true
+
+# SQLite or MySQL JDBC URL
+sql.jdbcUrl=jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db
+sql.username=
+sql.password=
+
+# Unique proxy identity
+sql.proxyId=velocity-main
+
+# Heartbeat interval in seconds
+sql.heartbeatSeconds=30
+```
+
+After changing the file, restart Velocity. The plugin does not reload proxy configuration at runtime.
+
+## Telemetry
+
+### enableAnonymousTracking
+
+- Type: boolean
+- Default: `true`
+- Effect: Enables anonymous FastStats telemetry for the Velocity plugin.
+- Scope: This setting controls telemetry created by the proxy plugin. Configure the same option separately in the Bukkit plugin's `config.yml` if both plugins are installed.
+
+All submitted telemetry is anonymous and publicly available. See [Telemetry](../../concepts/telemetry) for the collected fields, how the data is used, and opt-out instructions.
+
+## SQL Heartbeat
+
+### sql.enabled
+
+- Type: boolean
+- Default: `false`
+- Effect: Enables proxy heartbeat reporting when Geyser-Velocity or Floodgate is detected.
+- Note: Setting this to `true` alone is not enough. The plugin also requires a detected Geyser or Floodgate proxy plugin and a working SQL dependency/database connection.
+
+### sql.jdbcUrl
+
+- Type: string
+- Default: `jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db`
+- Effect: JDBC connection URL for the heartbeat database.
+- Supported databases: SQLite and MySQL.
+- SQLite note: Use an absolute path when a Bukkit backend must read the same database. Relative paths create separate database files for separate processes and break shared heartbeat detection.
+
+SQLite example:
+
+```properties
+sql.jdbcUrl=jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db
+```
+
+MySQL example:
+
+```properties
+sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
+```
+
+### sql.username
+
+- Type: string
+- Default: empty
+- Effect: Database username.
+- SQLite: Leave empty.
+- MySQL: Set the account created for the DoubleDoors database.
+
+### sql.password
+
+- Type: string
+- Default: empty
+- Effect: Database password.
+- SQLite: Leave empty.
+- MySQL: Set the password for `sql.username`.
+- Security: Do not publish this value or commit real credentials to source control.
+
+### sql.proxyId
+
+- Type: string
+- Default: `velocity-main`
+- Effect: Identifies this proxy in the `dd_proxy_presence` table.
+- Requirement: Every proxy sharing a database must use a different value.
+- Fallback: Blank values are replaced with `velocity-main`; use an explicit unique value instead.
+
+Examples:
+
+```properties
+# US proxy
+sql.proxyId=velocity-us-east
+
+# EU proxy
+sql.proxyId=velocity-eu-west
+```
+
+### sql.heartbeatSeconds
+
+- Type: integer
+- Default: `30`
+- Minimum: `5`
+- Effect: Number of seconds between heartbeat writes after the first successful heartbeat.
+- Invalid values: Non-numeric values fall back to `30`; values below `5` are clamped to `5`.
+
+## Recommended Configurations
+
+### Single proxy with SQLite
+
+Use this for local testing or a network with one proxy:
+
+```properties
+sql.enabled=true
+enableAnonymousTracking=true
+sql.jdbcUrl=jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db
+sql.username=
+sql.password=
+sql.proxyId=velocity-main
+sql.heartbeatSeconds=30
+```
+
+### Multiple proxies with MySQL
+
+Point every proxy at the same MySQL database and use a unique `sql.proxyId` on each proxy:
+
+```properties
+sql.enabled=true
+enableAnonymousTracking=true
+sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
+sql.username=dd_user
+sql.password=replace-this-password
+sql.proxyId=velocity-us-east
+sql.heartbeatSeconds=30
+```
+
+The EU proxy would use the same connection settings with `sql.proxyId=velocity-eu-west`.
+
+## Database Schema
+
+The plugin creates the heartbeat table automatically:
+
+```sql
+CREATE TABLE IF NOT EXISTS dd_proxy_presence (
+  proxy_id VARCHAR(128) PRIMARY KEY,
+  platform VARCHAR(32) NOT NULL,
+  last_seen_epoch_ms BIGINT NOT NULL,
+  has_geyser BOOLEAN NOT NULL DEFAULT FALSE,
+  has_floodgate BOOLEAN NOT NULL DEFAULT FALSE
+);
+```
+
+Inspect the current proxy rows with:
+
+```sql
+SELECT proxy_id, platform, last_seen_epoch_ms, has_geyser, has_floodgate
+FROM dd_proxy_presence;
+```
+
+On MySQL, this query lists proxies that reported within the last two minutes:
+
+```sql
+SELECT proxy_id, platform, last_seen_epoch_ms, has_geyser, has_floodgate
+FROM dd_proxy_presence
+WHERE last_seen_epoch_ms > UNIX_TIMESTAMP() * 1000 - 120000;
+```
+
+The Velocity plugin writes presence data only. It does not synchronize door blocks between separate backend servers.
+
+## Dependencies and Startup
+
+When SQL is enabled, the proxy downloads and loads the required SQL libraries into its data directory. The plugin then checks for Geyser-Velocity or Floodgate before starting heartbeat reporting.
+
+Expected behavior:
+
+- SQL disabled: no database connection or heartbeat writes.
+- SQL enabled without Geyser/Floodgate: a notice is logged and heartbeat reporting remains disabled.
+- SQL enabled with Geyser/Floodgate: the schema is initialized and heartbeats begin after the first successful connection.
+- SQL initialization failure: the error is logged and heartbeat reporting remains disabled.
+
+## Troubleshooting
+
+- Check that `plugins/DoubleDoors/proxy-config.properties` is readable by Velocity.
+- Confirm `sql.enabled=true` when heartbeat reporting is expected.
+- Install Geyser-Velocity or Floodgate on the same proxy and ensure it loads before DoubleDoors.
+- Use an absolute SQLite path when sharing the database with Bukkit.
+- Verify the MySQL host, port, database, username, password, and permissions.
+- Ensure every proxy has a unique `sql.proxyId`.
+- Check for `DoubleDoorsVelocity could not initialize SQL heartbeat` in the proxy log.
+
+See [Setup](./setup) for installation and database provisioning, [Quick Start](../getting-started/quick-start) for a minimal walkthrough, and [Troubleshooting](../support/troubleshooting) for common failures.

@@ -11,7 +11,7 @@
   "cmd.usage.main.server_toggle": "Attiva o disattiva il comportamento delle porte collegate sull'intero server.",
   "cmd.usage.main.locale": "Gestisci la tua lingua personale.",
   "cmd.usage.main.grief": "Blocca o autorizza l'accesso degli abitanti alle porte collegate in una claim.",
-  "cmd.usage.main.debug": "Attiva o disattiva la modalita di debug.",
+  "cmd.usage.main.debug": "Attiva o disattiva la modalità di debug.",
   "cmd.usage.main.preview": "Anteprima del partner collegato del blocco puntato.",
   "cmd.no_permission": "Non hai il permesso per usare questo comando.",
   "cmd.reload.success": "Configurazione, preferenze e lingua di DoubleDoors ricaricati (attivo: %s).",

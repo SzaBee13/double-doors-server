@@ -80,7 +80,7 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 
 Edit `plugins/DoubleDoors/proxy-config.properties`
 
-For more, visit the [wiki](https://github.com/SzaBee13/double-doors-server/wiki/Proxy-Setup)
+For more, visit the [wiki](https://doubledoors.szabee.me/redirect?page=velocity-setup)
 
 ## Commands
 
@@ -89,7 +89,7 @@ For more, visit the [wiki](https://github.com/SzaBee13/double-doors-server/wiki/
 
 Alias: `dd`
 
-Check out more commands at the [wiki](https://github.com/SzaBee13/double-doors-server/wiki/Commands-and-Permissions)
+Check out more commands at the [wiki](https://doubledoors.szabee.me/redirect?page=bukkit-commands-permissions)
 
 ## Permissions
 
@@ -97,7 +97,7 @@ Check out more commands at the [wiki](https://github.com/SzaBee13/double-doors-s
 - `doubledoors.toggle` (default: `true`)
 - `doubledoors.reload` (default: `op`)
 
-Check out more permissions at the [wiki](https://github.com/SzaBee13/double-doors-server/wiki/Commands-and-Permissions)
+Check out more permissions at the [wiki](https://doubledoors.szabee.me/redirect?page=bukkit-commands-permissions)
 
 ## Config
 

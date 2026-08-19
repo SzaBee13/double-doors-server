@@ -1,0 +1,46 @@
+---
+title: Performance and Safety Notes
+id: concepts-performance-and-safety-notes
+slug: /concepts/performance-and-safety-notes
+---
+## Performance Characteristics
+
+- Double-door partner matching is constant-time with local neighbor checks.
+- Recursive group syncing is BFS bounded by max distance (1..32).
+- Most hot-path checks are early-return guards.
+- Mirror-lookup cache reduces repeated neighbor analysis for frequently toggled doors.
+
+## Cache System
+
+- A TTL-based cache stores mirrored door lookup results to avoid redundant neighbor analysis.
+- Default TTL is 1200ms, configurable via `lookupCacheTtlMillis` (range: 200-10000ms).
+- Cache is automatically invalidated on block place, block break, and explosion events (3x3x2 region around affected blocks).
+- An interaction cooldown (`interactionCooldownMillis`, default 250ms) prevents rapid repeated toggles of the same block.
+
+## Main-Thread Safety
+
+- Event handling and block updates happen on the server thread.
+- Disk writes for players.yml are scheduled asynchronously.
+- SQL storage operations use async scheduling via `SchedulerBridge`.
+- Folia: region-aware scheduling is used automatically when available.
+
+## State Consistency Strategy
+
+- State is read after scheduled delay to match final vanilla outcome.
+- For mirrored doors, upper and lower halves are explicitly synchronized.
+- For recursive sets, block data snapshots are taken before mutation to reduce ordering side effects.
+- When closing, redstone-powered blocks are skipped to avoid fighting active circuits.
+
+## Tuning Recommendations
+
+- Keep `recursiveOpeningMaxBlocksDistance` moderate for large builds.
+- Disable block families you do not use (doors, fence gates, trapdoors).
+- Use `serverWideEnabled` as an immediate kill switch for incident response.
+- If partner doors appear out of sync, increase `animationSyncExtraDelayTicks` (0-4).
+- Lower `lookupCacheTtlMillis` if doors are frequently modified by other plugins; raise it for heavily-used door areas.
+
+## Known Tradeoffs
+
+- Reflection-based GriefPrevention and WorldGuard hooks are resilient but can miss strict checks on unusual API changes.
+- If `enableRecursiveOpening` is false, linked state application is skipped in all paths under current implementation.
+- The duplicate-interaction debounce uses nanosecond timestamps for Bedrock/Geyser double-fire prevention; removing it may cause rapid duplicate toggles for Bedrock clients.

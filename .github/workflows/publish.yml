@@ -206,7 +206,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.bukkit_artifact.outputs.jar_path }}
           name: 'Double Doors Bukkit ${{ steps.version.outputs.version }}'
-          version: 'bukkit-v${{ steps.version.outputs.version }}'
+          version: 'bukkit-${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: ${{ steps.release_notes.outputs.body }}
           loaders: |
@@ -224,7 +224,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.paper_artifact.outputs.jar_path }}
           name: 'Double Doors Paper ${{ steps.version.outputs.version }}'
-          version: 'paper-v${{ steps.version.outputs.version }}'
+          version: 'paper-${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: ${{ steps.release_notes.outputs.body }}
           loaders: |
@@ -243,7 +243,7 @@ jobs:
           modrinth-token: ${{ secrets.MODRINTH_TOKEN }}
           files: ${{ steps.proxy_artifact.outputs.jar_path }}
           name: 'Double Doors Velocity ${{ steps.version.outputs.version }}'
-          version: 'velocity-v${{ steps.version.outputs.version }}'
+          version: 'velocity-${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
           changelog: 'Velocity for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
           loaders: |

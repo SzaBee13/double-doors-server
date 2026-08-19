@@ -1,0 +1,95 @@
+{
+  "docsSidebar": [
+    "index",
+    {
+      "type": "category",
+      "label": "Bukkit, Spigot & Paper",
+      "link": {
+        "type": "generated-index"
+      },
+      "collapsible": true,
+      "collapsed": false,
+      "items": [
+        {
+          "type": "category",
+          "label": "Getting Started",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["bukkit/getting-started/bukkit-getting-started-installation", "bukkit/getting-started/bukkit-getting-started-quick-start"]
+        },
+        {
+          "type": "category",
+          "label": "Configuration",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["bukkit/configuration/bukkit-configuration-configuration", "bukkit/configuration/bukkit-configuration-commands-and-permissions"]
+        },
+        {
+          "type": "category",
+          "label": "Operations & Support",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["bukkit/support/bukkit-support-admin-runbook", "bukkit/support/bukkit-support-compatibility", "bukkit/support/bukkit-support-troubleshooting", "bukkit/support/bukkit-support-faq"]
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Velocity",
+      "link": {
+        "type": "generated-index"
+      },
+      "collapsible": true,
+      "collapsed": true,
+      "items": [
+        {
+          "type": "category",
+          "label": "Configuration",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["velocity/configuration/velocity-setup", "velocity/configuration/velocity-configuration-configuration"]
+        },
+        {
+          "type": "category",
+          "label": "Getting Started",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["velocity/getting-started/velocity-getting-started-installation", "velocity/getting-started/velocity-quick-start"]
+        },
+        {
+          "type": "category",
+          "label": "Support",
+          "link": {
+            "type": "generated-index"
+          },
+          "items": ["velocity/support/velocity-support-compatibility", "velocity/support/velocity-support-troubleshooting", "velocity/support/velocity-support-faq"]
+        }
+      ]
+    },
+    {
+      "type": "category",
+      "label": "Concepts & Internals",
+      "link": {
+        "type": "generated-index"
+      },
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["concepts/concepts-how-it-works", "concepts/concepts-performance-and-safety-notes", "concepts/concepts-api", "concepts/concepts-telemetry"]
+    },
+    {
+      "type": "category",
+      "label": "Contributing",
+      "link": {
+        "type": "generated-index"
+      },
+      "collapsible": true,
+      "collapsed": true,
+      "items": ["contributing/contributing-development-and-releases", "contributing/contributing-translating"]
+    }
+  ]
+}
