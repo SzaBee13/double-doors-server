@@ -145,7 +145,9 @@ public final class FastStatsManager {
       String locale = dd.getPlayerPreferences().getLocale(
         players[i].getUniqueId()
       );
-      locales[i] = locale != null && !locale.isBlank() ? locale : "";
+      locales[i] = locale != null && !locale.isBlank()
+        ? locale
+        : config.getLanguage();
     }
     return locales;
   }
