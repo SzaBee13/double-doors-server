@@ -11,7 +11,7 @@ DoubleDoors uses anonymous telemetry to understand how the plugin is configured 
 Telemetry is enabled by default, but you can opt out at any time.
 
 - Bukkit: Follow the [Analytics configuration](../bukkit/configuration/configuration#analytics) section in `config.yml`.
-- Velocity: Follow the [Analytics configuration](../velocity/configuration/configuration#telemetry) section in `config.properties`.
+- Velocity: Follow the [Analytics configuration](../velocity/configuration/configuration#telemetry) section in `plugins/DoubleDoors/proxy-config.properties`.
 
 All telemetry is anonymous and publicly available on the [DoubleDoors FastStats page](https://faststats.dev/project/double-doors-server/minecraft-plugin).
 
@@ -27,7 +27,10 @@ FastStats stores the submitted metrics and makes the aggregated project data pub
 
 ### Custom data specific to DoubleDoors
 
+#### Bukkit only
+
 - The language set in the config
+- Per-player locale tracking (enabled via `perPlayerLocale`)
 - How data is stored: YAML, SQLite, MySQL, or unknown
 - Whether auto-close is enabled
 - Whether the knocking feature is enabled
@@ -61,3 +64,15 @@ Telemetry may also include:
 - Java version
 - Operating system and architecture
 - Whether the server is in online mode
+
+## Opt out
+
+Set the following option in `plugins/DoubleDoors/config.yml`:
+
+```yaml
+enableAnonymousTracking: false
+```
+
+Then run `/doubledoors reload` or restart the server. You can re-enable telemetry at any time by setting the option back to `true`.
+
+For the related configuration reference, see [Analytics](../bukkit/configuration/configuration#analytics). For the public data, visit [FastStats](https://faststats.dev/project/double-doors-server/minecraft-plugin).
