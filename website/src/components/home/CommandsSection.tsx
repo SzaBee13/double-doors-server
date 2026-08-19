@@ -3,7 +3,7 @@ import type {ReactNode} from 'react';
 const COMMANDS: {command: string; description: string}[] = [
   {command: '/doubledoors toggle', description: 'Toggle double-door behavior for yourself'},
   {command: '/doubledoors reload', description: 'Reload the plugin configuration'},
-  {command: '/doubledoors locale', description: 'View or set your language'},
+  {command: '/doubledoors locale', description: 'View or set your language (set requires perPlayerLocaleEnabled: true)'},
   {command: '/doubledoors knock-volume', description: 'Set your personal knock sound volume'},
 ];
 

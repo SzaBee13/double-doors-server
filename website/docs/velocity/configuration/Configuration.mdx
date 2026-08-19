@@ -56,7 +56,7 @@ All submitted telemetry is anonymous and publicly available. See [Telemetry](../
 ### sql.jdbcUrl
 
 - Type: string
-- Default: `jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db` in the generated example; configure the actual absolute path for your server.
+- Default: `jdbc:sqlite:/absolute/path/to/plugins/DoubleDoors/doubledoors.db`
 - Effect: JDBC connection URL for the heartbeat database.
 - Supported databases: SQLite and MySQL.
 - SQLite note: Use an absolute path when a Bukkit backend must read the same database. Relative paths create separate database files for separate processes and break shared heartbeat detection.
