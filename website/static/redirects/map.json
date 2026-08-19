@@ -64,7 +64,7 @@
     }
   },
   "velocity-setup": {
-    "name": "Proxy Setup",
+    "name": "Velocity Setup",
     "latest": "1.4",
     "versions": {
       "1.4": "/velocity/configuration/setup",
