@@ -7,11 +7,16 @@ DoubleDoors exposes a public API for third-party plugins to integrate with linke
 
 ## Accessing the API
 
-Get the API instance from the DoubleDoors plugin:
+Declare DoubleDoors as a required dependency in your `plugin.yml`, then retrieve the API instance safely:
 
 ```java
-DoubleDoors plugin = (DoubleDoors) Bukkit.getPluginManager().getPlugin("DoubleDoors");
-DoubleDoorsAPI api = plugin.getApi();
+Plugin plugin = Bukkit.getPluginManager().getPlugin("DoubleDoors");
+if (plugin instanceof DoubleDoors doubleDoors) {
+  DoubleDoorsAPI api = doubleDoors.getApi();
+  // Use api here.
+} else {
+  // DoubleDoors is unavailable; disable this integration safely.
+}
 ```
 
 ## API Methods

@@ -19,7 +19,7 @@ slug: /concepts/performance-and-safety-notes
 
 ## Main-Thread Safety
 
-- Event handling and block updates happen on the server thread.
+- Event handling runs on the server thread. Block updates run on Bukkit's primary thread, or on the owning region thread under Folia.
 - Disk writes for players.yml are scheduled asynchronously.
 - SQL storage operations use async scheduling via `SchedulerBridge`.
 - Folia: region-aware scheduling is used automatically when available.

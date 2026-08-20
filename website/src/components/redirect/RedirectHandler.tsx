@@ -23,17 +23,25 @@ export default function RedirectHandler(): ReactNode {
   const [targetUrl, setTargetUrl] = useState<string | null>(null);
 
   useEffect(() => {
+    const controller = new AbortController();
+    let active = true;
+    setError(null);
+    setTargetUrl(null);
+
     if (!pageKey) {
       setError('Missing required parameter: page');
-      return;
+      return () => {
+        active = false;
+      };
     }
 
-    fetch('/redirects/map.json')
+    fetch('/redirects/map.json', {signal: controller.signal})
       .then((res) => {
         if (!res.ok) throw new Error('Failed to load redirect map');
         return res.json() as Promise<RedirectMap>;
       })
       .then((map) => {
+        if (!active) return;
         const entry = map[pageKey];
         if (!entry) {
           setError(`Unknown page: ${pageKey}`);
@@ -51,9 +59,15 @@ export default function RedirectHandler(): ReactNode {
         setTargetUrl(url);
         window.location.replace(url);
       })
-      .catch(() => {
+      .catch((error: unknown) => {
+        if (!active || (error instanceof DOMException && error.name === 'AbortError')) return;
         setError('Failed to load redirect map');
       });
+
+    return () => {
+      active = false;
+      controller.abort();
+    };
   }, [pageKey, version]);
 
   return (

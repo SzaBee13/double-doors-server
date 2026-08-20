@@ -22,10 +22,9 @@ slug: /bukkit/support/compatibility
 ### GriefPrevention
 
 - Optional reflective integration.
-- Linked partner door checks claim build permission before toggling.
+- Linked partner door checks require Access trust by default because `griefprevention.requireBuildForLinkedDoors` defaults to `false`. Enabling the option changes the requirement to Build trust.
 - If reflection fails or API signatures differ while GriefPrevention is installed, the linked action is denied and a compatibility error is logged. If GriefPrevention is absent, the integration is bypassed.
 - Per-claim villager blocking: admins can toggle villager linked-door access per claim using `/doubledoors grief villagers`.
-- Config option `griefprevention.requireBuildForLinkedDoors` controls whether Build trust (true) or Access trust (false) is required.
 
 ### WorldGuard
 

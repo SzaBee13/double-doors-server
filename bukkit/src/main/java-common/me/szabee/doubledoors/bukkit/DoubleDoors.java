@@ -826,7 +826,7 @@ public final class DoubleDoors extends JavaPlugin {
       closePlayerPreferences();
       pluginConfig.reload();
       DoorUtil.setMirrorCacheTtlMillis(pluginConfig.getLookupCacheTtlMillis());
-    fastStats.restart(pluginConfig);
+      fastStats.restart(pluginConfig);
       pluginUpdater.initialize(pluginConfig);
       stopProxyBridgePolling();
       sqlStorage = null;

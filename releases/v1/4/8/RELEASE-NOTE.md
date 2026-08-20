@@ -23,6 +23,8 @@ Release date: to be determined
 ## Fixed
 
 - Fixed GriefPrevention and WorldGuard integration checks logging at warning level instead of fine when checks fail.
+- Fixed unresolved GriefPrevention and WorldGuard reflection checks so configured protection rules deny safely.
+- Corrected website navigation, configuration examples, safety guidance, and French and Brazilian Portuguese command translations.
 
 ## Breaking Changes
 
