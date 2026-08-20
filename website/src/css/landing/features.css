@@ -1,0 +1,57 @@
+/* ---------------------------------------------------------------------------
+ * Home features
+ * ------------------------------------------------------------------------- */
+
+.dd-features {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.25rem;
+  margin-top: 2.5rem;
+}
+
+.dd-feature {
+  padding: 1.5rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 16px;
+  background: var(--ifm-background-color);
+  box-shadow: 0 1px 2px var(--ifm-color-emphasis-100);
+  transition:
+    border-color 0.15s ease,
+    box-shadow 0.15s ease,
+    transform 0.15s ease;
+}
+
+.dd-feature:hover {
+  border-color: var(--ifm-color-primary-lightest);
+  box-shadow: 0 10px 30px -14px var(--ifm-color-primary-lightest);
+  transform: translateY(-2px);
+}
+
+.dd-feature__icon {
+  display: grid;
+  place-items: center;
+  width: 2.75rem;
+  height: 2.75rem;
+  margin-bottom: 1rem;
+  border-radius: 12px;
+  color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-contrast-background);
+}
+
+.dd-feature__icon svg {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.dd-feature__title {
+  margin: 0 0 0.4rem;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.dd-feature__description {
+  margin: 0;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--ifm-color-emphasis-700);
+}

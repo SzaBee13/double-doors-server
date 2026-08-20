@@ -1,0 +1,53 @@
+/* ---------------------------------------------------------------------------
+ * CTA banner
+ * ------------------------------------------------------------------------- */
+
+.dd-cta {
+  padding: 5rem 1rem;
+  text-align: center;
+  color: #fff;
+  background: linear-gradient(135deg, var(--ifm-color-primary-darker), var(--ifm-color-primary));
+}
+
+.dd-cta__title {
+  margin: 0;
+  font-size: clamp(1.7rem, 4vw, 2.4rem);
+  letter-spacing: -0.03em;
+  color: #fff;
+}
+
+.dd-cta__description {
+  margin: 0.75rem auto 0;
+  max-width: 34rem;
+  font-size: 1.05rem;
+  color: rgba(255, 255, 255, 0.85);
+}
+
+.dd-cta__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 1.75rem;
+}
+
+.dd-cta .dd-btn--primary {
+  color: var(--ifm-color-primary-darker);
+  background: #fff;
+  box-shadow: none;
+}
+
+.dd-cta .dd-btn--primary:hover {
+  color: var(--ifm-color-primary-darker);
+  background: #fff;
+}
+
+.dd-cta .dd-btn--secondary {
+  color: #fff;
+  border-color: rgba(255, 255, 255, 0.7);
+}
+
+.dd-cta .dd-btn--secondary:hover {
+  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+}

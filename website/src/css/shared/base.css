@@ -1,0 +1,40 @@
+/* ---------------------------------------------------------------------------
+ * Base Styles
+ * ------------------------------------------------------------------------- */
+
+:root {
+  --ifm-color-primary: #7b3ff2;
+  --ifm-color-primary-dark: #6c2ee8;
+  --ifm-color-primary-darker: #6424df;
+  --ifm-color-primary-darkest: #521ab8;
+  --ifm-color-primary-light: #8a50f4;
+  --ifm-color-primary-lighter: #925bf5;
+  --ifm-color-primary-lightest: #aa7cf7;
+  --ifm-font-family-base: Inter, ui-sans-serif, system-ui, sans-serif;
+  --ifm-heading-font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  --ifm-code-font-size: 95%;
+  --docusaurus-highlighted-code-line-bg: rgba(123, 63, 242, 0.12);
+}
+
+[data-theme='dark'] {
+  --ifm-color-primary: #b58cff;
+  --ifm-color-primary-dark: #a16dff;
+  --ifm-color-primary-darker: #965cff;
+  --ifm-color-primary-darkest: #7130ff;
+  --ifm-color-primary-light: #c9aaff;
+  --ifm-color-primary-lighter: #d4baff;
+  --ifm-color-primary-lightest: #eadfff;
+  --docusaurus-highlighted-code-line-bg: rgba(181, 140, 255, 0.18);
+}
+
+.navbar {
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.navbar__title {
+  letter-spacing: -0.02em;
+}
+
+.theme-doc-markdown h1 {
+  letter-spacing: -0.035em;
+}

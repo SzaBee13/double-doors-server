@@ -1,0 +1,70 @@
+/* ---------------------------------------------------------------------------
+ * Button components
+ * ------------------------------------------------------------------------- */
+
+.dd-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  line-height: 1.2;
+  text-decoration: none;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.dd-btn:hover {
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.dd-btn--primary {
+  color: #fff;
+  background: linear-gradient(135deg, var(--ifm-color-primary-light), var(--ifm-color-primary));
+  box-shadow: 0 4px 18px -4px var(--ifm-color-primary-lightest);
+}
+
+.dd-btn--primary:hover {
+  color: #fff;
+  filter: brightness(1.06);
+}
+
+.dd-btn--secondary {
+  color: var(--ifm-color-primary);
+  border-color: var(--ifm-color-primary);
+  background: transparent;
+}
+
+.dd-btn--secondary:hover {
+  color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-contrast-background);
+}
+
+.dd-btn--ghost {
+  color: var(--ifm-color-content);
+  border-color: var(--ifm-color-emphasis-300);
+  background: transparent;
+}
+
+.dd-btn--ghost:hover {
+  color: var(--ifm-color-content);
+  border-color: var(--ifm-color-emphasis-500);
+}
+
+.dd-btn--small {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.82rem;
+}
+
+.dd-btn--large {
+  padding: 0.8rem 1.6rem;
+  font-size: 1.05rem;
+}
