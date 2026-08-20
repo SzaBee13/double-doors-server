@@ -1,5 +1,5 @@
 import Link from '@docusaurus/Link';
-import Button from '@site/src/components/Button';
+import Button from '@site/src/components/custom/Button';
 import type {ReactNode} from 'react';
 
 /** Landing-page hero with the logo, tagline, and primary actions. */

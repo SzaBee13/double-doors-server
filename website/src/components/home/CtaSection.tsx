@@ -1,4 +1,4 @@
-import Button from '@site/src/components/Button';
+import Button from '@site/src/components/custom/Button';
 import type {ReactNode} from 'react';
 
 /** Final call-to-action banner. */

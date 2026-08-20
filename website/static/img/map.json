@@ -302,6 +302,144 @@
                 "local": "logo.png"
               }
             }
+          },
+          "text": null,
+          "styles": {
+            "colors": {
+              "main": {
+                "primary": "",
+                "secondary": "",
+                "background": ""
+              }
+            }
+          }
+        }
+      }
+    },
+    "features": {
+      "clock": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/clock.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "doors": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/doors.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "fence": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/fence.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "platforms": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/platforms.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "player": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/player.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
+          }
+        }
+      },
+      "shield": {
+        "themes": {
+          "general": {
+            "formats": {
+              "xml+svg": {
+                "local": "features/shield.svg"
+              }
+            },
+            "text": null,
+            "styles": {
+              "colors": {
+                "main": {
+                  "primary": "dynamic",
+                  "secondary": "",
+                  "background": "transparent"
+                }
+              }
+            }
           }
         }
       }

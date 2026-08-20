@@ -1,4 +1,4 @@
-import GithubIcon from '@site/src/components/GithubIcon';
+import GithubIcon from '@site/src/components/icons/GitHub';
 import ReleaseNotes from '@site/src/components/releases/ReleaseNotes';
 import {formatDate, MODRINTH_DOWNLOAD} from '@site/src/components/releases/useReleases';
 import type {GitHubRelease} from '@site/src/components/releases/useReleases';
