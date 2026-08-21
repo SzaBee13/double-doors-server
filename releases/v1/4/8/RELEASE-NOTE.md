@@ -22,6 +22,7 @@ Release date: to be determined
 
 ## Fixed
 
+- Fixed FastStats metric collection invoking Bukkit APIs from asynchronous threads; `per_player_locales` and `update_checker` are now snapshotted on the main thread, preventing corrupted or failed telemetry submissions.
 - Fixed GriefPrevention and WorldGuard integration checks logging at warning level instead of fine when checks fail.
 - Fixed unresolved GriefPrevention and WorldGuard reflection checks so configured protection rules deny safely.
 - Corrected website navigation, configuration examples, safety guidance, and French and Brazilian Portuguese command translations.
@@ -41,6 +42,8 @@ Release date: to be determined
   <li>Telemetry cleanup — removed: <code>geyser_detected</code>, <code>worldguard_detected</code>, <code>griefprevention_detected</code>, <code>plugin_uptime_minutes</code>, <code>server_max_players</code>. Added: <code>update_checker</code>, <code>per_player_locales</code>. Changed: <code>recursive_opening</code> from boolean to number.</li>
   <li>Changed Velocity SQL dependencies from <code>implementation</code> to <code>compileOnly</code> and added runtime downloader with classpath injection.</li>
   <li>Added SHA-256 checksums for SQL dependency versions in <code>gradle.properties</code>.</li>
+  <li>FastStats collectors no longer touch live Bukkit state: <code>FastStatsManager</code> now maintains main-thread-computed snapshots (refreshed every 60 s) that the async collectors read.</li>
+  <li>Added unit test coverage for <code>ProtectionCompat</code> (including the fail-closed deny reasons and claim-manager fail-open behavior) and <code>FastStatsManager</code>.</li>
   <li>Crowdin translation updates across all locales.</li>
 </ul>
 </details>
