@@ -42,6 +42,8 @@ After changing the file, restart Velocity. The plugin does not reload proxy conf
 - Effect: Enables anonymous FastStats telemetry for the Velocity plugin.
 - Scope: This setting controls telemetry created by the proxy plugin. Configure the same option separately in the Bukkit plugin's `config.yml` if both plugins are installed.
 
+You should also change telemetry in `plugins/faststats/config.properties` by setting `enabled` to `true` or `false` depending on your preference.
+
 All submitted telemetry is anonymous and publicly available. See [Telemetry](../../concepts/telemetry) for the collected fields, how the data is used, and opt-out instructions.
 
 ## SQL Heartbeat

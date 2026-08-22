@@ -25,7 +25,7 @@ Release date: to be determined
 - Fixed FastStats metric collection invoking Bukkit APIs from asynchronous threads; `per_player_locales` and `update_checker` are now snapshotted on the main thread, preventing corrupted or failed telemetry submissions.
 - Fixed GriefPrevention and WorldGuard integration checks logging at warning level instead of fine when checks fail.
 - Fixed unresolved GriefPrevention and WorldGuard reflection checks so configured protection rules deny safely.
-- Corrected website navigation, configuration examples, safety guidance, and French and Brazilian Portuguese command translations.
+- Corrected configuration examples, safety guidance, and French and Brazilian Portuguese command translations.
 
 ## Breaking Changes
 
@@ -44,7 +44,6 @@ Release date: to be determined
   <li>Added SHA-256 checksums for SQL dependency versions in <code>gradle.properties</code>.</li>
   <li>FastStats collectors no longer touch live Bukkit state: <code>FastStatsManager</code> now maintains main-thread-computed snapshots (refreshed every 60 s) that the async collectors read.</li>
   <li>Added unit test coverage for <code>ProtectionCompat</code> (including the fail-closed deny reasons and claim-manager fail-open behavior) and <code>FastStatsManager</code>.</li>
-  <li>Crowdin translation updates across all locales.</li>
 </ul>
 </details>
 

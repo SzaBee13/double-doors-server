@@ -13,7 +13,9 @@ Telemetry is enabled by default, but you can opt out at any time.
 - Bukkit: Follow the [Analytics configuration](../bukkit/configuration/configuration#analytics) section in `config.yml`.
 - Velocity: Follow the [Analytics configuration](../velocity/configuration/configuration#telemetry) section in `plugins/DoubleDoors/proxy-config.properties`.
 
-All telemetry is anonymous and publicly available on the [DoubleDoors FastStats page](https://faststats.dev/project/double-doors-server/minecraft-plugin).
+You should also change telemetry in `plugins/faststats/config.properties` by setting `enabled` to `true` or `false` depending on your preference.
+
+All telemetry is anonymous and publicly available on the [DoubleDoors FastStats page](https://faststats.dev/project/double-doors-server).
 
 ## How data is collected
 
@@ -29,14 +31,24 @@ FastStats stores the submitted metrics and makes the aggregated project data pub
 
 #### Bukkit only
 
-- The language set in the config
-- Per-player locale tracking (enabled via `perPlayerLocaleEnabled`)
-- How data is stored: YAML, SQLite, MySQL, or unknown
-- Whether auto-close is enabled
-- Whether the knocking feature is enabled
-- Whether the update checker is enabled and whether `PluginUpdater` is installed
-- Whether debug mode is enabled
-- The recursive opening distance, or `0` when the feature is disabled
+Also applies to Spigot, Paper, etc.
+
+- **Server Language**
+  The server language set in the config (e.g. `en_US`)
+- **Player Language**
+  The language set by the player (e.g. `en_US`)
+- **Data Storage Type**
+  How data is stored: YAML, SQLite, MySQL, or unknown
+- **Auto Close Enabled**
+  Whether auto-close is enabled
+- **Knocking Enabled**
+  Whether the knocking feature is enabled
+- **Update Checker Enabled**
+  Whether the update checker is enabled and whether `PluginUpdater` is installed
+- **Debug Mode Enabled**
+  Whether debug mode is enabled
+- **Recursive Opening Distance**
+  The recursive opening distance, or `0` when the feature is disabled
 
 ### Error reports
 
@@ -45,34 +57,100 @@ FastStats stores the submitted metrics and makes the aggregated project data pub
 
 Error reports are used to diagnose failures and prioritize fixes.
 
+#### Error anonymization
+
+Source: [FastStats](https://faststats.dev/info#what-data-is-collected)
+
+When error tracking is enabled, all error data is automatically anonymized before transmission.
+
+- Folder paths that may contain usernames are redacted (e.g. /home/name, /Users/name, C:\Users\name)
+- The system username (user.name property) is redacted
+- IPv4 and IPv6 addresses are redacted
+- Errors are deduplicated to avoid transmitting the same error multiple times
+
 ### Standard FastStats data
+
+Source: [FastStats](https://faststats.dev/info#what-data-is-collected)
 
 FastStats also collects standard project metrics by default:
 
-- Number of players online
-- Number of servers running the plugin
-- Minecraft and server version
-- Server software, such as Paper or Spigot
-- Plugin version
-- Continued plugin usage over time (retention)
-- Download numbers from Modrinth, CurseForge, Hangar, Spigot, and other distribution platforms
+#### Server
 
-### Other technical information
+- **Server ID**
+  Randomly generated identifier used internally to prevent duplicate counting
+- **Player count**
+  Current number of online players
+- **Online mode**
+  Whether the server runs in online or offline mode
+- **Country**
+  Approximate country inferred from Cloudflare — your IP address is never stored
 
-Telemetry may also include:
+#### Software
 
-- Java version
-- Operating system and architecture
-- Whether the server is in online mode
+- **Platform**
+  Server software name (e.g. Paper, Folia, Velocity, Fabric)
+- **Platform version**
+  Version of the server software
+- **Game version**
+  Version of Minecraft (e.g. 1.21, 26.1.2)
+- **Plugin version**
+  Version of the plugin or mod that includes FastStats
+- **Client mod**
+  Whether the mod runs on the client rather than the server
 
-## Opt out
+#### System
 
-Set the following option in `plugins/DoubleDoors/config.yml`:
+- **Operating system**
+  OS name (e.g. Windows, Linux, macOS)
+- **OS version**
+  Operating system version
+- **OS architecture**
+  CPU architecture (e.g. x86_64, aarch64)
+- **CPU core count**
+  Number of CPU cores available to the server
+#### Java
 
-```yaml
-enableAnonymousTracking: false
-```
+- **Java version**
+  Runtime version (e.g. 21.0.2)
+- **Java vendor**
+  Java distribution vendor (e.g. Eclipse Temurin, Oracle)
 
-Then run `/doubledoors reload` or restart the server. You can re-enable telemetry at any time by setting the option back to `true`.
+## What is not collected
 
-For the related configuration reference, see [Analytics](../bukkit/configuration/configuration#analytics). For the public data, visit [FastStats](https://faststats.dev/project/double-doors-server/minecraft-plugin).
+Source: [FastStats](https://faststats.dev/info#what-is-not-collected)
+
+- **No IP addresses**
+  All requests are proxied. FastStats never receives or stores your server's IP address. Only an approximate country is inferred by Cloudflare.
+- **No player data**
+  No usernames, UUIDs, or other player identifiers are collected.
+- **No server fingerprinting**
+  FastStats does not attempt to uniquely fingerprint or track servers across reinstalls.
+- **No personal data**
+  Data that could reasonably identify a person or make a server uniquely traceable is not collected.
+
+The server ID used by FastStats is internal, randomly generated, and not publicly derivable.
+
+## Anonymity & Privacy
+
+Source: [FastStats](https://faststats.dev/info#anonymity-and-privacy)
+
+All data sent to FastStats is handled in an anonymous and aggregated manner.
+While FastStats uses a server ID internally to prevent duplicate counting, this identifier:
+
+- Can be regenerated by the administrator
+- Is not exposed publicly
+- Cannot be used to identify your server by third parties
+
+FastStats does not sell or share collected data with external parties.
+
+## Performance Impact
+
+Source: [FastStats](https://faststats.dev/info#performance-impact)
+
+Enabling FastStats has no noticeable performance impact on your server. Metrics are lightweight and sent at low frequency.
+
+- Default request: ~215 bytes (±15)
+- With one error: ~400 bytes
+- Per error added: ~200 bytes
+
+Error tracking, when enabled by a plugin, has minimal network overhead. Errors happen very infrequently, are transmitted every 30 minutes alongside normal metrics, and are deduplicated to prevent sending the same error multiple times.
