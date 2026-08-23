@@ -44,6 +44,7 @@ Release date: to be determined
   <li>Added SHA-256 checksums for SQL dependency versions in <code>gradle.properties</code>.</li>
   <li>FastStats collectors no longer touch live Bukkit state: <code>FastStatsManager</code> now maintains main-thread-computed snapshots (refreshed every 60 s) that the async collectors read.</li>
   <li>Added unit test coverage for <code>ProtectionCompat</code> (including the fail-closed deny reasons and claim-manager fail-open behavior) and <code>FastStatsManager</code>.</li>
+  <li>Cleaned up unused import in <code>ProtectionCompat</code>.</li>
 </ul>
 </details>
 
