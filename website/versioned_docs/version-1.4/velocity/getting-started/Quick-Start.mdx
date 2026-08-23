@@ -1,0 +1,57 @@
+---
+title: Quick Start
+id: velocity-quick-start
+slug: /velocity/getting-started/quick-start
+---
+
+This guide takes you from a fresh Velocity installation to a verified DoubleDoors proxy heartbeat.
+
+## 1. Install the prerequisites
+
+- Velocity 3.4.0 or newer
+- Java 21 or newer for the proxy runtime
+- Geyser-Velocity or Floodgate for heartbeat reporting
+- The DoubleDoors Bukkit plugin on each backend where doors are used
+
+The Velocity plugin does not synchronize blocks between backend servers. It reports proxy presence; door behavior remains a backend Bukkit plugin feature.
+
+## 2. Install the proxy plugin
+
+1. Stop the Velocity proxy.
+2. Download `doubledoors-velocity-<version>.jar` from the [releases page](https://github.com/SzaBee13/double-doors-server/releases).
+3. Copy the jar to the proxy `plugins/` directory.
+4. Start the proxy and check the console for DoubleDoors initialization.
+
+On first startup, the plugin creates `plugins/DoubleDoors/proxy-config.properties`.
+
+## 3. Configure heartbeat reporting
+
+For one proxy or local testing, SQLite is sufficient:
+
+```properties
+sql.enabled=true
+sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
+sql.username=
+sql.password=
+sql.proxyId=velocity-main
+sql.heartbeatSeconds=30
+```
+
+Use a unique `sql.proxyId` for every proxy. For multiple proxies, configure all of them to use the same MySQL database; see [Setup](../configuration/setup).
+
+Heartbeat reporting is enabled only when `sql.enabled=true` and Geyser or Floodgate is detected on the proxy.
+
+## 4. Verify the setup
+
+1. Restart Velocity after editing the properties file.
+2. Confirm the proxy log does not report a SQL initialization error.
+3. Query the heartbeat table when SQL is enabled:
+
+```sql
+SELECT proxy_id, platform, last_seen_epoch_ms
+FROM dd_proxy_presence;
+```
+
+4. Confirm `last_seen_epoch_ms` is updated approximately every `sql.heartbeatSeconds` seconds.
+
+If no row appears, check [Troubleshooting](../support/troubleshooting) before changing database settings.

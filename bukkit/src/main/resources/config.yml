@@ -84,7 +84,7 @@ serverWideEnabled: true
 
 # ── Analytics ───────────────────────────────────────────────
 # Anonymous FastStats usage metrics
-# All data is public: https://faststats.dev/project/double-doors-server/minecraft-plugin
+# All data is public: https://faststats.dev/project/double-doors-server
 enableAnonymousTracking: true
 
 # ── Language ────────────────────────────────────────────────

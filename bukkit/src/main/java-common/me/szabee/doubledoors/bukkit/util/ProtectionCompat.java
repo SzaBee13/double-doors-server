@@ -3,10 +3,7 @@ package me.szabee.doubledoors.bukkit.util;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 import java.util.function.Supplier;
@@ -28,8 +25,8 @@ public final class ProtectionCompat {
   /**
    * Checks whether a player may toggle a linked block according to protection rules.
    *
-   * <p>Currently integrates with GriefPrevention when installed. If integration cannot
-   * be resolved, the check fails open to avoid breaking door interactions.</p>
+   * <p>Installed protection integrations fail closed when their checks cannot be
+   * resolved. Absent integrations are bypassed.</p>
    *
    * @param plugin the plugin instance
    * @param player the interacting player
@@ -71,44 +68,47 @@ public final class ProtectionCompat {
     if (griefPrevention != null && griefPrevention.isEnabled()) {
       try {
         Object dataStore = getDataStore(griefPrevention);
-        if (dataStore != null) {
-          Object claim = findClaimAt(dataStore, linkedBlock);
-          if (claim != null) {
-            Boolean checkPermissionResult = tryCheckPermission(
+        if (dataStore == null) {
+          plugin.getLogger().warning("GriefPrevention compatibility check failed: dataStore is unavailable.");
+          return "griefprevention_unresolved";
+        }
+        Object claim = findClaimAt(dataStore, linkedBlock);
+        if (claim != null) {
+          Boolean checkPermissionResult = tryCheckPermission(
+            claim,
+            player,
+            "Build",
+            "Access",
+            "Inventory"
+          );
+          if (checkPermissionResult == null) {
+            plugin.getLogger().warning("GriefPrevention compatibility check failed: permission API is unavailable.");
+            return "griefprevention_unresolved";
+          }
+          if (!checkPermissionResult) {
+            return "griefprevention_permission_denied";
+          }
+
+          if (plugin.getPluginConfig().isGriefPreventionRequireBuildForLinkedDoors()) {
+            Boolean allowBuildResult = tryAllowBuild(
               claim,
               player,
-              "Build",
-              "Access",
-              "Inventory"
+              linkedBlock.getType()
             );
-            if (checkPermissionResult != null && !checkPermissionResult) {
-              return "griefprevention_permission_denied";
+            if (allowBuildResult == null) {
+              plugin.getLogger().warning("GriefPrevention compatibility check failed: build API is unavailable.");
+              return "griefprevention_unresolved";
             }
-
-            if (
-              plugin
-                .getPluginConfig()
-                .isGriefPreventionRequireBuildForLinkedDoors()
-            ) {
-              Boolean allowBuildResult = tryAllowBuild(
-                claim,
-                player,
-                linkedBlock.getType()
-              );
-              if (allowBuildResult != null && !allowBuildResult) {
-                return "griefprevention_build_denied";
-              }
+            if (!allowBuildResult) {
+              return "griefprevention_build_denied";
             }
           }
         }
       } catch (ReflectiveOperationException ex) {
         plugin
           .getLogger()
-          .fine(
-            "GriefPrevention compatibility check skipped: %s".formatted(
-              ex.getMessage()
-            )
-          );
+          .warning("GriefPrevention compatibility check failed: " + ex.getMessage());
+        return "griefprevention_unresolved";
       }
     }
 
@@ -168,7 +168,7 @@ public final class ProtectionCompat {
     }
 
     if (getClaimAt == null) {
-      return null;
+      throw new NoSuchMethodException("Compatible getClaimAt method is unavailable");
     }
 
     Object[] args = new Object[getClaimAt.getParameterCount()];
@@ -493,10 +493,10 @@ public final class ProtectionCompat {
           return "worldguard_build_denied";
         }
       } catch (ReflectiveOperationException ex) {
-        // Fail open to keep compatibility resilient.
         plugin
           .getLogger()
-          .fine("WorldGuard build-permission check failed: " + ex.getMessage());
+          .warning("WorldGuard build-permission check failed: " + ex.getMessage());
+        return "worldguard_unresolved";
       }
     }
 
@@ -510,6 +510,9 @@ public final class ProtectionCompat {
     String customFlag = config.getWorldGuardCustomFlag();
     if (!customFlag.isEmpty()) {
       String state = resolveWorldGuardCustomFlagState(block, customFlag);
+      if ("unresolved".equals(state)) {
+        return "worldguard_unresolved";
+      }
       if ("deny".equals(state)) {
         return "worldguard_custom_flag_deny";
       }
@@ -581,7 +584,7 @@ public final class ProtectionCompat {
         break;
       }
       if (testState == null) {
-        return true;
+        return false;
       }
 
       Object result = testState.invoke(
@@ -590,9 +593,9 @@ public final class ProtectionCompat {
         localPlayer,
         stateFlags
       );
-      return !(result instanceof Boolean allowed) || allowed;
+      return result instanceof Boolean allowed && allowed;
     } catch (ReflectiveOperationException | IllegalArgumentException ex) {
-      return true;
+      return false;
     }
   }
 
@@ -614,59 +617,32 @@ public final class ProtectionCompat {
         .getMethod("get", String.class)
         .invoke(registry, flagName);
       if (flag == null) {
-        return "";
+        return "unresolved";
       }
 
       Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
       if (applicableRegionSet == null) {
-        return "";
+        return "unresolved";
       }
 
       String queriedState = queryWorldGuardStateFromApplicableSet(
         applicableRegionSet,
         flag
       );
-      if (!queriedState.isEmpty()) {
-        return queriedState;
-      }
-
-      List<Object> regions = new ArrayList<>();
-      for (Object region : getApplicableWorldGuardRegions(
-        applicableRegionSet
-      )) {
-        regions.add(region);
-      }
-      regions.sort(
-        Comparator.comparingInt(
-          ProtectionCompat::getWorldGuardRegionPriority
-        ).reversed()
-      );
-      for (Object region : regions) {
-        try {
-          Object value = region
-            .getClass()
-            .getMethod("getFlag", flag.getClass())
-            .invoke(region, flag);
-          String normalized = normalizeWorldGuardState(value);
-          if (normalized.contains("deny")) {
-            return "deny";
-          }
-          if (normalized.contains("allow")) {
-            return "allow";
-          }
-        } catch (ReflectiveOperationException ex) {
-          // Move to the next region.
-        }
-      }
-    } catch (ReflectiveOperationException ignored) {
-      // Fail open.
+      return queriedState;
+    } catch (ReflectiveOperationException | IllegalArgumentException ignored) {
+      return "unresolved";
     }
-    return "";
   }
 
   private static Set<String> getWorldGuardRegionIds(Block block) {
     Set<String> ids = new HashSet<>();
-    Object applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+    Object applicableRegionSet;
+    try {
+      applicableRegionSet = getApplicableWorldGuardRegionSet(block);
+    } catch (ReflectiveOperationException ignored) {
+      return null;
+    }
     if (applicableRegionSet == null) {
       return null;
     }
@@ -683,64 +659,58 @@ public final class ProtectionCompat {
     return ids;
   }
 
-  private static Object getApplicableWorldGuardRegionSet(Block block) {
-    try {
-      Class<?> worldGuardClass = Class.forName(
-        "com.sk89q.worldguard.WorldGuard"
-      );
-      Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
-      Object platform = worldGuard
-        .getClass()
-        .getMethod("getPlatform")
-        .invoke(worldGuard);
-      Object regionContainer = platform
-        .getClass()
-        .getMethod("getRegionContainer")
-        .invoke(platform);
+  private static Object getApplicableWorldGuardRegionSet(Block block)
+    throws ReflectiveOperationException {
+    Class<?> worldGuardClass = Class.forName(
+      "com.sk89q.worldguard.WorldGuard"
+    );
+    Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+    Object platform = worldGuard
+      .getClass()
+      .getMethod("getPlatform")
+      .invoke(worldGuard);
+    Object regionContainer = platform
+      .getClass()
+      .getMethod("getRegionContainer")
+      .invoke(platform);
 
-      Class<?> bukkitAdapterClass = Class.forName(
-        "com.sk89q.worldedit.bukkit.BukkitAdapter"
-      );
-      Object weWorld = bukkitAdapterClass
-        .getMethod("adapt", org.bukkit.World.class)
-        .invoke(null, block.getWorld());
-      Object regionManager = null;
-      for (Method method : regionContainer.getClass().getMethods()) {
-        if (
-          !method.getName().equals("get") || method.getParameterCount() != 1
-        ) {
-          continue;
-        }
-        Class<?> parameterType = method.getParameterTypes()[0];
-        if (
-          !parameterType.isInstance(weWorld) &&
-          !parameterType.isAssignableFrom(weWorld.getClass())
-        ) {
-          continue;
-        }
-        regionManager = method.invoke(regionContainer, weWorld);
-        break;
+    Class<?> bukkitAdapterClass = Class.forName(
+      "com.sk89q.worldedit.bukkit.BukkitAdapter"
+    );
+    Object weWorld = bukkitAdapterClass
+      .getMethod("adapt", org.bukkit.World.class)
+      .invoke(null, block.getWorld());
+    Object regionManager = null;
+    for (Method method : regionContainer.getClass().getMethods()) {
+      if (
+        !method.getName().equals("get") || method.getParameterCount() != 1
+      ) {
+        continue;
       }
-      if (regionManager == null) {
-        return null;
+      Class<?> parameterType = method.getParameterTypes()[0];
+      if (
+        !parameterType.isInstance(weWorld) &&
+        !parameterType.isAssignableFrom(weWorld.getClass())
+      ) {
+        continue;
       }
-
-      Class<?> blockVectorClass = Class.forName(
-        "com.sk89q.worldedit.math.BlockVector3"
-      );
-      Object blockVector = blockVectorClass
-        .getMethod("at", int.class, int.class, int.class)
-        .invoke(null, block.getX(), block.getY(), block.getZ());
-      Object applicable = regionManager
-        .getClass()
-        .getMethod("getApplicableRegions", blockVectorClass)
-        .invoke(regionManager, blockVector);
-      return applicable;
-    } catch (ReflectiveOperationException ignored) {
-      // Fail open.
+      regionManager = method.invoke(regionContainer, weWorld);
+      break;
+    }
+    if (regionManager == null) {
+      throw new NoSuchMethodException("WorldGuard region manager is unavailable");
     }
 
-    return null;
+    Class<?> blockVectorClass = Class.forName(
+      "com.sk89q.worldedit.math.BlockVector3"
+    );
+    Object blockVector = blockVectorClass
+      .getMethod("at", int.class, int.class, int.class)
+      .invoke(null, block.getX(), block.getY(), block.getZ());
+    return regionManager
+      .getClass()
+      .getMethod("getApplicableRegions", blockVectorClass)
+      .invoke(regionManager, blockVector);
   }
 
   private static Iterable<?> getApplicableWorldGuardRegions(
@@ -755,56 +725,42 @@ public final class ProtectionCompat {
   private static String queryWorldGuardStateFromApplicableSet(
     Object applicableRegionSet,
     Object flag
-  ) {
-    try {
-      Class<?> stateFlagClass = Class.forName(
-        "com.sk89q.worldguard.protection.flags.StateFlag"
-      );
-      if (!stateFlagClass.isInstance(flag)) {
-        return "";
-      }
-      Object stateFlags = Array.newInstance(stateFlagClass, 1);
-      Array.set(stateFlags, 0, flag);
-
-      for (Method method : applicableRegionSet.getClass().getMethods()) {
-        if (
-          !method.getName().equals("queryState") ||
-          method.getParameterCount() != 2
-        ) {
-          continue;
-        }
-        Class<?>[] parameterTypes = method.getParameterTypes();
-        if (!parameterTypes[1].isArray()) {
-          continue;
-        }
-        Object result = method.invoke(applicableRegionSet, new Object[] {
-          null,
-          stateFlags,
-        });
-        String normalized = normalizeWorldGuardState(result);
-        if (normalized.contains("deny")) {
-          return "deny";
-        }
-        if (normalized.contains("allow")) {
-          return "allow";
-        }
-      }
-    } catch (ReflectiveOperationException | IllegalArgumentException ignored) {
-      // Fall back to priority-sorted region iteration.
+  ) throws ReflectiveOperationException {
+    Class<?> stateFlagClass = Class.forName(
+      "com.sk89q.worldguard.protection.flags.StateFlag"
+    );
+    if (!stateFlagClass.isInstance(flag)) {
+      return "unresolved";
     }
-    return "";
-  }
+    Object stateFlags = Array.newInstance(stateFlagClass, 1);
+    Array.set(stateFlags, 0, flag);
 
-  private static int getWorldGuardRegionPriority(Object region) {
-    try {
-      Object value = region.getClass().getMethod("getPriority").invoke(region);
-      if (value instanceof Number number) {
-        return number.intValue();
+    boolean foundQueryState = false;
+    for (Method method : applicableRegionSet.getClass().getMethods()) {
+      if (
+        !method.getName().equals("queryState") ||
+        method.getParameterCount() != 2
+      ) {
+        continue;
       }
-    } catch (ReflectiveOperationException ignored) {
-      // Default priority.
+      Class<?>[] parameterTypes = method.getParameterTypes();
+      if (!parameterTypes[1].isArray()) {
+        continue;
+      }
+      foundQueryState = true;
+      Object result = method.invoke(applicableRegionSet, new Object[] {
+        null,
+        stateFlags,
+      });
+      String normalized = normalizeWorldGuardState(result);
+      if (normalized.contains("deny")) {
+        return "deny";
+      }
+      if (normalized.contains("allow")) {
+        return "allow";
+      }
     }
-    return 0;
+    return foundQueryState ? "" : "unresolved";
   }
 
   private static String normalizeWorldGuardState(Object value) {

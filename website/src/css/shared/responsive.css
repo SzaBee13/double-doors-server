@@ -1,0 +1,22 @@
+/* ---------------------------------------------------------------------------
+ * Responsive
+ * ------------------------------------------------------------------------- */
+
+@media (max-width: 640px) {
+  .dd-section {
+    padding: 3rem 1rem;
+  }
+
+  .dd-hero {
+    padding: 4rem 1rem 5rem;
+  }
+
+  .dd-release__header {
+    flex-direction: column;
+  }
+
+  .dd-release__links {
+    flex-wrap: wrap;
+    width: 100%;
+  }
+}

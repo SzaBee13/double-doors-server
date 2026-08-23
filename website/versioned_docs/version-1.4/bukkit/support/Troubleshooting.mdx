@@ -1,0 +1,57 @@
+---
+title: Troubleshooting
+id: bukkit-support-troubleshooting
+slug: /bukkit/support/troubleshooting
+---
+## Linked blocks do not open together
+
+Checklist:
+
+1. Confirm serverWideEnabled is true.
+2. Confirm enableRecursiveOpening is true.
+3. Confirm block family toggle is enabled (doors, fence gates, trapdoors).
+4. Confirm player has doubledoors.use.
+5. Confirm player did not disable with /doubledoors toggle.
+
+For doors specifically, verify mirrored pair geometry:
+
+- Same door type
+- Same facing
+- Opposite hinge
+- Adjacent side-by-side
+
+## Redstone sync is inconsistent
+
+1. Confirm target block type is enabled.
+2. Check if another plugin also modifies openable state.
+3. Re-test with only DoubleDoors enabled to isolate conflicts.
+
+## Villagers do not synchronize doors
+
+1. Confirm enableVillagerLinkedDoors is true.
+2. Confirm enableRecursiveOpening is true.
+3. Confirm serverWideEnabled is true.
+4. Ensure villagers actually trigger door interactions in your test path.
+
+## Players report no effect but admins see it
+
+Likely permission or preference mismatch:
+
+1. Validate doubledoors.use for affected group.
+2. Ask player to run /doubledoors toggle to re-enable global preference.
+3. Ask player to run /doubledoors toggle doors or gates or trapdoors as needed.
+
+## GriefPrevention claim behavior seems wrong
+
+1. Confirm GriefPrevention is loaded and enabled.
+2. Test in and outside claims.
+3. Set `debug: true` in `plugins/DoubleDoors/config.yml`.
+4. Run `/doubledoors reload`, reproduce the issue, and capture the relevant console output.
+5. Set `debug: false` and run `/doubledoors reload` again.
+6. Report exact server versions and plugin versions if reproducible.
+
+## Safe Recovery Steps
+
+1. Set `serverWideEnabled: false` in `plugins/DoubleDoors/config.yml` and run `/doubledoors reload` to disable behavior server-wide. Alternatively, verify the current state before using `/doubledoors server-toggle`.
+2. Investigate with minimal plugin set.
+3. Re-enable with /doubledoors server-toggle after validation.

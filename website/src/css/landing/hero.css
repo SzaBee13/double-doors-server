@@ -1,0 +1,103 @@
+/* ---------------------------------------------------------------------------
+ * Home hero
+ * ------------------------------------------------------------------------- */
+.dd-hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 1rem 7rem;
+  text-align: center;
+  background:
+    radial-gradient(60% 80% at 50% 0%, var(--ifm-color-primary-contrast-background), transparent 70%),
+    var(--ifm-background-color);
+}
+
+.dd-hero__glow {
+  position: absolute;
+  top: -10rem;
+  left: 50%;
+  width: 46rem;
+  height: 46rem;
+  transform: translateX(-50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, var(--ifm-color-primary-lightest), transparent 65%);
+  opacity: 0.35;
+  filter: blur(40px);
+  pointer-events: none;
+}
+
+.dd-hero__inner {
+  position: relative;
+  max-width: 52rem;
+}
+
+.dd-logo {
+  width: 112px;
+  height: 112px;
+  border-radius: 22px;
+  box-shadow: 0 12px 40px -12px var(--ifm-color-primary-lightest);
+  margin-bottom: 1.5rem;
+}
+
+.dd-eyebrow {
+  margin: 0 0 0.6rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--ifm-color-primary);
+}
+
+.dd-hero__title {
+  margin: 0;
+  font-size: clamp(3rem, 8vw, 5.2rem);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ifm-color-content);
+}
+
+.dd-hero__title-accent {
+  color: var(--ifm-color-primary);
+}
+
+.dd-hero__tagline {
+  margin: 1.25rem auto 0;
+  max-width: 40rem;
+  font-size: clamp(1.2rem, 2.5vw, 1.5rem);
+  font-weight: 600;
+  color: var(--ifm-color-content);
+}
+
+.dd-hero__description {
+  margin: 0.9rem auto 0;
+  max-width: 42rem;
+  font-size: 1.05rem;
+  line-height: 1.6;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.dd-hero__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.8rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.dd-hero__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  justify-content: center;
+  margin-top: 2.2rem;
+  font-size: 0.88rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.dd-hero__meta a {
+  color: var(--ifm-color-emphasis-700);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

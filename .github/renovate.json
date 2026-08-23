@@ -5,7 +5,8 @@
     "config:recommended"
   ],
   "timezone": "UTC",
-  "schedule": ["earlyMondays"],
+  "dependencyDashboard": false,
+  "schedule": ["0 6 * * 1"],
   "ignoreUnstable": true,
   "prHourlyLimit": 0,
   "prConcurrentLimit": 10,

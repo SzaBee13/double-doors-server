@@ -1,0 +1,21 @@
+/* ---------------------------------------------------------------------------
+ * Platforms
+ * ------------------------------------------------------------------------- */
+
+.dd-platforms {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  list-style: none;
+  margin: 1.5rem 0 0;
+  padding: 0;
+}
+
+.dd-platform {
+  padding: 0.45rem 1.1rem;
+  border: 1px solid var(--ifm-color-emphasis-300);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--ifm-color-content);
+}

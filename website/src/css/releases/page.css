@@ -1,0 +1,166 @@
+/* ---------------------------------------------------------------------------
+ * Releases page
+ * ------------------------------------------------------------------------- */
+
+.dd-main--releases .dd-container {
+  width: min(860px, 100% - 2rem);
+}
+
+.dd-release-hero {
+  padding: 4.5rem 1rem 2.5rem;
+  text-align: center;
+  background: radial-gradient(
+    50% 100% at 50% 0%,
+    var(--ifm-color-primary-contrast-background),
+    transparent 70%
+  );
+}
+
+.dd-release-hero__title {
+  margin: 0;
+  font-size: clamp(2.2rem, 5vw, 3.2rem);
+  font-weight: 800;
+  letter-spacing: -0.035em;
+}
+
+.dd-release-hero__description {
+  margin: 0.75rem auto 1.75rem;
+  max-width: 34rem;
+  color: var(--ifm-color-emphasis-700);
+}
+
+.dd-release-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 4rem 1rem;
+  text-align: center;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.dd-release-state__title {
+  margin: 0;
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--ifm-color-content);
+}
+
+.dd-release-state__message,
+.dd-release-state__hint {
+  margin: 0;
+}
+
+.dd-spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid var(--ifm-color-emphasis-200);
+  border-top-color: var(--ifm-color-primary);
+  border-radius: 50%;
+  animation: dd-spin 0.8s linear infinite;
+}
+
+@keyframes dd-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .dd-spinner {
+    animation: none;
+  }
+}
+
+.dd-releases {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+.dd-release {
+  padding: 1.75rem;
+  border: 1px solid var(--ifm-color-emphasis-200);
+  border-radius: 18px;
+  background: var(--ifm-background-color);
+  box-shadow: 0 1px 2px var(--ifm-color-emphasis-100);
+}
+
+.dd-release--latest {
+  border-color: var(--ifm-color-primary-lightest);
+  box-shadow: 0 12px 40px -18px var(--ifm-color-primary-lightest);
+}
+
+.dd-release__header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  justify-content: space-between;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+  border-bottom: 1px solid var(--ifm-color-emphasis-200);
+}
+
+.dd-release__title-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  align-items: center;
+}
+
+.dd-release__version {
+  margin: 0;
+  font-size: 1.3rem;
+  letter-spacing: -0.02em;
+}
+
+.dd-release__date {
+  margin: 0.25rem 0 0;
+  font-size: 0.85rem;
+  color: var(--ifm-color-emphasis-600);
+}
+
+.dd-release__links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dd-release__toggle {
+  cursor: pointer;
+}
+
+.dd-github-icon {
+  flex-shrink: 0;
+}
+
+html[data-theme="light"] .dd-github-icon--dark,
+html[data-theme="dark"] .dd-github-icon--light {
+  display: none;
+}
+
+.navbar__link--github {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+}
+
+.dd-release__badge {
+  padding: 0.18rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.dd-release__badge--latest {
+  color: var(--ifm-color-primary);
+  background: var(--ifm-color-primary-contrast-background);
+}
+
+.dd-release__badge--prerelease {
+  color: var(--ifm-color-warning);
+  background: var(--ifm-color-warning-contrast-background);
+}

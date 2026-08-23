@@ -1,0 +1,167 @@
+{
+  "bukkit-commands-permissions": {
+    "name": "Commands and Permissions",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/configuration/commands-and-permissions",
+      "1.3": "/Commands-and-Permissions"
+    }
+  },
+  "bukkit-configuration": {
+    "name": "Configuration",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/configuration/configuration",
+      "1.3": "/Configuration"
+    }
+  },
+  "bukkit-installation": {
+    "name": "Installation",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/getting-started/installation",
+      "1.3": "/Installation"
+    }
+  },
+  "bukkit-quick-start": {
+    "name": "Quick Start",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/getting-started/quick-start",
+      "1.3": "/Quick-Start"
+    }
+  },
+  "bukkit-troubleshooting": {
+    "name": "Troubleshooting",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/support/troubleshooting",
+      "1.3": "/Troubleshooting"
+    }
+  },
+  "bukkit-faq": {
+    "name": "FAQ",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/support/faq",
+      "1.3": "/FAQ"
+    }
+  },
+  "bukkit-compatibility": {
+    "name": "Compatibility",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/support/compatibility",
+      "1.3": "/Compatibility"
+    }
+  },
+  "bukkit-admin-runbook": {
+    "name": "Admin Runbook",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/bukkit/support/admin-runbook",
+      "1.3": "/Admin-Runbook"
+    }
+  },
+  "velocity-setup": {
+    "name": "Velocity Setup",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/configuration/setup",
+      "1.3": "/Proxy-Setup"
+    }
+  },
+  "velocity-configuration": {
+    "name": "Velocity Configuration",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/configuration/configuration",
+      "1.3": "/Configuration"
+    }
+  },
+  "velocity-installation": {
+    "name": "Velocity Installation",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/getting-started/installation",
+      "1.3": "/Installation"
+    }
+  },
+  "velocity-quick-start": {
+    "name": "Velocity Quick Start",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/getting-started/quick-start",
+      "1.3": "/Quick-Start"
+    }
+  },
+  "velocity-troubleshooting": {
+    "name": "Velocity Troubleshooting",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/support/troubleshooting",
+      "1.3": "/Troubleshooting"
+    }
+  },
+  "velocity-faq": {
+    "name": "Velocity FAQ",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/support/faq",
+      "1.3": "/FAQ"
+    }
+  },
+  "velocity-compatibility": {
+    "name": "Velocity Compatibility",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/velocity/support/compatibility",
+      "1.3": "/Compatibility"
+    }
+  },
+  "how-it-works": {
+    "name": "How It Works",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/concepts/how-it-works",
+      "1.3": "/How-It-Works"
+    }
+  },
+  "performance-and-safety-notes": {
+    "name": "Performance and Safety Notes",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/concepts/performance-and-safety-notes",
+      "1.3": "/Performance-and-Safety-Notes"
+    }
+  },
+  "api": {
+    "name": "API",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/concepts/api"
+    }
+  },
+  "telemetry": {
+    "name": "Telemetry",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/concepts/telemetry"
+    }
+  },
+  "development-and-releases": {
+    "name": "Development and Releases",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/contributing/development-and-releases",
+      "1.3": "/Development-and-Releases"
+    }
+  },
+  "translating": {
+    "name": "Translating",
+    "latest": "1.4",
+    "versions": {
+      "1.4": "/contributing/translating"
+    }
+  }
+}
