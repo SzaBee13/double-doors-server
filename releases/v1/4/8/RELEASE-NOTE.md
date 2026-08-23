@@ -1,6 +1,6 @@
 # DoubleDoors v1.4.8 Release Notes
 
-Release date: to be determined
+Release date: 2026-08-23
 
 ## Highlights
 
