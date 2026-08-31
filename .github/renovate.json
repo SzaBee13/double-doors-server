@@ -6,7 +6,7 @@
   ],
   "timezone": "UTC",
   "dependencyDashboard": false,
-  "schedule": ["0 6 * * 1"],
+  "schedule": ["* 6 * * 1"],
   "ignoreUnstable": true,
   "prHourlyLimit": 0,
   "prConcurrentLimit": 10,

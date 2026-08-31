@@ -156,26 +156,7 @@ jobs:
       - name: Define game versions
         id: game_versions
         run: |
-          cat << 'EOF' >> "$GITHUB_OUTPUT"
-          versions<<GAME_VERSIONS
-          1.21
-          1.21.1
-          1.21.2
-          1.21.3
-          1.21.4
-          1.21.5
-          1.21.6
-          1.21.7
-          1.21.8
-          1.21.9
-          1.21.10
-          1.21.11
-          26.1
-          26.1.1
-          26.1.2
-          26.2
-          GAME_VERSIONS
-          EOF
+          printf 'versions<<GAME_VERSIONS\n%s\nGAME_VERSIONS\n' "$(cat assets/actions/publish/game_versions.txt)" >> "$GITHUB_OUTPUT"
 
       - name: Publish Bukkit to CurseForge
         uses: Kira-NT/mc-publish@v3.3
@@ -301,6 +282,6 @@ jobs:
             }
           platform_dependencies: |
             {
-              "PAPER": ["1.21.x", "26.1.x", "26.2.x"],
-              "VELOCITY": [">=3.4"]
+              "PAPER": ["1.21.x", "26.1.x", "26.2"],
+              "VELOCITY": [">=3.4.0"]
             }

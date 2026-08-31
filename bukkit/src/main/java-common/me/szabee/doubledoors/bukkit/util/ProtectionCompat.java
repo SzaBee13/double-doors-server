@@ -483,12 +483,19 @@ public final class ProtectionCompat {
         );
         Method inst = wgPluginClass.getMethod("inst");
         Object wgPlugin = inst.invoke(null);
-        Method canBuild = wgPluginClass.getMethod(
-          "canBuild",
-          Player.class,
-          org.bukkit.Location.class
-        );
-        Object allowed = canBuild.invoke(wgPlugin, player, block.getLocation());
+        Object allowed;
+        try {
+          // WorldGuard versions that still expose the legacy Bukkit helper.
+          Method canBuild = wgPluginClass.getMethod(
+            "canBuild",
+            Player.class,
+            org.bukkit.Location.class
+          );
+          allowed = canBuild.invoke(wgPlugin, player, block.getLocation());
+        } catch (NoSuchMethodException ex) {
+          // Newer WorldGuard versions require checking the BUILD state flag.
+          allowed = queryWorldGuardBuildState(wgPlugin, player, block);
+        }
         if (allowed instanceof Boolean bool && !bool) {
           return "worldguard_build_denied";
         }
@@ -521,6 +528,76 @@ public final class ProtectionCompat {
       }
     }
     return "";
+  }
+
+  private static boolean queryWorldGuardBuildState(
+    Object worldGuardPlugin,
+    Player player,
+    Block block
+  ) throws ReflectiveOperationException {
+    Class<?> worldGuardClass = Class.forName(
+      "com.sk89q.worldguard.WorldGuard"
+    );
+    Object worldGuard = worldGuardClass.getMethod("getInstance").invoke(null);
+    Object platform = worldGuard
+      .getClass()
+      .getMethod("getPlatform")
+      .invoke(worldGuard);
+    Object regionContainer = platform
+      .getClass()
+      .getMethod("getRegionContainer")
+      .invoke(platform);
+    Object regionQuery = regionContainer
+      .getClass()
+      .getMethod("createQuery")
+      .invoke(regionContainer);
+
+    Class<?> bukkitAdapterClass = Class.forName(
+      "com.sk89q.worldedit.bukkit.BukkitAdapter"
+    );
+    Object adaptedLocation = bukkitAdapterClass
+      .getMethod("adapt", org.bukkit.Location.class)
+      .invoke(null, block.getLocation());
+    Object localPlayer = worldGuardPlugin
+      .getClass()
+      .getMethod("wrapPlayer", Player.class)
+      .invoke(worldGuardPlugin, player);
+
+    Class<?> flagsClass = Class.forName(
+      "com.sk89q.worldguard.protection.flags.Flags"
+    );
+    Object buildFlag = flagsClass.getField("BUILD").get(null);
+    Class<?> stateFlagClass = Class.forName(
+      "com.sk89q.worldguard.protection.flags.StateFlag"
+    );
+    Object stateFlags = Array.newInstance(stateFlagClass, 1);
+    Array.set(stateFlags, 0, buildFlag);
+
+    Method testState = null;
+    for (Method method : regionQuery.getClass().getMethods()) {
+      if (
+        method.getName().equals("testState") &&
+        method.getParameterCount() == 3 &&
+        method.getParameterTypes()[2].isArray()
+      ) {
+        testState = method;
+        break;
+      }
+    }
+    if (testState == null) {
+      throw new NoSuchMethodException("WorldGuard region query is unavailable");
+    }
+
+    Object result = testState.invoke(
+      regionQuery,
+      adaptedLocation,
+      localPlayer,
+      stateFlags
+    );
+    if (!(result instanceof Boolean)) {
+      throw new IllegalStateException("WorldGuard BUILD query returned no state");
+    }
+    return (Boolean) result;
   }
 
   private static boolean isWorldGuardUseAllowed(Player player, Block block) {
