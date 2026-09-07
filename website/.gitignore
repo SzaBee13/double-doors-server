@@ -8,6 +8,12 @@
 .docusaurus
 .cache-loader
 
+# Environment files
+.env
+.env.local
+.env.*.local
+!.env.example
+
 # Misc
 .DS_Store
 .env.local
