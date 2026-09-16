@@ -15,6 +15,14 @@ import type * as Preset from '@docusaurus/preset-classic';
   }
 });
 
+const hasAlgolia =
+  Boolean(process.env.ALGOLIA_APP_ID) &&
+  process.env.ALGOLIA_APP_ID !== 'YOUR_APP_ID' &&
+  Boolean(process.env.ALGOLIA_API_KEY) &&
+  process.env.ALGOLIA_API_KEY !== 'YOUR_SEARCH_API_KEY' &&
+  Boolean(process.env.ALGOLIA_INDEX_NAME) &&
+  process.env.ALGOLIA_INDEX_NAME !== 'YOUR_INDEX_NAME';
+
 const config: Config = {
   title: 'DoubleDoors',
   tagline: 'Synchronized doors and door-like blocks for Minecraft servers',
@@ -62,14 +70,18 @@ const config: Config = {
     colorMode: {
       respectPrefersColorScheme: true,
     },
-    algolia: {
-      appId: process.env.ALGOLIA_APP_ID || 'YOUR_APP_ID',
-      apiKey: process.env.ALGOLIA_API_KEY || 'YOUR_SEARCH_API_KEY',
-      indexName: process.env.ALGOLIA_INDEX_NAME || 'YOUR_INDEX_NAME',
-      contextualSearch: true,
-      searchParameters: {},
-      searchPagePath: 'search',
-    },
+    ...(hasAlgolia
+      ? {
+          algolia: {
+            appId: process.env.ALGOLIA_APP_ID!,
+            apiKey: process.env.ALGOLIA_API_KEY!,
+            indexName: process.env.ALGOLIA_INDEX_NAME!,
+            contextualSearch: true,
+            searchParameters: {},
+            searchPagePath: 'search',
+          },
+        }
+      : {}),
     navbar: {
       title: 'DoubleDoors',
       logo: {

@@ -595,7 +595,7 @@ public final class ProtectionCompat {
       stateFlags
     );
     if (!(result instanceof Boolean)) {
-      throw new IllegalStateException("WorldGuard BUILD query returned no state");
+      throw new NoSuchMethodException("WorldGuard BUILD query returned no state");
     }
     return (Boolean) result;
   }
