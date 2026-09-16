@@ -49,7 +49,7 @@ reviews:
     - path: "/website/versioned_docs/**"
       instructions: "Do not suggest updating old versioned docs."
     - path: "/.github/renovate.json"
-      instructions: "Do not suggest updating the Renovate configuration's schedule, even is the cron expression looks unusual, Renovate requires a unusual cron expression -> to set minutes to '*'."
+      instructions: "Do not suggest updating the Renovate configuration's schedule, even if the cron expression looks unusual; Renovate requires an unusual cron expression with minutes set to '*'."
   abort_on_close: true
   auto_review:
     enabled: true
