@@ -48,6 +48,8 @@ reviews:
       instructions: "Do not suggest adding missing strings or updating strings that are not translated, only suggest updating existing translated strings. Do not suggest removing translated strings. Do not suggest changing usage strings even when it's the same everywhere."
     - path: "/website/versioned_docs/**"
       instructions: "Do not suggest updating old versioned docs."
+    - path: "/.github/renovate.json"
+      instructions: "Do not suggest updating the Renovate configuration's schedule, even is the cron expression looks unusual, Renovate requires a unusual cron expression -> to set minutes to '*'."
   abort_on_close: true
   auto_review:
     enabled: true
