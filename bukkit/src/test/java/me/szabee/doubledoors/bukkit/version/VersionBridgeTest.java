@@ -19,8 +19,8 @@ class VersionBridgeTest {
     try (MockedStatic<Bukkit> mockedBukkit = mockStatic(Bukkit.class)) {
       mockedBukkit
         .when(Bukkit::getBukkitVersion)
-        .thenReturn("26.1-R0.1-SNAPSHOT");
-      assertEquals("26.1-R0.1-SNAPSHOT", bridge.getServerApiVersion());
+        .thenReturn("26.3-R0.1-SNAPSHOT");
+      assertEquals("26.3-R0.1-SNAPSHOT", bridge.getServerApiVersion());
 
       mockedBukkit.when(Bukkit::getBukkitVersion).thenReturn("");
       assertEquals("unknown", bridge.getServerApiVersion());
