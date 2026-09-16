@@ -7,7 +7,7 @@ This file tells AI coding agents how to work effectively in this repository.
 | Item | Value |
 | --- | --- |
 | Language | Java 25+ |
-| Framework | Bukkit/Spigot 1.21.x, 26.1.x, 26.2.x |
+| Framework | Bukkit/Spigot 1.21.x, 26.1.x, 26.2.x, 26.3.x |
 | Build | Gradle (`./gradlew build`) |
 | Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
 
@@ -18,7 +18,7 @@ This file tells AI coding agents how to work effectively in this repository.
 
 ## Key source files
 
-| File | Role |
+| File | Purpose |
 | --- | --- |
 | [`DoubleDoors.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
 | [`PluginConfig.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
@@ -84,5 +84,4 @@ What you should add to the developer notes (in release notes dropdown):
 
 ## Documentation
 
-EVERY CHANGE **MUST** BE DOCUMENTED IN `releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md`.
-If necessary, update the GitHub Wiki at `wiki/`.
+Updates to the documentation should be made in `website/docs/` not in the versioned docs, because those are for the past versions only.
