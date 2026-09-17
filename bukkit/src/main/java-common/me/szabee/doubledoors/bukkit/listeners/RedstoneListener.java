@@ -311,13 +311,12 @@ public final class RedstoneListener implements Listener {
 
         boolean effectiveOpenState = anyPowered ? true : openable.isOpen();
 
-        BlockFace targetGateFacing = null;
-        for (Block b : allBlocks) {
-          if (b.getBlockData() instanceof Gate gate) {
-            targetGateFacing = gate.getFacing();
-            break;
-          }
-        }
+        Gate originGate = originData instanceof Gate originGateData
+          ? originGateData
+          : null;
+        BlockFace targetGateFacing = originGate == null
+          ? null
+          : originGate.getFacing();
 
         // Snapshot first to avoid any ordering effects while mutating a connected component.
         Map<Block, BlockData> snapshot = new HashMap<>();
