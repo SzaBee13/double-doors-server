@@ -24,6 +24,7 @@ Release date: 2026-09-
 ## Fixed
 
 - Fixed WorldGuard build-permission compatibility when legacy `WorldGuardPlugin.canBuild()` method is absent in newer WorldGuard versions.
+- Fixed Fence Gates's redstone handler when powered by multiple redstone sources.
 
 ## Breaking Changes
 
@@ -38,7 +39,6 @@ None.
   <li>Updated Paper dev bundle dependency to 26.3.</li>
   <li>Added <code>RegionQuery.testState(..., Flags.BUILD)</code> fallback logic in <code>ProtectionCompat</code> for WorldGuard.</li>
   <li>Added comprehensive unit tests for <code>ProtectionCompat</code>.</li>
-  <li>Added game version manifest file at <code>assets/actions/publish/game_versions.txt</code>.</li>
   <li>Updated CodeRabbit and Renovate configuration.</li>
 </ul>
 </details>
