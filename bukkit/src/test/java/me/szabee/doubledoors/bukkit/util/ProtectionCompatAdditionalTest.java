@@ -2,6 +2,7 @@ package me.szabee.doubledoors.bukkit.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
 import static org.mockito.Mockito.when;
@@ -87,6 +88,17 @@ class ProtectionCompatAdditionalTest {
     try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
       bukkit.when(Bukkit::getPluginManager).thenReturn(pm);
       assertFalse(ProtectionCompat.isLocationAllowed(plugin, block));
+    }
+  }
+
+  @Test
+  void testIsLocationAllowedWhitelistAllowsListedLocation() {
+    Block block = block("WORLD", 1, 2, 3);
+    PluginConfig config = config(PluginConfig.LocationMode.WHITELIST, Set.of("world:1:2:3"));
+    PluginManager pm = managerWith(null);
+    try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+      bukkit.when(Bukkit::getPluginManager).thenReturn(pm);
+      assertTrue(ProtectionCompat.isLocationAllowed(plugin(config), block));
     }
   }
 
