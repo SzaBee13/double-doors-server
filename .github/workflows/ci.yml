@@ -33,7 +33,7 @@ jobs:
         uses: codecov/codecov-action@v7
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
-          files: core/build/reports/jacoco/test/jacocoTestReport.xml,bukkit/build/reports/jacoco/test/jacocoTestReport.xml,velocity/build/reports/jacoco/test/jacocoTestReport.xml
+          files: core/build/reports/jacoco/test/jacocoTestReport.xml,loaders/bukkit/build/reports/jacoco/test/jacocoTestReport.xml,loaders/velocity/build/reports/jacoco/test/jacocoTestReport.xml
 
       - name: Upload build outputs
         if: failure()
@@ -41,6 +41,6 @@ jobs:
         with:
           name: gradle-build-outputs
           path: |
-            bukkit/build/libs/*
-            velocity/build/libs/*
+            loaders/bukkit/build/libs/*
+            loaders/velocity/build/libs/*
             core/build/libs/*

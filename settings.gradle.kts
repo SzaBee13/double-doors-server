@@ -46,3 +46,7 @@ dependencyResolutionManagement {
 
 rootProject.name = "doubledoors-parent"
 include("core", "bukkit", "paper", "velocity")
+
+project(":bukkit").projectDir = file("loaders/bukkit")
+project(":paper").projectDir = file("loaders/paper")
+project(":velocity").projectDir = file("loaders/velocity")

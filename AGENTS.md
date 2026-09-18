@@ -9,7 +9,7 @@ This file tells AI coding agents how to work effectively in this repository.
 | Language | Java 25+ |
 | Framework | Bukkit/Spigot 1.21.x, 26.1.x, 26.2.x, 26.3.x |
 | Build | Gradle (`./gradlew build`) |
-| Output | `bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
+| Output | `loaders/bukkit/build/libs/doubledoors-bukkit-<version>.jar`, `loaders/velocity/build/libs/doubledoors-velocity-<version>.jar` (shaded) |
 
 ## Source Control (Git)
 
@@ -20,15 +20,15 @@ This file tells AI coding agents how to work effectively in this repository.
 
 | File | Purpose |
 | --- | --- |
-| [`DoubleDoors.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
-| [`PluginConfig.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
-| [`PlayerPreferences.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PlayerPreferences.java) | Reads/writes `players.yml` (per-player settings, persistent) |
-| [`DoorInteractListener.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/DoorInteractListener.java) | Player right-click linking logic |
-| [`RedstoneListener.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/RedstoneListener.java) | Redstone power changes + villager AI door events |
-| [`DoorUtil.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/DoorUtil.java) | Block-search utilities (mirrored partner, BFS connected set) |
-| [`ProtectionCompat.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/ProtectionCompat.java) | Reflective GriefPrevention integration |
-| [`TranslationManager.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationManager.java) | Locale-aware translation lookups (player vs. console) |
-| [`TranslationCatalog.java`](bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationCatalog.java) | Language file loading, available-languages list |
+| [`DoubleDoors.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/DoubleDoors.java) | Plugin lifecycle, command handling, tab completion |
+| [`PluginConfig.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PluginConfig.java) | Reads/writes `config.yml` (server-wide settings) |
+| [`PlayerPreferences.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/config/PlayerPreferences.java) | Reads/writes `players.yml` (per-player settings, persistent) |
+| [`DoorInteractListener.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/DoorInteractListener.java) | Player right-click linking logic |
+| [`RedstoneListener.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/listeners/RedstoneListener.java) | Redstone power changes + villager AI door events |
+| [`DoorUtil.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/DoorUtil.java) | Block-search utilities (mirrored partner, BFS connected set) |
+| [`ProtectionCompat.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/util/ProtectionCompat.java) | Reflective GriefPrevention integration |
+| [`TranslationManager.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationManager.java) | Locale-aware translation lookups (player vs. console) |
+| [`TranslationCatalog.java`](loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit/i18n/TranslationCatalog.java) | Language file loading, available-languages list |
 
 ## Coding conventions
 
@@ -46,7 +46,7 @@ This file tells AI coding agents how to work effectively in this repository.
 When releasing a new version:
 
 1. Update `version` in `gradle.properties`.
-2. Update `version:` in `bukkit/src/main/resources/plugin.yml`.
+2. Update `version:` in `loaders/bukkit/src/main/resources/plugin.yml`.
 3. Create `assets/releases/v<major>/<minor>/<patch>/RELEASE-NOTE.md` using `assets/releases/RELEASE-NOTE-EXAMPLE.md` as a template. DO NOT add a release date to the top of the file.
 4. If `javaRelease` changed, call out the new required Java runtime in release notes/upgrade guide and notify operators before deployment.
 

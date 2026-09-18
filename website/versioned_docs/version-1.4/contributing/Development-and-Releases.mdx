@@ -18,17 +18,17 @@ Build:
 
 Artifact:
 
-- bukkit/build/libs/doubledoors-bukkit-&lt;version&gt;.jar
-- velocity/build/libs/doubledoors-velocity-&lt;version&gt;.jar
+- loaders/bukkit/build/libs/doubledoors-bukkit-&lt;version&gt;.jar
+- loaders/velocity/build/libs/doubledoors-velocity-&lt;version&gt;.jar
 
 ## Source Layout
 
-- bukkit/src/main/java-common/me/szabee/doubledoors/bukkit
-- bukkit/src/main/java-v26_2_x/me/szabee/doubledoors/bukkit/version
+- loaders/bukkit/src/main/java-common/me/szabee/doubledoors/bukkit
+- loaders/bukkit/src/main/java-v26_2_x/me/szabee/doubledoors/bukkit/version
 - core/src/main/java/me/szabee/doubledoors
-- velocity/src/main/java/me/szabee/doubledoors/velocity
-- bukkit/src/main/resources/config.yml
-- bukkit/src/main/resources/plugin.yml
+- loaders/velocity/src/main/java/me/szabee/doubledoors/velocity
+- loaders/bukkit/src/main/resources/config.yml
+- loaders/bukkit/src/main/resources/plugin.yml
 
 ## Coding Rules
 
@@ -49,7 +49,7 @@ Artifact:
 ## Release Checklist
 
 1. Update version in `gradle.properties`.
-2. Update version in `bukkit/src/main/resources/plugin.yml`.
+2. Update version in `loaders/bukkit/src/main/resources/plugin.yml`.
 3. Build with `./gradlew build`.
 4. Smoke-test on Paper 1.21.
 5. Create release notes under `assets/releases/v&lt;major&gt;/&lt;minor&gt;/&lt;patch&gt;/RELEASE-NOTE.md`.
@@ -58,5 +58,5 @@ Artifact:
 ## Documentation Checklist
 
 - Keep wiki configuration keys in sync with src/main/resources/config.yml.
-- Keep command/permission docs in sync with `bukkit/src/main/resources/plugin.yml` and command handler behavior.
+- Keep command/permission docs in sync with `loaders/bukkit/src/main/resources/plugin.yml` and command handler behavior.
 - Update troubleshooting page if behavior around recursive opening or compatibility changes.
