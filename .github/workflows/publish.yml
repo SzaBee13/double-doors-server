@@ -127,9 +127,9 @@ jobs:
           REST="${VERSION_BASE#*.}"
           MINOR="${REST%%.*}"
           PATCH="${REST#*.}"
-          RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/RELEASE-NOTE.md"
-          if [ -n "$VERSION_SUFFIX" ] && [ -f "releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md" ]; then
-            RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md"
+          RELEASE_NOTE_FILE="assets/releases/v${MAJOR}/${MINOR}/${PATCH}/RELEASE-NOTE.md"
+          if [ -n "$VERSION_SUFFIX" ] && [ -f "assets/releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md" ]; then
+            RELEASE_NOTE_FILE="assets/releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md"
           fi
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
