@@ -1,6 +1,27 @@
+import fs from 'fs';
+import path from 'path';
+import dotenv from 'dotenv';
 import {themes as prismThemes} from 'prism-react-renderer';
 import type {Config} from '@docusaurus/types';
 import type * as Preset from '@docusaurus/preset-classic';
+
+// Load environment variables from .env, .env.local, and environment-specific files
+['.env', '.env.local', `.env.${process.env.NODE_ENV}`, `.env.${process.env.NODE_ENV}.local`].forEach((file) => {
+  if (file) {
+    const envPath = path.resolve(__dirname, file);
+    if (fs.existsSync(envPath)) {
+      dotenv.config({ path: envPath, override: true });
+    }
+  }
+});
+
+const hasAlgolia =
+  Boolean(process.env.ALGOLIA_APP_ID) &&
+  process.env.ALGOLIA_APP_ID !== 'YOUR_APP_ID' &&
+  Boolean(process.env.ALGOLIA_API_KEY) &&
+  process.env.ALGOLIA_API_KEY !== 'YOUR_SEARCH_API_KEY' &&
+  Boolean(process.env.ALGOLIA_INDEX_NAME) &&
+  process.env.ALGOLIA_INDEX_NAME !== 'YOUR_INDEX_NAME';
 
 const config: Config = {
   title: 'DoubleDoors',
@@ -49,6 +70,18 @@ const config: Config = {
     colorMode: {
       respectPrefersColorScheme: true,
     },
+    ...(hasAlgolia
+      ? {
+          algolia: {
+            appId: process.env.ALGOLIA_APP_ID!,
+            apiKey: process.env.ALGOLIA_API_KEY!,
+            indexName: process.env.ALGOLIA_INDEX_NAME!,
+            contextualSearch: true,
+            searchParameters: {},
+            searchPagePath: 'search',
+          },
+        }
+      : {}),
     navbar: {
       title: 'DoubleDoors',
       logo: {

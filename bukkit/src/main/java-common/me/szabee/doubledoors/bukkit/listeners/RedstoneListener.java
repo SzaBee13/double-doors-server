@@ -233,10 +233,6 @@ public final class RedstoneListener implements Listener {
           return;
         }
 
-        boolean openState = openable.isOpen();
-        BlockFace targetGateFacing =
-          originData instanceof Gate gate ? gate.getFacing() : null;
-
         if (originData instanceof Door) {
           DoorUtil.MirrorSearchResult search =
             DoorUtil.analyzeMirroredDoubleDoorPartner(normalizedOrigin);
@@ -256,31 +252,36 @@ public final class RedstoneListener implements Listener {
             return;
           }
 
-          if (linked.isOpen() == openState) {
-            return;
+          boolean originPowered = isBlockPowered(normalizedOrigin);
+          boolean partnerPowered = isBlockPowered(partner);
+          boolean effectiveOpenState = (originPowered || partnerPowered)
+            ? true
+            : openable.isOpen();
+
+          if (openable.isOpen() != effectiveOpenState) {
+            openable.setOpen(effectiveOpenState);
+            normalizedOrigin.setBlockData(openable, false);
+            plugin.playLinkedFeedback(normalizedOrigin, OpenableType.DOOR);
+
+            Block originTop = normalizedOrigin.getRelative(BlockFace.UP);
+            BlockData originTopData = originTop.getBlockData();
+            if (originTopData instanceof Openable originTopOpenable) {
+              originTopOpenable.setOpen(effectiveOpenState);
+              originTop.setBlockData(originTopData, false);
+            }
           }
 
-          Block partnerTop = partner.getRelative(BlockFace.UP);
-          // When closing, skip the partner if it still has its own redstone power.
-          if (
-            !openState &&
-            (partner.isBlockPowered() ||
-              partner.isBlockIndirectlyPowered() ||
-              partnerTop.isBlockPowered() ||
-              partnerTop.isBlockIndirectlyPowered())
-          ) {
-            return;
-          }
+          if (linked.isOpen() != effectiveOpenState) {
+            linked.setOpen(effectiveOpenState);
+            partner.setBlockData(linked, false);
+            plugin.playLinkedFeedback(partner, OpenableType.DOOR);
 
-          linked.setOpen(openState);
-          partner.setBlockData(linked, false);
-          plugin.playLinkedFeedback(partner, OpenableType.DOOR);
-
-          // Keep the upper half of the partner door in sync too.
-          BlockData topData = partnerTop.getBlockData();
-          if (topData instanceof Openable topOpenable) {
-            topOpenable.setOpen(openState);
-            partnerTop.setBlockData(topData, false);
+            Block partnerTop = partner.getRelative(BlockFace.UP);
+            BlockData partnerTopData = partnerTop.getBlockData();
+            if (partnerTopData instanceof Openable partnerTopOpenable) {
+              partnerTopOpenable.setOpen(effectiveOpenState);
+              partnerTop.setBlockData(partnerTopData, false);
+            }
           }
           return;
         }
@@ -297,9 +298,29 @@ public final class RedstoneListener implements Listener {
           return;
         }
 
+        Set<Block> allBlocks = new HashSet<>(connected);
+        allBlocks.add(normalizedOrigin);
+
+        boolean anyPowered = false;
+        for (Block b : allBlocks) {
+          if (isBlockPowered(b)) {
+            anyPowered = true;
+            break;
+          }
+        }
+
+        boolean effectiveOpenState = anyPowered ? true : openable.isOpen();
+
+        Gate originGate = originData instanceof Gate originGateData
+          ? originGateData
+          : null;
+        BlockFace targetGateFacing = originGate == null
+          ? null
+          : originGate.getFacing();
+
         // Snapshot first to avoid any ordering effects while mutating a connected component.
         Map<Block, BlockData> snapshot = new HashMap<>();
-        for (Block block : connected) {
+        for (Block block : allBlocks) {
           snapshot.put(block, block.getBlockData());
         }
 
@@ -309,7 +330,7 @@ public final class RedstoneListener implements Listener {
           if (!(data instanceof Openable linked)) {
             continue;
           }
-          if (linked.isOpen() == openState) {
+          if (linked.isOpen() == effectiveOpenState) {
             continue;
           }
 
@@ -317,28 +338,23 @@ public final class RedstoneListener implements Listener {
             continue;
           }
 
-          // When closing, skip blocks that still have their own redstone power.
-          if (!openState) {
-            Block upper = data instanceof Door
-              ? block.getRelative(BlockFace.UP)
-              : block;
-            if (
-              block.isBlockPowered() ||
-              block.isBlockIndirectlyPowered() ||
-              upper.isBlockPowered() ||
-              upper.isBlockIndirectlyPowered()
-            ) {
-              continue;
-            }
-          }
-
           if (
-            openState && targetGateFacing != null && linked instanceof Gate gate
+            effectiveOpenState && targetGateFacing != null && linked instanceof Gate gate
           ) {
             gate.setFacing(targetGateFacing);
           }
-          linked.setOpen(openState);
+          linked.setOpen(effectiveOpenState);
           block.setBlockData(linked, false);
+
+          if (data instanceof Door) {
+            Block upper = block.getRelative(BlockFace.UP);
+            BlockData upperData = upper.getBlockData();
+            if (upperData instanceof Openable upperOpenable) {
+              upperOpenable.setOpen(effectiveOpenState);
+              upper.setBlockData(upperData, false);
+            }
+          }
+
           OpenableType type = OpenableType.fromBlockData(
             block.getBlockData(),
             block.getType()
@@ -350,6 +366,22 @@ public final class RedstoneListener implements Listener {
         }
       }
     );
+  }
+
+  private boolean isBlockPowered(Block block) {
+    if (block.isBlockPowered() || block.isBlockIndirectlyPowered()) {
+      return true;
+    }
+    BlockData data = block.getBlockData();
+    if (data instanceof Bisected bisected) {
+      Block otherHalf = bisected.getHalf() == Half.BOTTOM
+        ? block.getRelative(BlockFace.UP)
+        : block.getRelative(BlockFace.DOWN);
+      if (otherHalf.isBlockPowered() || otherHalf.isBlockIndirectlyPowered()) {
+        return true;
+      }
+    }
+    return false;
   }
 
   private Block normalizeOriginBlock(Block block) {

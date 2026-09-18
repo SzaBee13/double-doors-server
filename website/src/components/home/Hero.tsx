@@ -34,7 +34,7 @@ export default function Hero(): ReactNode {
         <div className="dd-hero__meta">
           <span>Java 25+</span>
           <span aria-hidden="true">•</span>
-          <span>Minecraft 1.21.x · 26.1.x · 26.2.x</span>
+          <span>Minecraft 1.21.x · 26.1.x · 26.2.x · 26.3.x</span>
           <span aria-hidden="true">•</span>
           <Link to="/translate">Help translate</Link>
         </div>

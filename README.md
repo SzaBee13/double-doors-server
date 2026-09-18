@@ -10,7 +10,11 @@
 [![Online servers](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Donline_servers&style=flat)](https://faststats.dev/project/double-doors-server)
 [![Total downloads](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Ddownloads%26label%3DDownloads&style=flat)](https://faststats.dev/project/double-doors-server)
 
-A Bukkit/Spigot plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
+A plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
+
+## Documentation
+
+For detailed documentation, see the [documentation](https://doubledoors.szabee.me).
 
 ## Features
 
@@ -29,7 +33,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, and `26.2.x`.
+- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, `26.2.x`, and `26.3.x`.
 
 ### Geyser / Floodgate
 
@@ -65,139 +69,6 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 - Automatic detection of Geyser/Floodgate clients
 - Support for SQLite and MySQL databases
 - Connection pooling via HikariCP for efficient SQL resource usage
-
-### Proxy Installation
-
-1. Download the Velocity JAR from the releases page (`doubledoors-velocity-<version>.jar`)
-2. Place it in your Velocity `plugins/` directory
-3. Restart the proxy
-4. A `plugins/DoubleDoors/proxy-config.properties` file will be generated
-
-### Proxy Configuration
-
-Edit `plugins/DoubleDoors/proxy-config.properties`:
-
-```properties
-# Enable SQL heartbeat reporting (requires Geyser/Floodgate on this proxy)
-sql.enabled=false
-
-# JDBC URL for the shared database
-# SQLite example: jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
-# MySQL example: jdbc:mysql://localhost:3306/doubledoors
-sql.jdbcUrl=jdbc:sqlite:plugins/DoubleDoors/doubledoors.db
-
-# SQL authentication (leave blank for SQLite)
-sql.username=
-sql.password=
-
-# Unique proxy identifier (for multi-proxy setups)
-sql.proxyId=velocity-main
-
-# Heartbeat interval in seconds (minimum 5 seconds)
-sql.heartbeatSeconds=30
-```
-
-### Multi-Proxy Example
-
-For a setup with multiple Velocity proxies reporting to a shared MySQL database:
-
-**Proxy 1:**
-```properties
-sql.enabled=true
-sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
-sql.username=dd_user
-sql.password=dd_pass
-sql.proxyId=velocity-us
-sql.heartbeatSeconds=30
-```
-
-**Proxy 2:**
-```properties
-sql.enabled=true
-sql.jdbcUrl=jdbc:mysql://db.example.com:3306/doubledoors
-sql.username=dd_user
-sql.password=dd_pass
-sql.proxyId=velocity-eu
-sql.heartbeatSeconds=30
-```
-
-## Commands
-
-- `/doubledoors reload` - reload config
-- `/doubledoors toggle` - toggle behavior for yourself
-- `/doubledoors knock-volume <0-1>` - set personal knock sound volume
-- `/doubledoors server-toggle` - toggle behavior server-wide
-- `/doubledoors locale [code|credits|credit <code>]` - view or set your locale
-
-## Permissions
-
-- `doubledoors.use` (default: `true`)
-- `doubledoors.knock` (default: `true`)
-- `doubledoors.knock.volume` (default: `true`)
-- `doubledoors.autoclose` (default: `true`)
-- `doubledoors.iron.manual` (default: `op`)
-- `doubledoors.toggle` (default: `true`)
-- `doubledoors.toggle.autoclose` (default: `true`)
-- `doubledoors.toggle.knock` (default: `true`)
-- `doubledoors.locale` (default: `true`)
-- `doubledoors.reload` (default: `op`)
-- `doubledoors.server-toggle` (default: `op`)
-- `doubledoors.grief` (default: `true`)
-- `doubledoors.debug` (default: `op`)
-- `doubledoors.preview` (default: `true`)
-- `doubledoors.update.notify` (default: `op`)
-
-## Config
-
-`bukkit/src/main/resources/config.yml`
-
-- `enableRecursiveOpening` (default: `true`)
-- `recursiveOpeningMaxBlocksDistance` (default: `10`)
-- `enableDoors` (default: `true`)
-- `enableFenceGates` (default: `true`)
-- `enableTrapdoors` (default: `true`)
-- `enableVillagerLinkedDoors` (default: `true`)
-- `serverWideEnabled` (default: `true`)
-- `perPlayerLocaleEnabled` (default: `true`)
-- `language` (default: `en_US`)
-
-### Update Checker
-
-- Built-in update checks are controlled by `updateChecker.enabled` in `config.yml`.
-- If a standalone `PluginUpdater` plugin is installed, DoubleDoors automatically disables its own built-in checks to avoid duplicate notifications.
-- Startup logs explicitly state whether update checks are:
-  - enabled via DoubleDoors built-in updater,
-  - disabled by config,
-  - or delegated to standalone `PluginUpdater`.
-- When delegating to standalone `PluginUpdater`, configure that plugin to include DoubleDoors update notifications.
-
-Troubleshooting:
-
-- If you do not receive update notifications, first check startup logs to see which updater path is active.
-- If built-in checks are active, verify `updateChecker.enabled` and related notify/schedule settings.
-- If checks are delegated, verify standalone `PluginUpdater` configuration and permissions for who should receive update notices.
-
-Language files:
-
-- Built-in fallback file: `src/main/resources/lang/en_US.json`
-- Runtime custom language folder: `plugins/DoubleDoors/lang/`
-- Set active language with `language: <code>` in `config.yml` (example: `language: de_DE`)
-- Custom files are JSON objects of key/value strings and override built-in messages when present.
-
-## Build
-
-Requirements:
-
-- Java 25+
-- Gradle
-
-Build command:
-
-```bash
-./gradlew build
-```
-
-Output jars are generated under `bukkit/build/libs/` and `velocity/build/libs/`.
 
 ## License
 

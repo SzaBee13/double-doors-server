@@ -11,6 +11,10 @@
 
 A Bukkit/Spigot plugin that opens mirrored double doors together, with low-latency syncing and optional compatibility handling for common server stacks.
 
+## Documentation
+
+For detailed documentation, see the [documentation](https://doubledoors.szabee.me).
+
 ## Features
 
 - Same-tick partner door sync
@@ -35,7 +39,7 @@ A Bukkit/Spigot plugin that opens mirrored double doors together, with low-laten
 
 ## Compatibility
 
-- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, and `26.2.x`.
+- Supports Minecraft Java Edition `1.21.x`, `26.1.x`, `26.2.x`, and `26.3.x`.
 - Java 25+ Runtime
 
 ### Geyser / Floodgate
@@ -68,50 +72,6 @@ DoubleDoors includes an optional **Velocity proxy plugin** for Geyser/Floodgate 
 - Automatic detection of Geyser/Floodgate clients
 - Support for SQLite and MySQL databases
 - Connection pooling via HikariCP for efficient SQL resource usage
-
-### Proxy Installation
-
-1. Download the proxy JAR from the releases page (`doubledoors-velocity-<version>.jar`)
-2. Place it in your Velocity `plugins/` directory
-3. Restart the proxy
-4. A `plugins/DoubleDoors/proxy-config.properties` file will be generated
-
-### Proxy Configuration
-
-Edit `plugins/DoubleDoors/proxy-config.properties`
-
-For more, visit the [documentation](https://doubledoors.szabee.me/redirect?page=velocity-setup)
-
-## Commands
-
-- `/doubledoors reload` - reload config
-- `/doubledoors toggle` - toggle behavior for yourself
-
-Alias: `dd`
-
-Check out more commands at the [documentation](https://doubledoors.szabee.me/redirect?page=bukkit-commands-permissions)
-
-## Permissions
-
-- `doubledoors.use` (default: `true`)
-- `doubledoors.toggle` (default: `true`)
-- `doubledoors.reload` (default: `op`)
-
-Check out more permissions at the [documentation](https://doubledoors.szabee.me/redirect?page=bukkit-commands-permissions)
-
-## Config
-
-`bukkit/src/main/resources/config.yml`
-
-- `enableRecursiveOpening` (default: `true`)
-- `recursiveOpeningMaxBlocksDistance` (default: `10`)
-- `enableDoors` (default: `true`)
-- `enableFenceGates` (default: `true`)
-- `enableTrapdoors` (default: `true`)
-- `enableVillagerLinkedDoors` (default: `true`)
-- `serverWideEnabled` (default: `true`)
-- `perPlayerLocaleEnabled` (default: `true`)
-- `language` (default: `en_US`)
 
 ## Language
 
