@@ -13,3 +13,8 @@ This file contains updates that we need to document in a later release when that
 | com.mysql:mysql-connector-j | 9.7.0 | 26.7.0 |
 | actions/setup-java | v5 | v6 |
 | crowdin/github-action | v2 | v3 |
+
+## Developer Notes
+
+- Moved the Bukkit, Paper, and Velocity loader modules under `loaders/` while
+  preserving their Gradle project names (`:bukkit`, `:paper`, and `:velocity`).

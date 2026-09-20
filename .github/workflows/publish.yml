@@ -36,12 +36,12 @@ jobs:
       - name: Get Bukkit JAR path
         id: bukkit_artifact
         run: |
-          JAR_PATH=$(find bukkit/build/libs -maxdepth 1 -name "doubledoors-bukkit-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          JAR_PATH=$(find loaders/bukkit/build/libs -maxdepth 1 -name "doubledoors-bukkit-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
 
           if [ -z "$JAR_PATH" ]; then
             echo "Could not find a publishable Bukkit JAR." >&2
-            echo "Contents of bukkit/build/libs:" >&2
-            ls -la bukkit/build/libs >&2 || true
+            echo "Contents of loaders/bukkit/build/libs:" >&2
+            ls -la loaders/bukkit/build/libs >&2 || true
             exit 1
           fi
 
@@ -50,12 +50,12 @@ jobs:
       - name: Get Velocity JAR path
         id: proxy_artifact
         run: |
-          PROXY_JAR_PATH=$(find velocity/build/libs -maxdepth 1 -name "doubledoors-velocity-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          PROXY_JAR_PATH=$(find loaders/velocity/build/libs -maxdepth 1 -name "doubledoors-velocity-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
 
           if [ -z "$PROXY_JAR_PATH" ]; then
             echo "Could not find a publishable Velocity JAR." >&2
-            echo "Contents of velocity/build/libs:" >&2
-            ls -la velocity/build/libs >&2 || true
+            echo "Contents of loaders/velocity/build/libs:" >&2
+            ls -la loaders/velocity/build/libs >&2 || true
             exit 1
           fi
 
@@ -64,12 +64,12 @@ jobs:
       - name: Get Paper JAR path
         id: paper_artifact
         run: |
-          PAPER_JAR_PATH=$(find paper/build/libs -maxdepth 1 -name "doubledoors-paper-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
+          PAPER_JAR_PATH=$(find loaders/paper/build/libs -maxdepth 1 -name "doubledoors-paper-*.jar" -not -name "*sources*" -not -name "*javadoc*" | head -n 1)
 
           if [ -z "$PAPER_JAR_PATH" ]; then
             echo "Could not find a publishable Paper JAR." >&2
-            echo "Contents of paper/build/libs:" >&2
-            ls -la paper/build/libs >&2 || true
+            echo "Contents of loaders/paper/build/libs:" >&2
+            ls -la loaders/paper/build/libs >&2 || true
             exit 1
           fi
 
@@ -127,9 +127,9 @@ jobs:
           REST="${VERSION_BASE#*.}"
           MINOR="${REST%%.*}"
           PATCH="${REST#*.}"
-          RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/RELEASE-NOTE.md"
-          if [ -n "$VERSION_SUFFIX" ] && [ -f "releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md" ]; then
-            RELEASE_NOTE_FILE="releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md"
+          RELEASE_NOTE_FILE="assets/releases/v${MAJOR}/${MINOR}/${PATCH}/RELEASE-NOTE.md"
+          if [ -n "$VERSION_SUFFIX" ] && [ -f "assets/releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md" ]; then
+            RELEASE_NOTE_FILE="assets/releases/v${MAJOR}/${MINOR}/${PATCH}/${VERSION_SUFFIX}.md"
           fi
           DELIMITER="RELEASE_NOTES_$(date +%s%N)"
 
@@ -198,7 +198,7 @@ jobs:
             25
           game-version-filter: none
 
-      - name: Publish Paper, Purpur, and Folia to Modrinth
+      - name: Publish Paper to Modrinth
         uses: Kira-NT/mc-publish@v3.3
         with:
           modrinth-id: ${{ vars.MODRINTH_ID }}
@@ -207,7 +207,6 @@ jobs:
           name: 'Double Doors Paper ${{ steps.version.outputs.version }}'
           version: 'paper-${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
-          changelog: ${{ steps.release_notes.outputs.body }}
           loaders: |
             paper
             purpur
@@ -226,7 +225,6 @@ jobs:
           name: 'Double Doors Velocity ${{ steps.version.outputs.version }}'
           version: 'velocity-${{ steps.version.outputs.version }}'
           version-type: ${{ steps.release_channel.outputs.version_type }}
-          changelog: 'Velocity for Double Doors Server ${{ steps.version.outputs.version }}. more details below'
           loaders: |
             velocity
           game-versions: ${{ steps.game_versions.outputs.versions }}
