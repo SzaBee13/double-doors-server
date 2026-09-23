@@ -30,12 +30,14 @@ class ProtectionCompatTest {
    */
   static final class FakeDataStore {
     private final Object claim;
+    private boolean lastIgnoreHeight;
 
     FakeDataStore(Object claim) {
       this.claim = claim;
     }
 
     public Object getClaimAt(Location location, boolean includeNested) {
+      lastIgnoreHeight = includeNested;
       return claim;
     }
   }
@@ -119,9 +121,24 @@ class ProtectionCompatTest {
     return gp;
   }
 
+  private static Plugin griefPrevention3DWithDataStore(Object dataStore) {
+    Plugin gp = griefPreventionWithDataStore(dataStore);
+    when(gp.getName()).thenReturn("GriefPrevention3D");
+    return gp;
+  }
+
   private static PluginManager managerWith(Plugin griefPreventionPlugin) {
     PluginManager pm = mock(PluginManager.class);
     when(pm.getPlugin("GriefPrevention")).thenReturn(griefPreventionPlugin);
+    when(pm.getPlugin("GriefPrevention3D")).thenReturn(null);
+    when(pm.getPlugin("WorldGuard")).thenReturn(null);
+    return pm;
+  }
+
+  private static PluginManager managerWith3D(Plugin griefPreventionPlugin) {
+    PluginManager pm = mock(PluginManager.class);
+    when(pm.getPlugin("GriefPrevention")).thenReturn(null);
+    when(pm.getPlugin("GriefPrevention3D")).thenReturn(griefPreventionPlugin);
     when(pm.getPlugin("WorldGuard")).thenReturn(null);
     return pm;
   }
@@ -214,12 +231,31 @@ class ProtectionCompatTest {
     Block block = block("world", 7, 7, 7);
     PluginConfig config = config(PluginConfig.LocationMode.BLACKLIST, Set.of());
     DoubleDoors plugin = plugin(config);
+    FakeDataStore dataStore = new FakeDataStore(null);
     PluginManager pm =
-      managerWith(griefPreventionWithDataStore(new FakeDataStore(null)));
+      managerWith(griefPreventionWithDataStore(dataStore));
 
     try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
       bukkit.when(Bukkit::getPluginManager).thenReturn(pm);
       assertEquals("", ProtectionCompat.explainLinkedDoorDeniedReason(plugin, null, block));
+      assertTrue(dataStore.lastIgnoreHeight);
+    }
+  }
+
+  @Test
+  void testGriefPrevention3DRespectsClaimHeight() {
+    Block block = block("world", 16, 16, 16);
+    PluginConfig config = config(PluginConfig.LocationMode.BLACKLIST, Set.of());
+    FakeDataStore dataStore = new FakeDataStore(null);
+    PluginManager pm = managerWith3D(griefPrevention3DWithDataStore(dataStore));
+
+    try (MockedStatic<Bukkit> bukkit = mockStatic(Bukkit.class)) {
+      bukkit.when(Bukkit::getPluginManager).thenReturn(pm);
+      assertEquals(
+        "",
+        ProtectionCompat.explainLinkedDoorDeniedReason(plugin(config), null, block)
+      );
+      assertFalse(dataStore.lastIgnoreHeight);
     }
   }
 

@@ -14,6 +14,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+import org.bukkit.plugin.PluginManager;
 
 /**
  * Optional protection-plugin compatibility hooks.
@@ -62,9 +63,7 @@ public final class ProtectionCompat {
       return locationFilterReason;
     }
 
-    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
-      "GriefPrevention"
-    );
+    Plugin griefPrevention = getGriefPreventionPlugin();
     if (griefPrevention != null && griefPrevention.isEnabled()) {
       try {
         Object dataStore = getDataStore(griefPrevention);
@@ -72,7 +71,11 @@ public final class ProtectionCompat {
           plugin.getLogger().warning("GriefPrevention compatibility check failed: dataStore is unavailable.");
           return "griefprevention_unresolved";
         }
-        Object claim = findClaimAt(dataStore, linkedBlock);
+        Object claim = findClaimAt(
+          dataStore,
+          linkedBlock,
+          isGriefPrevention3D(griefPrevention)
+        );
         if (claim != null) {
           Boolean checkPermissionResult = tryCheckPermission(
             claim,
@@ -150,7 +153,24 @@ public final class ProtectionCompat {
     }
   }
 
-  private static Object findClaimAt(Object dataStore, Block linkedBlock)
+  private static Plugin getGriefPreventionPlugin() {
+    PluginManager pluginManager = Bukkit.getPluginManager();
+    Plugin griefPrevention3D = pluginManager.getPlugin("GriefPrevention3D");
+    if (griefPrevention3D != null) {
+      return griefPrevention3D;
+    }
+    return pluginManager.getPlugin("GriefPrevention");
+  }
+
+  private static boolean isGriefPrevention3D(Plugin plugin) {
+    return "GriefPrevention3D".equalsIgnoreCase(plugin.getName());
+  }
+
+  private static Object findClaimAt(
+    Object dataStore,
+    Block linkedBlock,
+    boolean respectHeight
+  )
     throws ReflectiveOperationException {
     Method getClaimAt = null;
     for (Method method : dataStore.getClass().getMethods()) {
@@ -178,7 +198,7 @@ public final class ProtectionCompat {
       if (
         parameterTypes[i] == boolean.class || parameterTypes[i] == Boolean.class
       ) {
-        args[i] = Boolean.TRUE;
+        args[i] = i == 1 ? !respectHeight : Boolean.TRUE;
       } else {
         args[i] = null;
       }
@@ -319,9 +339,7 @@ public final class ProtectionCompat {
    * @return the claim ID, or {@code -1L} if unavailable
    */
   public static long getClaimIdAt(DoubleDoors plugin, Block block) {
-    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
-      "GriefPrevention"
-    );
+    Plugin griefPrevention = getGriefPreventionPlugin();
     if (griefPrevention == null || !griefPrevention.isEnabled()) {
       return -1L;
     }
@@ -330,7 +348,11 @@ public final class ProtectionCompat {
       if (dataStore == null) {
         return -1L;
       }
-      Object claim = findClaimAt(dataStore, block);
+      Object claim = findClaimAt(
+        dataStore,
+        block,
+        isGriefPrevention3D(griefPrevention)
+      );
       if (claim == null) {
         return -1L;
       }
@@ -363,9 +385,7 @@ public final class ProtectionCompat {
     Player player,
     Block block
   ) {
-    Plugin griefPrevention = Bukkit.getPluginManager().getPlugin(
-      "GriefPrevention"
-    );
+    Plugin griefPrevention = getGriefPreventionPlugin();
     if (griefPrevention == null || !griefPrevention.isEnabled()) {
       return true;
     }
@@ -374,7 +394,11 @@ public final class ProtectionCompat {
       if (dataStore == null) {
         return true;
       }
-      Object claim = findClaimAt(dataStore, block);
+      Object claim = findClaimAt(
+        dataStore,
+        block,
+        isGriefPrevention3D(griefPrevention)
+      );
       if (claim == null) {
         return true; // wilderness — no restrictions
       }

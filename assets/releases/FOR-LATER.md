@@ -2,6 +2,8 @@
 
 This file contains updates that we need to document in a later release when that comes.
 
+- Added automatic compatibility with GriefPrevention3D. Its 3D claims are checked at the door's actual height without additional DoubleDoors configuration; servers using only regular 2D claims retain the original GriefPrevention behavior.
+
 ## Dependency Updates
 
 | Package | Old Version | New Version |

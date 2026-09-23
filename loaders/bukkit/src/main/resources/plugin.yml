@@ -4,7 +4,7 @@ main: me.szabee.doubledoors.bukkit.DoubleDoors
 api-version: "1.21"
 author: SzaBee13
 description: Opens connected doors, fence gates, and trapdoors simultaneously; supports per-player preferences.
-softdepend: [LuckPerms, GriefPrevention, WorldGuard, Geyser-Spigot, floodgate]
+softdepend: [LuckPerms, GriefPrevention, GriefPrevention3D, WorldGuard, Geyser-Spigot, floodgate]
 folia-supported: true
 commands:
   doubledoors:
