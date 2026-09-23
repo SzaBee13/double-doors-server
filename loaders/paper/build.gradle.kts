@@ -14,7 +14,8 @@ sourceSets {
     java {
       srcDirs(
         "../bukkit/src/main/java-common",
-        "../bukkit/src/main/java-$minecraftVersionId"
+        "../bukkit/src/main/java-$minecraftVersionId",
+        "src/main/java"
       )
     }
     resources {

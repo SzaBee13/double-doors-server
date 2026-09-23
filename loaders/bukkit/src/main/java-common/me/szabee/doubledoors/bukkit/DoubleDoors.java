@@ -45,7 +45,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 /**
  * Main plugin class for DoubleDoors.
  */
-public final class DoubleDoors extends JavaPlugin {
+public class DoubleDoors extends JavaPlugin {
 
   private static final String LOCALE_PERMISSION = "doubledoors.locale";
 
@@ -469,15 +469,7 @@ public final class DoubleDoors extends JavaPlugin {
       .registerEvents(new RedstoneListener(this), this);
     registerVersionListener();
 
-    if (!registerPaperCommand()) {
-      var doubledoorsCommand = getCommand("doubledoors");
-      if (doubledoorsCommand != null) {
-        doubledoorsCommand.setExecutor(this);
-        doubledoorsCommand.setTabCompleter(this);
-      } else {
-        getLogger().warning("Command registration failed: no Paper brigadier and no Bukkit fallback available.");
-      }
-    }
+    registerPlatformCommands();
 
     PluginManager pluginManager = getServer().getPluginManager();
     if (pluginManager.isPluginEnabled("LuckPerms")) {
@@ -552,6 +544,22 @@ public final class DoubleDoors extends JavaPlugin {
     }
   }
 
+  /**
+   * Registers the loader-specific command implementation.
+   *
+   * <p>Bukkit uses the command declared in {@code plugin.yml}; Paper overrides
+   * this hook to install its Brigadier command.</p>
+   */
+  protected void registerPlatformCommands() {
+    var doubledoorsCommand = getCommand("doubledoors");
+    if (doubledoorsCommand == null) {
+      getLogger().warning("Command registration failed: no Bukkit command available.");
+      return;
+    }
+    doubledoorsCommand.setExecutor(this);
+    doubledoorsCommand.setTabCompleter(this);
+  }
+
   private void registerVersionListener() {
     VersionBridge localBridge = versionBridge;
     if (localBridge == null) {
@@ -560,77 +568,6 @@ public final class DoubleDoors extends JavaPlugin {
     localBridge
       .createVersionListener()
       .ifPresent(l -> getServer().getPluginManager().registerEvents(l, this));
-  }
-
-  /**
-   * Attempts to register the {@code /doubledoors} command using Paper's
-   * {@code BasicCommand} API via reflection. Returns {@code true} on success
-   * (Paper server), {@code false} if the Bukkit fallback should be used.
-   */
-  private boolean registerPaperCommand() {
-    try {
-      Class<?> basicCmdClass = Class.forName(
-        "io.papermc.paper.command.brigadier.BasicCommand"
-      );
-      Class<?> cssClass = Class.forName(
-        "io.papermc.paper.command.brigadier.CommandSourceStack"
-      );
-      java.lang.reflect.Method getSender = cssClass.getMethod("getSender");
-
-      Object basicCommand = java.lang.reflect.Proxy.newProxyInstance(
-        basicCmdClass.getClassLoader(),
-        new Class<?>[]{ basicCmdClass },
-        (proxy, method, args) -> {
-          String name = method.getName();
-          return switch (name) {
-            case "execute" -> {
-              Object source = args[0];
-              String[] cmdArgs = (String[]) args[1];
-              CommandSender sender = (CommandSender) getSender.invoke(source);
-              handleCommand(sender, "doubledoors", cmdArgs);
-              yield null;
-            }
-            case "suggest" -> {
-              Object source = args[0];
-              String[] cmdArgs = (String[]) args[1];
-              CommandSender sender = (CommandSender) getSender.invoke(source);
-              yield handleTabComplete(sender, "doubledoors", cmdArgs);
-            }
-            case "permission" -> null;
-            case "canUse" -> true;
-            case "toString" -> "DoubleDoors[PaperCommandProxy]";
-            case "equals" -> proxy == args[0];
-            case "hashCode" -> System.identityHashCode(proxy);
-            default -> {
-              try {
-                yield method.invoke(proxy, args);
-              } catch (java.lang.reflect.InvocationTargetException e) {
-                throw e.getCause();
-              }
-            }
-          };
-        }
-      );
-
-      Class<?> javaPluginClass = Class.forName(
-        "org.bukkit.plugin.java.JavaPlugin"
-      );
-      java.lang.reflect.Method registerCmd = javaPluginClass.getMethod(
-        "registerCommand",
-        String.class,
-        java.util.Collection.class,
-        basicCmdClass
-      );
-      registerCmd.invoke(
-        this,
-        "doubledoors",
-        java.util.List.of("dd"),
-        basicCommand
-      );
-      return true;
-    } catch (Throwable ignored) {
-      return false;
-    }
   }
 
   private String t(String key, Object... args) {

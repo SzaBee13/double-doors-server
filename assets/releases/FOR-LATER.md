@@ -20,3 +20,5 @@ This file contains updates that we need to document in a later release when that
 
 - Moved the Bukkit, Paper, and Velocity loader modules under `loaders/` while
   preserving their Gradle project names (`:bukkit`, `:paper`, and `:velocity`).
+- Separated the loader-neutral API into `core`, added a typed Bukkit API facade,
+  and moved Paper-specific command initialization into the Paper loader.

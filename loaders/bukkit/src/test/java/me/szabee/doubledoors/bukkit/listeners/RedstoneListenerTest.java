@@ -7,14 +7,12 @@ import static org.mockito.Mockito.when;
 import me.szabee.doubledoors.bukkit.DoubleDoors;
 import me.szabee.doubledoors.bukkit.config.PluginConfig;
 import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
-import me.szabee.doubledoors.bukkit.util.SchedulerBridge;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
-import org.bukkit.event.world.GenericGameEvent;
-import org.junit.jupiter.api.Test;
+ import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 class RedstoneListenerTest {
@@ -69,8 +67,7 @@ class RedstoneListenerTest {
 
     try (
       MockedStatic<DoorInteractListener> door = mockStatic(DoorInteractListener.class);
-      MockedStatic<ProtectionCompat> protection = mockStatic(ProtectionCompat.class);
-      MockedStatic<SchedulerBridge> scheduler = mockStatic(SchedulerBridge.class)
+      MockedStatic<ProtectionCompat> protection = mockStatic(ProtectionCompat.class)
     ) {
       door.when(() -> DoorInteractListener.isEnabledType(block, config, plugin)).thenReturn(true);
       protection.when(() -> ProtectionCompat.getClaimIdAt(plugin, block)).thenReturn(-1L);
