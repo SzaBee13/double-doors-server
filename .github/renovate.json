@@ -27,7 +27,7 @@
     {
       "matchPackageNames": ["io.papermc.paperweight.userdev", "com.gradleup.shadow"],
       "groupName": "build tools",
-      "allowedVersions": "!/SNAPSHOT$/i"
+      "allowedVersions": "!/[-.]?snapshot$/i"
     },
     {
       "matchPackageNames": ["dev.faststats.metrics:**"],
