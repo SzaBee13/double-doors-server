@@ -2,7 +2,7 @@
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "baseBranchPatterns": ["dev"],
   "extends": [
-    "config:recommended"
+    "config:recommended", ":dependencyDashboardApproval"
   ],
   "timezone": "UTC",
   "dependencyDashboard": false,
@@ -27,7 +27,7 @@
     {
       "matchPackageNames": ["io.papermc.paperweight.userdev", "com.gradleup.shadow"],
       "groupName": "build tools",
-      "allowedVersions": "!/SNAPSHOT$/i"
+      "allowedVersions": "!/[-.]?snapshot$/i"
     },
     {
       "matchPackageNames": ["dev.faststats.metrics:**"],
