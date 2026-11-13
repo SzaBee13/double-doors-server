@@ -93,7 +93,15 @@ public final class ClaimSettings {
       synchronized (writeLock) {
         if (useSql) {
           boolean currentBlocked = villagersBlockedClaims.contains(claimId);
-          sqlStorage.setVillagersBlocked(claimId, currentBlocked);
+          if (!sqlStorage.setVillagersBlocked(claimId, currentBlocked)) {
+            plugin
+              .getLogger()
+              .warning(
+                "Could not save SQL claim setting for claim %d.".formatted(
+                  claimId
+                )
+              );
+          }
           return;
         }
         save();

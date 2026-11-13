@@ -1,18 +1,23 @@
 package me.szabee.doubledoors.bukkit.listeners;
 
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.mockStatic;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import me.szabee.doubledoors.bukkit.DoubleDoors;
 import me.szabee.doubledoors.bukkit.config.PluginConfig;
 import me.szabee.doubledoors.bukkit.util.ProtectionCompat;
+import org.bukkit.Server;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Villager;
 import org.bukkit.event.block.BlockRedstoneEvent;
 import org.bukkit.event.entity.EntityInteractEvent;
- import org.junit.jupiter.api.Test;
+import org.bukkit.scheduler.BukkitScheduler;
+import org.junit.jupiter.api.Test;
 import org.mockito.MockedStatic;
 
 class RedstoneListenerTest {
@@ -60,6 +65,10 @@ class RedstoneListenerTest {
     PluginConfig config = config(true, true);
     when(config.getAnimationSyncExtraDelayTicks()).thenReturn(3);
     DoubleDoors plugin = plugin(config);
+    Server server = mock(Server.class);
+    BukkitScheduler scheduler = mock(BukkitScheduler.class);
+    when(plugin.getServer()).thenReturn(server);
+    when(server.getScheduler()).thenReturn(scheduler);
     Villager villager = mock(Villager.class);
     EntityInteractEvent event = mock(EntityInteractEvent.class);
     when(event.getEntity()).thenReturn(villager);
@@ -73,6 +82,8 @@ class RedstoneListenerTest {
       protection.when(() -> ProtectionCompat.getClaimIdAt(plugin, block)).thenReturn(-1L);
       listener(plugin).onVillagerInteract(event);
     }
+
+    verify(scheduler).runTaskLater(eq(plugin), any(Runnable.class), eq(5L));
   }
 
   private static RedstoneListener listener(DoubleDoors plugin) {

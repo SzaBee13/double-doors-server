@@ -6,6 +6,10 @@ This file contains updates that we need to document in a later release when that
 
 - Added automatic compatibility with GriefPrevention3D. Its 3D claims are checked at the door's actual height without additional DoubleDoors configuration; servers using only regular 2D claims retain the original GriefPrevention behavior.
 
+## Fixed
+
+- Log a warning when saving a claim setting to SQL fails, instead of silently dropping the failure.
+
 ## Dependency Updates
 
 | Package | Old Version | New Version |
@@ -24,6 +28,7 @@ This file contains updates that we need to document in a later release when that
 
 ## Developer Notes
 
+- Fixed the redstone listener test to provide a mocked Bukkit scheduler and verify the villager-event delay.
 - Moved the Bukkit, Paper, and Velocity loader modules under `loaders/` while
   preserving their Gradle project names (`:bukkit`, `:paper`, and `:velocity`).
 - Separated the loader-neutral API into `core`, added a typed Bukkit API facade,
