@@ -2,6 +2,8 @@
 
 This file contains updates that we need to document in a later release when that comes.
 
+## Added
+
 - Added automatic compatibility with GriefPrevention3D. Its 3D claims are checked at the door's actual height without additional DoubleDoors configuration; servers using only regular 2D claims retain the original GriefPrevention behavior.
 
 ## Dependency Updates
@@ -11,11 +13,12 @@ This file contains updates that we need to document in a later release when that
 | io.papermc.paperweight.userdev | v2.0.0-beta.21 | v2.0.0-beta.24 |
 | org.junit:junit-bom | 6.1.1 | 6.1.3 |
 | com.gradleup.shadow | 9.5.1 | 9.6.1 |
-| dev.faststats.metrics | 0.27.2 | 0.30.2 |
-| com.mysql:mysql-connector-j | 9.7.0 | 26.7.0 |
+| dev.faststats.metrics | 0.27.2 | 0.32.2 |
+| com.google.code.gson:gson | 2.14.0 | 2.15.0 |
+| com.mysql:mysql-connector-j | 9.7.0 | 26.10.0 |
 | actions/setup-java | v5 | v6 |
 | crowdin/github-action | v2 | v3 | 
-| org.xerial:sqlite-jdbc | 3.53.2.0 | 3.53.4.0 |
+| org.xerial:sqlite-jdbc | 3.53.2.0 | 3.54.1.0 |
 | org.mockito:mockito-junit-jupiter | 5.23.0 | 5.24.0 |
 | org.mockito:mockito-core | 5.23.0 | 5.24.0	|
 
