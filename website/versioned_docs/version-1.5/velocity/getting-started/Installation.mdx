@@ -1,0 +1,29 @@
+---
+title: Installation
+id: velocity-getting-started-installation
+slug: /velocity/getting-started/installation
+---
+## Requirements
+
+- Velocity 3.4.0 or newer.
+- Java 25 or newer for the proxy runtime.
+- Geyser-Velocity or Floodgate when proxy presence reporting is needed.
+- SQLite for one proxy, or MySQL for multiple proxies sharing state.
+
+## Install Steps
+
+1. Stop the Velocity proxy.
+2. Download `doubledoors-velocity-<version>.jar` from the [releases page](https://github.com/SzaBee13/double-doors-server/releases).
+3. Place the jar in the proxy `plugins/` directory.
+4. Start the proxy once and confirm that DoubleDoors loads after Geyser/Floodgate.
+5. Edit `plugins/DoubleDoors/proxy-config.properties` if SQL heartbeat reporting is required.
+6. Restart the proxy after changing the configuration.
+
+The proxy plugin does not replace the Bukkit/Paper plugin. Install the Bukkit plugin separately on each backend server where doors are used.
+
+## Verify Installation
+
+- Confirm the proxy log reports DoubleDoors initialization.
+- Confirm `plugins/DoubleDoors/proxy-config.properties` exists.
+- With SQL enabled, query `dd_proxy_presence` and verify a recent `last_seen_epoch_ms` value.
+- If Geyser/Floodgate is absent, heartbeat reporting is intentionally disabled.

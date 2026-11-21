@@ -1,0 +1,86 @@
+---
+title: Compatibility
+id: bukkit-support-compatibility
+slug: /bukkit/support/compatibility
+---
+## Platform
+
+- Minecraft Java Edition `1.21.x`, `26.1.x`, `26.2.x`, and `26.3.x`.
+- Bukkit/Spigot API `1.21` or newer.
+- Paper, Purpur, and Folia builds matching the supported Minecraft versions.
+- Java 25 or newer.
+
+The `doubledoors-bukkit` artifact is intended for Bukkit and Spigot. Use the
+`doubledoors-paper` artifact on Paper, Purpur, and Folia.
+
+## Permission Plugins
+
+### LuckPerms
+
+- LuckPerms versions compatible with the supported Bukkit platform versions.
+- Uses standard Bukkit permissions.
+- No special integration code required.
+- Manage `doubledoors.*` nodes as usual.
+
+## Protection Plugins
+
+### GriefPrevention
+
+- No specific GriefPrevention release is bundled or required.
+- GriefPrevention3D is supported automatically as a drop-in replacement. No
+  additional DoubleDoors configuration is required.
+- When GriefPrevention3D is installed, 3D claims are resolved using the
+  door's actual Y-level, so linked-door checks apply to the correct
+  height-limited claim.
+- GriefPrevention3D servers using only regular 2D claims behave the same as
+  standard GriefPrevention servers.
+- Supported versions must expose the reflective API used by DoubleDoors:
+  `dataStore`, `getClaimAt(Location, boolean)`, `checkPermission`, and
+  `allowBuild`.
+- Optional reflective integration.
+- Linked partner door checks require Access trust by default because `griefprevention.requireBuildForLinkedDoors` defaults to `false`. Enabling the option changes the requirement to Build trust.
+- If reflection fails or API signatures differ while GriefPrevention is installed, the linked action is denied and a compatibility error is logged. If GriefPrevention is absent, the integration is bypassed.
+- Per-claim villager blocking: admins can toggle villager linked-door access per claim using `/doubledoors grief villagers`.
+
+### WorldGuard
+
+- WorldGuard 7.x versions exposing either the legacy
+  `WorldGuardPlugin.canBuild(Player, Location)` API or the modern
+  `RegionQuery.testState(..., Flags.BUILD)` API are supported.
+- Use the WorldEdit version required by the installed WorldGuard release.
+- Optional reflective integration via `softdepend`.
+- **Build permission check**: When `worldGuardRespectBuildPermission` is true, linked door actions require WorldGuard build permission.
+- **USE flag check**: When `worldGuardRespectUseFlag` is true, linked door actions require the WorldGuard USE flag to be set to `allow`.
+- **Custom state-flag**: A configurable flag name (default `double-doors-allow`) can be set per-region to `allow` or `deny` DoubleDoors behavior. Resolved with priority-based flag resolution when multiple regions overlap.
+- **Region blacklist/whitelist**: `worldGuardRegionFilter.mode` controls which WorldGuard regions are subject to DoubleDoors linking. Region IDs are collected via WorldGuard's `getApplicableRegions()` API.
+- If reflection fails or API signatures differ while WorldGuard is installed, the linked action is denied and a compatibility error is logged. If WorldGuard is absent, the integration is bypassed.
+
+## Bedrock Bridge
+
+### Geyser and Floodgate
+
+- Geyser-Spigot and Floodgate versions compatible with the supported server
+  version are supported; no specific release is bundled or required.
+- Optional soft dependency.
+- Duplicate interaction debounce is active to reduce double-fire toggles for the same block interaction.
+- When SQL storage is enabled, the Bukkit plugin polls the shared database to detect if a remote Velocity proxy has Geyser/Floodgate active, enabling Bedrock client debounce even when Geyser runs on a separate proxy.
+
+## Concurrency Frameworks
+
+### Folia
+
+- Folia versions matching Minecraft `1.21.x`, `26.1.x`, `26.2.x`, or `26.3.x` are supported.
+- Plugin declares `folia-supported: true` in `plugin.yml`.
+- Uses region-aware scheduling via reflection: `getGlobalRegionScheduler()`, `getRegionScheduler()`, `getAsyncScheduler()`.
+- Falls back to standard Bukkit scheduler when Folia is not present.
+- Delayed block updates and shared-state access use Folia-aware region scheduling.
+
+## Other Plugins
+
+DoubleDoors is event-driven and generally compatible with typical server stacks. If another plugin cancels interaction events before MONITOR handlers run, DoubleDoors will not process those cancelled events.
+
+## Practical Advice
+
+- Keep only one plugin responsible for advanced multi-block door logic.
+- If you stack multiple similar plugins, expect conflicts or race-like state overrides.
+- Prefer explicit permission setup for user groups even if defaults already allow use.
