@@ -9,6 +9,7 @@ This file contains updates that we need to document in a later release when that
 ## Fixed
 
 - Log a warning when saving a claim setting to SQL fails, instead of silently dropping the failure.
+- Restored missing diacritical marks in German, Spanish, French, and Portuguese locale strings.
 
 ## Dependency Updates
 
@@ -29,7 +30,7 @@ This file contains updates that we need to document in a later release when that
 ## Developer Notes
 
 - Fixed the redstone listener test to provide a mocked Bukkit scheduler and verify the villager-event delay.
-- Moved the Bukkit, Paper, and Velocity loader modules under `loaders/` while
-  preserving their Gradle project names (`:bukkit`, `:paper`, and `:velocity`).
-- Separated the loader-neutral API into `core`, added a typed Bukkit API facade,
-  and moved Paper-specific command initialization into the Paper loader.
+- Moved the Bukkit, Paper, and Velocity loader modules under `loaders/` while preserving their Gradle project names (`:bukkit`, `:paper`, and `:velocity`).
+- Separated the loader-neutral API into `core`, added a typed Bukkit API facade, and moved Paper-specific command initialization into the Paper loader.
+- Registered the plugin's permission nodes and defaults in the Paper loader, since Paper's plugin descriptor does not load permissions from `plugin.yml`.
+
