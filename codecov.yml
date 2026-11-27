@@ -20,7 +20,7 @@ flag_management:
         - core/src/
     - name: bukkit
       paths:
-        - bukkit/src/
+        - loaders/bukkit/src/
     - name: velocity
       paths:
-        - velocity/src/
+        - loaders/velocity/src/

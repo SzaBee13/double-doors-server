@@ -3,7 +3,6 @@
 [![GitHub Release](https://img.shields.io/github/v/release/SzaBee13/double-doors-server)](https://github.com/SzaBee13/double-doors-server/releases)
 [![GitHub License](https://img.shields.io/github/license/SzaBee13/double-doors-server)](https://github.com/SzaBee13/double-doors-server/blob/main/LICENSE)
 [![GitHub Issues](https://img.shields.io/github/issues/SzaBee13/double-doors-server)](https://github.com/SzaBee13/double-doors-server/issues)
-[![Modrinth Game Versions](https://img.shields.io/modrinth/game-versions/double-doors-server)](https://modrinth.com/plugin/double-doors-server)
 [![Crowdin](https://badges.crowdin.net/double-doors-server/localized.svg)](https://crowdin.com/project/double-doors-server)
 <br>
 [![Online players](https://img.shields.io/endpoint?url=https%3A%2F%2Ffaststats.dev%2Fapi%2Fshields%2Fdouble-doors-server%3Fmetric%3Donline_players&style=flat)](https://faststats.dev/project/double-doors-server)

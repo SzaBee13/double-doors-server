@@ -27,6 +27,13 @@ The `doubledoors-bukkit` artifact is intended for Bukkit and Spigot. Use the
 ### GriefPrevention
 
 - No specific GriefPrevention release is bundled or required.
+- GriefPrevention3D is supported automatically as a drop-in replacement. No
+  additional DoubleDoors configuration is required.
+- When GriefPrevention3D is installed, 3D claims are resolved using the
+  door's actual Y-level, so linked-door checks apply to the correct
+  height-limited claim.
+- GriefPrevention3D servers using only regular 2D claims behave the same as
+  standard GriefPrevention servers.
 - Supported versions must expose the reflective API used by DoubleDoors:
   `dataStore`, `getClaimAt(Location, boolean)`, `checkPermission`, and
   `allowBuild`.
