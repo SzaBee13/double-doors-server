@@ -5,7 +5,9 @@
     "config:recommended", ":dependencyDashboardApproval"
   ],
   "timezone": "UTC",
-  "dependencyDashboard": false,
+  "dependencyDashboard": {
+    "enabled": false
+  },
   "schedule": ["* 6 * * 1"],
   "ignoreUnstable": true,
   "prHourlyLimit": 0,
