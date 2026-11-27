@@ -1,6 +1,6 @@
 # DoubleDoors v1.5.0 Release Notes
 
-Release date: TBD
+Release date: 2026-11-27
 
 ## Added
 
